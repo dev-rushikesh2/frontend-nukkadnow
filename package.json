@@ -57,7 +57,7 @@
     "@angular-eslint/eslint-plugin-template": "^18.4.1",
     "@angular-eslint/schematics": "^18.4.1",
     "@angular-eslint/template-parser": "^18.4.1",
-    "@types/jasmine": "~5.1.4",
+    "@types/jasmine": "~7.0.0",
     "@types/node": "^20.17.6",
     "@typescript-eslint/eslint-plugin": "^8.14.0",
     "@typescript-eslint/parser": "^8.14.0",
