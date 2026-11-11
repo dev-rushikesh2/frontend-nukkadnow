@@ -1,10 +1,173 @@
-﻿<div class="home-container">
-  <h2>Home</h2>
-  @if (store.loading()) {
-    <p>Loading...</p>
-  } @else {
-    @for (item of store.items(); track item.id) {
-      <app-home-card [item]="item"></app-home-card>
-    }
-  }
-</div>
+<app-customer-shell [showHeader]="true" [showNav]="true">
+  <div class="home-feed-view">
+
+    <!-- 1. Location & Mode Switcher Bar -->
+    <section class="location-mode-row">
+      <!-- Location Pill -->
+      <a routerLink="/onboarding" class="location-pill">
+        <span class="pin-svg">📍</span>
+        <span class="locality-text">{{ currentLocality() }}</span>
+        <span class="chevron-down">▾</span>
+      </a>
+
+      <!-- Fulfilment Toggle Pill (Pickup vs Delivery) -->
+      <div class="fulfilment-toggle-pill" role="tablist">
+        <button
+          type="button"
+          class="toggle-btn"
+          [class.active]="selectedMode() === 'PICKUP'"
+          (click)="setMode('PICKUP')"
+          role="tab"
+          [attr.aria-selected]="selectedMode() === 'PICKUP'">
+          <span class="btn-icon">🛍️</span>
+          <span>Pickup</span>
+        </button>
+        <button
+          type="button"
+          class="toggle-btn"
+          [class.active]="selectedMode() === 'DELIVERY'"
+          (click)="setMode('DELIVERY')"
+          role="tab"
+          [attr.aria-selected]="selectedMode() === 'DELIVERY'">
+          <span class="btn-icon">🛵</span>
+          <span>Delivery</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. Search Input Bar with QR Scanner -->
+    <section class="search-section">
+      <div class="search-bar-wrap" (click)="navigateToSearch()">
+        <span class="search-lens">🔍</span>
+        <span class="search-placeholder">Search for shops, products, or categories</span>
+        <a routerLink="/pickup-token/scan" class="qr-scanner-btn" aria-label="Scan QR Code" (click)="$event.stopPropagation()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6D28D9" stroke-width="2.2" stroke-linecap="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <rect x="7" y="7" width="3" height="3" fill="#6D28D9"/>
+            <rect x="14" y="7" width="3" height="3" fill="#6D28D9"/>
+            <rect x="7" y="14" width="3" height="3" fill="#6D28D9"/>
+          </svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- 3. Hero Promo Banner -->
+    <section class="hero-banner-section">
+      <div class="hero-banner-card">
+        <div class="banner-text-side">
+          <h2 class="banner-headline">
+            Shop Local<br>Support <span class="highlight-yellow">Nukkad</span>
+          </h2>
+          <p class="banner-subtext">Your favourite neighbourhood shops, now at your fingertips!</p>
+          <div class="carousel-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+        <div class="banner-art-side">
+          <div class="basket-art">🧺 🍅 🥬 🥖 🥛</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Quick Category Icons Grid -->
+    <section class="categories-quick-section">
+      <div class="categories-scroll-row">
+        @for (cat of categories(); track cat.id) {
+          <a routerLink="/categories" class="cat-quick-card">
+            <div class="cat-icon-container" [style.background-color]="cat.bg">
+              <span class="cat-emoji">{{ cat.icon }}</span>
+            </div>
+            <span class="cat-label">{{ cat.name }}</span>
+          </a>
+        }
+      </div>
+    </section>
+
+    <!-- 5. Nearby Shops Section -->
+    <section class="nearby-shops-section">
+      <div class="section-title-row">
+        <div class="title-left">
+          <span class="section-pin">📍</span>
+          <h3 class="section-heading">Nearby Shops</h3>
+          <span class="badge-distance">Within 3 km</span>
+        </div>
+        <a routerLink="/discovery" class="view-all-link">
+          <span>View All</span>
+          <span class="arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Horizontal scrollable shop cards -->
+      <div class="shops-horizontal-scroller">
+        @for (shop of nearbyShops(); track shop.id) {
+          <div class="shop-card" (click)="openShop(shop.id)">
+            <!-- Thumbnail cover -->
+            <div class="shop-thumb-wrap">
+              <div class="shop-thumb-img">{{ shop.image }}</div>
+              <span class="shop-status-badge" [class.open]="shop.isOpen">
+                {{ shop.isOpen ? 'Open' : 'Closed' }}
+              </span>
+              <button
+                type="button"
+                class="favourite-btn"
+                [class.faved]="shop.isFavourite"
+                (click)="toggleFavourite(shop.id, $event)"
+                aria-label="Toggle Favourite">
+                {{ shop.isFavourite ? '❤️' : '🤍' }}
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="shop-body">
+              <h4 class="shop-title">
+                {{ shop.name }}
+                <span class="verified-tick">✓</span>
+              </h4>
+              <div class="shop-meta-row">
+                <span class="star-rating">⭐ {{ shop.rating }}</span>
+                <span class="reviews-count">({{ shop.reviewsCount }})</span>
+                <span class="meta-dot">•</span>
+                <span class="shop-distance">{{ shop.distance }}</span>
+              </div>
+              <div class="shop-tags-row">
+                @for (tag of shop.tags; track tag) {
+                  <span class="tag-pill">{{ tag }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- 6. Today's Local Offers Section -->
+    <section class="offers-section">
+      <div class="section-title-row">
+        <div class="title-left">
+          <span class="section-lightning">⚡</span>
+          <h3 class="section-heading">Today's Local Offers</h3>
+        </div>
+        <a routerLink="/categories" class="view-all-link">
+          <span>View All</span>
+          <span class="arrow">→</span>
+        </a>
+      </div>
+
+      <div class="offers-scroller">
+        @for (offer of localOffers(); track offer.id) {
+          <div class="offer-card" [style.background]="offer.bgGradient">
+            <div class="offer-info">
+              <span class="offer-title">{{ offer.title }}</span>
+              <strong class="offer-discount">{{ offer.discount }}</strong>
+              <div class="offer-arrow-btn">➔</div>
+            </div>
+            <div class="offer-art">{{ offer.icon }}</div>
+          </div>
+        }
+      </div>
+    </section>
+
+  </div>
+</app-customer-shell>

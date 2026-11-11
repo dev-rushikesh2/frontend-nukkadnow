@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -11,12 +11,25 @@ export const routes: Routes = [
     loadChildren: () => import('./features/discovery/discovery.routes').then(m => m.DISCOVERY_ROUTES)
   },
   {
+    path: 'shops-map',
+    redirectTo: 'discovery/map',
+    pathMatch: 'full'
+  },
+  {
     path: 'categories',
     loadChildren: () => import('./features/categories/categories.routes').then(m => m.CATEGORIES_ROUTES)
   },
   {
     path: 'merchant/:id',
     loadChildren: () => import('./features/merchant-profile/merchant-profile.routes').then(m => m.MERCHANT_PROFILE_ROUTES)
+  },
+  {
+    path: 'product/:id',
+    loadChildren: () => import('./features/product-details/product-details.routes').then(m => m.PRODUCT_DETAILS_ROUTES)
+  },
+  {
+    path: 'product',
+    loadChildren: () => import('./features/product-details/product-details.routes').then(m => m.PRODUCT_DETAILS_ROUTES)
   },
   {
     path: 'cart',
@@ -43,12 +56,29 @@ export const routes: Routes = [
     loadChildren: () => import('./features/pickup-token/pickup-token.routes').then(m => m.PICKUP_TOKEN_ROUTES)
   },
   {
+    path: 'pickup-token',
+    loadChildren: () => import('./features/pickup-token/pickup-token.routes').then(m => m.PICKUP_TOKEN_ROUTES)
+  },
+  {
+    path: 'qr',
+    loadChildren: () => import('./features/pickup-token/pickup-token.routes').then(m => m.PICKUP_TOKEN_ROUTES)
+  },
+  {
+    path: 'qr-order',
+    loadChildren: () => import('./features/pickup-token/pickup-token.routes').then(m => m.PICKUP_TOKEN_ROUTES)
+  },
+  {
     path: 'merchant-delivery/:id',
     loadChildren: () => import('./features/merchant-delivery/merchant-delivery.routes').then(m => m.MERCHANT_DELIVERY_ROUTES)
   },
   {
     path: 'favourites',
     loadChildren: () => import('./features/favourites/favourites.routes').then(m => m.FAVOURITES_ROUTES)
+  },
+  {
+    path: 'addresses',
+    redirectTo: 'account/addresses',
+    pathMatch: 'full'
   },
   {
     path: 'notifications',
@@ -69,6 +99,16 @@ export const routes: Routes = [
   {
     path: 'help-support',
     loadChildren: () => import('./features/help-support/help-support.routes').then(m => m.HELP_SUPPORT_ROUTES)
+  },
+  {
+    path: 'help',
+    redirectTo: 'help-support',
+    pathMatch: 'full'
+  },
+  {
+    path: 'privacy',
+    redirectTo: 'help-support',
+    pathMatch: 'full'
   },
   {
     path: '**',

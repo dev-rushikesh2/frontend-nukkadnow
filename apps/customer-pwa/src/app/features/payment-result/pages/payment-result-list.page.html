@@ -1,10 +1,209 @@
-﻿<div class="payment-result-container">
-  <h2>PaymentResult</h2>
-  @if (store.loading()) {
-    <p>Loading...</p>
-  } @else {
-    @for (item of store.items(); track item.id) {
-      <app-payment-result-card [item]="item"></app-payment-result-card>
-    }
-  }
+<div class="confirmation-page-viewport">
+  <!-- Brand Header -->
+  <header class="confirm-header">
+    <button class="nav-btn" routerLink="/home" aria-label="Go Home">
+      <svg viewBox="0 0 24 24" class="svg-icon">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+
+    <div class="brand-center">
+      <div class="brand-logo-mark">
+        <svg viewBox="0 0 24 24" class="logo-icon" fill="currentColor">
+          <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+        </svg>
+      </div>
+      <div class="brand-meta">
+        <span class="brand-name">Nukkad<span class="brand-now">Now</span></span>
+        <span class="brand-tagline">Your Neighbourhood Marketplace</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="action-btn" routerLink="/discovery" aria-label="Search">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+      </button>
+      <button class="action-btn" routerLink="/notifications" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+        </svg>
+        <span class="notification-badge-dot"></span>
+      </button>
+      <button class="action-btn" routerLink="/account" aria-label="Account">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="confirm-content-scroll">
+    <!-- Festive Success Hero -->
+    <div class="success-hero-block">
+      <div class="confetti-wrap">
+        <span class="confetti-dot dot-1"></span>
+        <span class="confetti-dot dot-2"></span>
+        <span class="confetti-dot dot-3"></span>
+        <span class="confetti-dot dot-4"></span>
+        <span class="confetti-dot dot-5"></span>
+        <span class="confetti-dot dot-6"></span>
+        <span class="confetti-ribbon rib-1"></span>
+        <span class="confetti-ribbon rib-2"></span>
+
+        <div class="check-circle-outer">
+          <div class="check-circle-inner">✓</div>
+        </div>
+      </div>
+
+      <h1 class="hero-headline">Order Confirmed!</h1>
+      <p class="hero-subline">
+        Thank you for shopping with NukkadNow<br>
+        Your order has been placed successfully.
+      </p>
+
+      <button class="order-id-pill" (click)="copyOrderId()">
+        <span>Order ID: {{ orderId() }}</span>
+        <svg viewBox="0 0 24 24" class="copy-svg">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
+        @if (copied()) {
+          <span class="copied-tooltip">Copied!</span>
+        }
+      </button>
+    </div>
+
+    <!-- 4-Stage Progress Timeline Card -->
+    <div class="timeline-card">
+      <div class="timeline-step active">
+        <div class="step-badge active">✓</div>
+        <span class="step-title">Order Placed</span>
+        <span class="step-time">Today, 10:24 AM</span>
+      </div>
+
+      <div class="timeline-line active"></div>
+
+      <div class="timeline-step">
+        <div class="step-badge">🛍️</div>
+        <span class="step-title">Preparing</span>
+        <span class="step-time">~ 10–15 min</span>
+      </div>
+
+      <div class="timeline-line"></div>
+
+      <div class="timeline-step">
+        <div class="step-badge">🛵</div>
+        <span class="step-title">On the Way</span>
+        <span class="step-time">~ 30–45 min</span>
+      </div>
+
+      <div class="timeline-line"></div>
+
+      <div class="timeline-step">
+        <div class="step-badge">✓</div>
+        <span class="step-title">Delivered</span>
+        <span class="step-time">Estimated by<br>11:15 AM</span>
+      </div>
+    </div>
+
+    <!-- Shop Card -->
+    <div class="shop-card">
+      <div class="shop-thumb-wrap">
+        <img [src]="shopInfo().image" [alt]="shopInfo().name" class="shop-img" />
+      </div>
+
+      <div class="shop-details-col">
+        <div class="shop-name-row">
+          <h2 class="shop-name">{{ shopInfo().name }}</h2>
+          <span class="verified-dot">✓</span>
+        </div>
+        <span class="shop-sub">{{ shopInfo().categories }}</span>
+        <span class="shop-rating">★ {{ shopInfo().rating }} ({{ shopInfo().reviewsCount }} reviews)</span>
+      </div>
+
+      <button class="call-shop-pill-btn" (click)="callShop()">
+        <svg viewBox="0 0 24 24" class="phone-svg">
+          <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.44-5.15-3.75-6.59-6.59l1.97-1.57c.28-.28.37-.68.25-1.02A11.36 11.36 0 018.57 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.62c0-.55-.45-1-.99-1z"/>
+        </svg>
+        <span>Call Shop</span>
+      </button>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div class="order-summary-card">
+      <div class="summary-card-header">
+        <div class="title-with-icon">
+          <span class="summary-icon">🧾</span>
+          <h3 class="summary-heading">Order Summary</h3>
+        </div>
+        <span class="summary-count">3 items</span>
+      </div>
+
+      <div class="items-summary-list">
+        @for (item of items(); track item.id) {
+          <div class="item-summary-row">
+            <div class="item-thumb-box">
+              <img [src]="item.image" [alt]="item.name" class="item-img" />
+            </div>
+
+            <div class="item-texts-col">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-meta">{{ item.unitWeight }} × {{ item.quantity }}</span>
+            </div>
+
+            <span class="item-price">₹{{ item.price * item.quantity }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="bill-breakdown">
+        <div class="bill-line">
+          <span class="b-label">Item Total</span>
+          <span class="b-val">₹{{ itemTotal() }}</span>
+        </div>
+        <div class="bill-line discount">
+          <span class="b-label">Shop Discount (10% on tomatoes)</span>
+          <span class="b-val">−₹{{ discount() }}</span>
+        </div>
+        <div class="bill-line">
+          <span class="b-label">Delivery Fee</span>
+          <span class="b-val">₹{{ deliveryFee() }}</span>
+        </div>
+        <div class="bill-divider"></div>
+        <div class="bill-line total-line">
+          <span class="b-total-label">Total Paid</span>
+          <span class="b-total-val">₹{{ totalPaid() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Details Card -->
+    <div class="delivery-details-card">
+      <div class="delivery-icon-bubble">
+        <svg viewBox="0 0 24 24" class="truck-svg"><path d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4.48L19 10.35V7zM7 17c-.55 0-1-.45-1-1h2c0 .55-.45 1-1 1zm12-7.35l-2.65 3.35H15V8h2.35l1.65 1.65z"/></svg>
+      </div>
+
+      <div class="delivery-texts-col">
+        <h4 class="delivery-heading">Delivery Details</h4>
+        <p class="delivery-addr">Home – Flat 302, Sai Residency, Civil Lines, Amravati – 444601</p>
+        <span class="delivery-sla">🕒 Estimated Delivery: <strong>10:55 AM – 11:15 AM</strong> (in 30–45 min)</span>
+      </div>
+
+      <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+    </div>
+  </div>
+
+  <!-- Dual Sticky Action Bar -->
+  <div class="sticky-action-bar">
+    <button class="track-order-btn" (click)="trackOrder()">
+      <svg viewBox="0 0 24 24" class="btn-svg"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      <span>Track Order</span>
+    </button>
+
+    <button class="continue-btn" (click)="continueShopping()">
+      <span>Continue Shopping</span>
+      <svg viewBox="0 0 24 24" class="arrow-svg"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42 5.43 5.43H5v2z"/></svg>
+    </button>
+  </div>
 </div>

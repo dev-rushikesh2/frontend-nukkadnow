@@ -1,0 +1,291 @@
+<app-customer-shell>
+  <div class="addresses-viewport">
+    <!-- Top Header -->
+    <app-page-header
+      [showBack]="true"
+      (back)="goBack()"
+      [showSearch]="false"
+      [showNotifications]="false"
+      [showProfile]="false">
+    </app-page-header>
+
+    <!-- Page Content Container -->
+    <main class="addresses-content">
+      <!-- Title & Action Bar -->
+      <header class="section-title-row">
+        <div class="title-block">
+          <h1 class="page-title">Manage Addresses</h1>
+          <p class="page-subtitle">Save and manage your delivery locations</p>
+        </div>
+        <button type="button" class="add-address-pill-btn" (click)="scrollToForm()">
+          <svg viewBox="0 0 24 24" class="btn-pin-svg" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+          <span>Add New Address</span>
+        </button>
+      </header>
+
+      <!-- Saved Addresses List -->
+      <section class="addresses-list-section" aria-label="Saved delivery addresses">
+        @for (addr of addresses(); track addr.id) {
+          <article 
+            class="address-card" 
+            [class.selected]="selectedAddressId() === addr.id"
+            (click)="selectAddress(addr.id)">
+            
+            <!-- Radio Selector -->
+            <div class="radio-indicator" [class.checked]="selectedAddressId() === addr.id" aria-hidden="true">
+              @if (selectedAddressId() === addr.id) {
+                <span class="radio-inner-dot"></span>
+              }
+            </div>
+
+            <!-- Type Icon Badge -->
+            <div class="type-icon-box" [class]="addr.type.toLowerCase()">
+              @if (addr.type === 'Home') {
+                <svg viewBox="0 0 24 24" class="type-svg" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 10.5L12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 19.5v-9z"/>
+                  <path d="M9 21v-7h6v7"/>
+                </svg>
+              } @else if (addr.type === 'Work') {
+                <svg viewBox="0 0 24 24" class="type-svg" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 24 24" class="type-svg" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                  <circle cx="12" cy="9" r="2.5"/>
+                </svg>
+              }
+            </div>
+
+            <!-- Address Text Info -->
+            <div class="address-details-col">
+              <div class="type-heading-row">
+                <h2 class="address-type-label">{{ addr.type }}</h2>
+                @if (addr.isDefault) {
+                  <span class="default-pill-badge">Default</span>
+                }
+              </div>
+              <p class="address-full-text">{{ addr.fullAddress }}</p>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="card-actions-col">
+              <button 
+                type="button" 
+                class="action-sub-btn edit-action" 
+                (click)="editAddress(addr, $event)" 
+                aria-label="Edit address">
+                <svg viewBox="0 0 24 24" class="action-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9"/>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                <span>Edit</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="action-sub-btn delete-action" 
+                (click)="deleteAddress(addr.id, $event)" 
+                aria-label="Delete address">
+                <svg viewBox="0 0 24 24" class="action-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>
+                </svg>
+                <span>Delete</span>
+              </button>
+            </div>
+          </article>
+        }
+      </section>
+
+      <!-- Center Add Address Trigger Strip -->
+      <button type="button" class="add-address-trigger-card" (click)="scrollToForm()">
+        <svg viewBox="0 0 24 24" class="plus-icon" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>Add New Address</span>
+      </button>
+
+      <!-- Add New Address Form Section -->
+      <section id="address-form-section" class="form-container-card">
+        <div class="form-header-row">
+          <h2 class="form-title">
+            {{ editingId() !== null ? 'Edit Address' : 'Add New Address' }}
+          </h2>
+          @if (editingId() !== null) {
+            <button type="button" class="cancel-edit-btn" (click)="cancelEdit()">Cancel</button>
+          }
+        </div>
+
+        <!-- Address Type Selector Pills -->
+        <div class="input-group">
+          <label class="group-label">Address Type</label>
+          <div class="type-pills-row" role="radiogroup">
+            <button 
+              type="button" 
+              class="type-pill-btn" 
+              [class.active]="addressType() === 'Home'"
+              (click)="setType('Home')">
+              <svg viewBox="0 0 24 24" class="pill-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 10.5L12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 19.5v-9z"/>
+                <path d="M9 21v-7h6v7"/>
+              </svg>
+              <span>Home</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="type-pill-btn" 
+              [class.active]="addressType() === 'Work'"
+              (click)="setType('Work')">
+              <svg viewBox="0 0 24 24" class="pill-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              <span>Work</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="type-pill-btn" 
+              [class.active]="addressType() === 'Other'"
+              (click)="setType('Other')">
+              <svg viewBox="0 0 24 24" class="pill-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                <circle cx="12" cy="9" r="2.5"/>
+              </svg>
+              <span>Other</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Full Address Input -->
+        <div class="input-group">
+          <label class="group-label">Full Address <span class="required-star">*</span></label>
+          <div class="input-with-icon-wrap">
+            <svg viewBox="0 0 24 24" class="field-lead-svg" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            <input 
+              type="text" 
+              class="text-field"
+              placeholder="House / Flat No., Building, Street / Area" 
+              [(ngModel)]="fullAddress"
+              aria-label="Full delivery address" />
+          </div>
+        </div>
+
+        <!-- City & PIN Code 2-Column Row -->
+        <div class="form-columns-row">
+          <!-- City / Town -->
+          <div class="input-group col-half">
+            <label class="group-label">City / Town <span class="required-star">*</span></label>
+            <div class="input-with-icon-wrap select-wrap">
+              <svg viewBox="0 0 24 24" class="field-lead-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 21h18M6 21V7l8-4v18M14 21V11l4 2v8M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/>
+              </svg>
+              <select class="text-field select-field" [(ngModel)]="city" aria-label="Select City or Town">
+                @for (c of cityOptions; track c) {
+                  <option [value]="c">{{ c }}</option>
+                }
+              </select>
+              <svg viewBox="0 0 24 24" class="select-chevron-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- PIN Code -->
+          <div class="input-group col-half">
+            <label class="group-label">PIN Code <span class="required-star">*</span></label>
+            <div class="input-with-icon-wrap">
+              <svg viewBox="0 0 24 24" class="field-lead-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="16" rx="2"/>
+                <path d="M3 8l9 6 9-6"/>
+              </svg>
+              <input 
+                type="text" 
+                class="text-field" 
+                placeholder="444601"
+                maxlength="6"
+                [(ngModel)]="pincode" 
+                aria-label="PIN Code" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Set Location on Map Strip -->
+        <div 
+          class="map-location-picker-card" 
+          [class.active-locating]="mapPickerActive()"
+          (click)="triggerMapLocation()"
+          role="button"
+          tabindex="0"
+          aria-label="Set location accurately on map">
+          
+          <div class="picker-left-col">
+            <div class="picker-crosshair-icon">
+              <svg viewBox="0 0 24 24" class="crosshair-svg" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="22" y1="12" x2="18" y2="12"/>
+                <line x1="6" y1="12" x2="2" y2="12"/>
+                <line x1="12" y1="6" x2="12" y2="2"/>
+                <line x1="12" y1="22" x2="12" y2="18"/>
+                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="picker-text-col">
+              <span class="picker-title">Set Location on Map</span>
+              <span class="picker-sub">Pick accurate location for faster delivery</span>
+              @if (mapCoords()) {
+                <span class="coords-badge">{{ mapCoords() }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="picker-preview-col">
+            <!-- Mini Vector Map Preview Illustration -->
+            <div class="mini-map-preview">
+              <svg viewBox="0 0 80 40" class="mini-map-svg" aria-hidden="true">
+                <rect width="80" height="40" fill="#E8F5E9" rx="6"/>
+                <path d="M0 10 Q30 8 45 20 T80 25" stroke="#FFFFFF" stroke-width="6" fill="none"/>
+                <path d="M25 0 Q30 20 40 40" stroke="#FFFFFF" stroke-width="5" fill="none"/>
+                <path d="M50 0 Q55 18 65 40" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+                <circle cx="48" cy="18" r="8" fill="#DDD6FE" opacity="0.6"/>
+                <!-- Pin -->
+                <path d="M48 10 C45.8 10 44 11.8 44 14 C44 17.5 48 22 48 22 C48 22 52 17.5 52 14 C52 11.8 50.2 10 48 10 Z" fill="#6D28D9"/>
+                <circle cx="48" cy="14" r="1.5" fill="#FFFFFF"/>
+              </svg>
+            </div>
+            <svg viewBox="0 0 24 24" class="chevron-right-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="button" 
+          class="submit-address-cta-btn" 
+          (click)="saveAddress()">
+          {{ editingId() !== null ? 'Update Address' : 'Save Address' }}
+        </button>
+      </section>
+    </main>
+
+    <!-- Success Toast Alert -->
+    @if (toastMessage()) {
+      <div class="floating-toast-alert" role="status">
+        <svg viewBox="0 0 24 24" class="toast-check-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+        <span>{{ toastMessage() }}</span>
+      </div>
+    }
+  </div>
+</app-customer-shell>

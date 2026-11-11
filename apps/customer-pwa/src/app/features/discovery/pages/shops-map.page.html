@@ -1,0 +1,280 @@
+<app-customer-shell activeNav="home">
+  <div class="shops-map-page">
+    <!-- Brand Header -->
+    <header class="brand-header">
+      <div class="brand-left">
+        <div class="brand-logo-mark">
+          <svg viewBox="0 0 24 24" class="logo-icon" fill="currentColor">
+            <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <span class="brand-name">Nukkad<span class="brand-now">Now</span></span>
+          <span class="brand-tagline">Your Neighbourhood Marketplace</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="action-btn" routerLink="/notifications" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" class="action-icon">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+          </svg>
+          <span class="notification-badge-dot"></span>
+        </button>
+
+        <button class="action-btn avatar-btn" routerLink="/account" aria-label="Account Profile">
+          <svg viewBox="0 0 24 24" class="action-icon">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Title Bar -->
+    <div class="page-title-bar">
+      <button class="back-circle-btn" (click)="goBack()" aria-label="Go Back">
+        <svg viewBox="0 0 24 24" class="back-icon">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+      </button>
+      <div class="title-meta">
+        <h1 class="page-heading">Nearby Shops</h1>
+        <p class="page-subheading">Discover local shops around you on map</p>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="search-filter-row">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" class="search-icon">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search shops, products or categories"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+      </div>
+
+      <button class="filter-tune-btn" aria-label="Open Filter">
+        <svg viewBox="0 0 24 24" class="filter-icon">
+          <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Category Filter Chips -->
+    <div class="category-chips-scroll">
+      @for (c of filterCategories; track c.id) {
+        <button
+          type="button"
+          class="chip-btn"
+          [class.active]="selectedCategory() === c.id"
+          (click)="selectCategory(c.id)"
+        >
+          @if (c.id === 'all') {
+            <span class="chip-icon grid-icon">⊞</span>
+          } @else if (c.id === 'groceries') {
+            <span class="chip-icon">🛒</span>
+          } @else if (c.id === 'fruits-veg') {
+            <span class="chip-icon">🍏</span>
+          } @else if (c.id === 'food') {
+            <span class="chip-icon">🍴</span>
+          } @else {
+            <span class="chip-icon">•••</span>
+          }
+          <span class="chip-text">{{ c.label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Interactive Map Viewport -->
+    <div class="map-viewport-container">
+      <div class="map-vector-canvas">
+        <!-- SVG Roads & Terrain -->
+        <svg class="map-svg-roads" viewBox="0 0 400 350" preserveAspectRatio="none">
+          <!-- Park green zones -->
+          <path d="M 0,200 Q 50,220 80,280 L 0,280 Z" fill="#E8F5E9" />
+          <path d="M 320,240 Q 370,220 400,260 L 400,310 L 330,310 Z" fill="#E8F5E9" />
+          <path d="M 20,40 Q 60,30 80,70 L 10,90 Z" fill="#E8F5E9" />
+
+          <!-- River / water body -->
+          <path d="M 300,350 Q 350,280 400,220 L 400,180 Q 330,260 280,350 Z" fill="#BAE6FD" opacity="0.6"/>
+
+          <!-- Primary & Secondary Road Grids -->
+          <path d="M 0,110 L 400,80" stroke="#FFFFFF" stroke-width="8" fill="none"/>
+          <path d="M 0,110 L 400,80" stroke="#CBD5E1" stroke-width="5" fill="none"/>
+
+          <path d="M 120,0 L 220,350" stroke="#FFFFFF" stroke-width="9" fill="none"/>
+          <path d="M 120,0 L 220,350" stroke="#CBD5E1" stroke-width="6" fill="none"/>
+
+          <path d="M 0,220 L 400,200" stroke="#FFFFFF" stroke-width="8" fill="none"/>
+          <path d="M 0,220 L 400,200" stroke="#CBD5E1" stroke-width="5" fill="none"/>
+
+          <path d="M 280,0 L 20,300" stroke="#FFFFFF" stroke-width="7" fill="none"/>
+          <path d="M 280,0 L 20,300" stroke="#E2E8F0" stroke-width="4" fill="none"/>
+
+          <path d="M 200,60 L 400,180" stroke="#FFFFFF" stroke-width="6" fill="none"/>
+          <path d="M 200,60 L 400,180" stroke="#E2E8F0" stroke-width="3" fill="none"/>
+        </svg>
+
+        <!-- 3km Radius Boundary Circle -->
+        <div class="radius-circle"></div>
+
+        <!-- User Central Pulse Pin -->
+        <div class="user-location-marker">
+          <div class="user-pulse-outer"></div>
+          <div class="user-pulse-inner"></div>
+        </div>
+
+        <!-- Prominent Shop Callout Pins -->
+        <!-- City Bakery -->
+        <div class="map-shop-callout" style="top: 22%; left: 32%;" (click)="openShopDetails('city-bakery')">
+          <div class="callout-badge bakery">
+            <span class="pin-icon">🏪</span>
+          </div>
+          <div class="callout-pill">
+            <span class="callout-name">City Bakery</span>
+            <span class="callout-dist">1.2 km</span>
+          </div>
+        </div>
+
+        <!-- Shree Fresh Mart -->
+        <div class="map-shop-callout" style="top: 40%; left: 14%;" (click)="openShopDetails('shree-fresh-mart')">
+          <div class="callout-badge grocery">
+            <span class="pin-icon">🛍️</span>
+          </div>
+          <div class="callout-pill">
+            <span class="callout-name">Shree Fresh Mart</span>
+            <span class="callout-dist">0.8 km</span>
+          </div>
+        </div>
+
+        <!-- Aarogyam Pharma -->
+        <div class="map-shop-callout" style="top: 26%; left: 63%;" (click)="openShopDetails('aarogyam-pharma')">
+          <div class="callout-badge pharma">
+            <span class="pin-icon">➕</span>
+          </div>
+          <div class="callout-pill">
+            <span class="callout-name">Aarogyam Pharma</span>
+            <span class="callout-dist">1.5 km</span>
+          </div>
+        </div>
+
+        <!-- Amravati Veggie Point -->
+        <div class="map-shop-callout" style="top: 45%; left: 58%;" (click)="openShopDetails('amravati-veggie-point')">
+          <div class="callout-badge veggie">
+            <span class="pin-icon">🛒</span>
+          </div>
+          <div class="callout-pill">
+            <span class="callout-name">Amravati Veggie Point</span>
+            <span class="callout-dist">1.2 km</span>
+          </div>
+        </div>
+
+        <!-- Scattered Icon Pins -->
+        <div class="scattered-pin purple-shop" style="top: 28%; left: 16%;">🏪</div>
+        <div class="scattered-pin orange-food" style="top: 34%; left: 39%;">🍴</div>
+        <div class="scattered-pin purple-shop" style="top: 32%; left: 55%;">🏪</div>
+        <div class="scattered-pin purple-shop" style="top: 47%; left: 38%;">🏪</div>
+        <div class="scattered-pin purple-shop" style="top: 52%; left: 31%;">🏪</div>
+        <div class="scattered-pin orange-food" style="top: 51%; left: 55%;">🍴</div>
+        <div class="scattered-pin purple-shop" style="top: 50%; left: 78%;">🏪</div>
+
+        <!-- Map Control: Recenter GPS -->
+        <button class="map-ctrl-btn recenter-btn" (click)="recenterMap()" aria-label="Recenter Map">
+          <svg viewBox="0 0 24 24" class="ctrl-icon">
+            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+          </svg>
+        </button>
+
+        <!-- Map Control: Zoom -->
+        <div class="zoom-controls">
+          <button class="zoom-btn" (click)="zoomIn()" aria-label="Zoom in">+</button>
+          <div class="zoom-divider"></div>
+          <button class="zoom-btn" (click)="zoomOut()" aria-label="Zoom out">−</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Sheet / Drawer -->
+    <div class="shops-bottom-sheet">
+      <div class="sheet-handle-bar">
+        <span class="handle-pill"></span>
+      </div>
+
+      <div class="sheet-header">
+        <div class="sheet-title-wrap">
+          <span class="shop-title-icon">🏪</span>
+          <h2 class="sheet-heading">Nearby Shops <span class="count">({{ filteredShops().length }})</span></h2>
+        </div>
+
+        <button class="radius-selector-pill">
+          <span class="pin-icon">📍</span>
+          <span>Within {{ selectedRadius() }}</span>
+          <svg viewBox="0 0 24 24" class="chevron-icon">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Shop Cards Scroll List -->
+      <div class="shop-cards-list">
+        @for (shop of filteredShops(); track shop.id) {
+          <div class="shop-card" (click)="openShopDetails(shop.id)">
+            <div class="card-thumb-wrap">
+              <img [src]="shop.image" [alt]="shop.name" class="shop-thumb" />
+            </div>
+
+            <div class="card-info">
+              <div class="shop-title-row">
+                <h3 class="shop-name">{{ shop.name }}</h3>
+                <button
+                  type="button"
+                  class="fav-btn"
+                  [class.is-fav]="shop.isFavorite"
+                  (click)="toggleFavorite(shop, $event)"
+                  aria-label="Add to favorites"
+                >
+                  <svg viewBox="0 0 24 24" class="fav-icon">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="shop-meta-row">
+                @if (shop.isOpen) {
+                  <span class="status-badge open">Open</span>
+                } @else {
+                  <span class="status-badge closed">Closed</span>
+                }
+                <span class="rating-text">
+                  <span class="star">★</span> {{ shop.rating }} ({{ shop.reviewsCount }})
+                </span>
+                <span class="meta-dot">•</span>
+                <span class="dist-text">{{ shop.distance }}</span>
+              </div>
+
+              <div class="shop-tags-row">
+                <div class="tags-group">
+                  @for (tag of shop.tags; track tag) {
+                    <span class="tag-pill">{{ tag }}</span>
+                  }
+                </div>
+
+                <button class="navigate-btn" (click)="navigateShop(shop, $event)">
+                  <svg viewBox="0 0 24 24" class="nav-arrow-icon">
+                    <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+                  </svg>
+                  <span>Navigate</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</app-customer-shell>

@@ -1,10 +1,192 @@
-﻿<div class="account-container">
-  <h2>Account</h2>
-  @if (store.loading()) {
-    <p>Loading...</p>
-  } @else {
-    @for (item of store.items(); track item.id) {
-      <app-account-card [item]="item"></app-account-card>
-    }
-  }
-</div>
+<app-customer-shell activeNav="account">
+  <div class="account-page-viewport">
+    <!-- Brand Header -->
+    <header class="account-header">
+      <div class="brand-left">
+        <div class="brand-logo-mark">
+          <svg viewBox="0 0 24 24" class="logo-icon" fill="currentColor">
+            <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <span class="brand-name">Nukkad<span class="brand-now">Now</span></span>
+          <span class="brand-tagline">Your Neighbourhood Marketplace</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="action-btn" routerLink="/discovery" aria-label="Search">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </button>
+        <button class="action-btn" routerLink="/notifications" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+          </svg>
+          <span class="notification-badge-dot"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="account-scroll-content">
+      <!-- Title -->
+      <div class="title-block">
+        <h1 class="page-title">My Account</h1>
+        <p class="page-subtitle">Manage your profile, orders, addresses and more</p>
+      </div>
+
+      <!-- Purple Gradient Profile Hero Card -->
+      <div class="profile-hero-card">
+        <div class="avatar-camera-box">
+          <img [src]="user().avatar" [alt]="user().name" class="avatar-img" />
+          <span class="camera-badge">📷</span>
+        </div>
+
+        <div class="user-meta-col">
+          <h2 class="user-name">{{ user().name }}</h2>
+          <div class="phone-verified-row">
+            <span class="user-phone">{{ user().phone }}</span>
+            @if (user().verified) {
+              <span class="verified-pill">✓ Verified</span>
+            }
+          </div>
+          <span class="user-email">{{ user().email }}</span>
+        </div>
+
+        <button class="edit-profile-btn" (click)="editProfile()">
+          <svg viewBox="0 0 24 24" class="edit-svg"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          <span>Edit Profile</span>
+        </button>
+      </div>
+
+      <!-- 4 Metric Cards Bar -->
+      <div class="metric-cards-row">
+        <div class="metric-card" (click)="openOrders()">
+          <span class="metric-icon-box purple">🛍️</span>
+          <span class="metric-val">{{ user().totalOrders }}</span>
+          <span class="metric-label">Total Orders</span>
+        </div>
+
+        <div class="metric-card" (click)="openFavourites()">
+          <span class="metric-icon-box pink">❤️</span>
+          <span class="metric-val">{{ user().favouritesCount }}</span>
+          <span class="metric-label">Favourites</span>
+        </div>
+
+        <div class="metric-card" routerLink="/discovery">
+          <span class="metric-icon-box blue">🏪</span>
+          <span class="metric-val">{{ user().followedShopsCount }}</span>
+          <span class="metric-label">Followed Shops</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-icon-box orange">🎁</span>
+          <span class="metric-val">₹{{ user().totalSavings }}</span>
+          <span class="metric-label">Total Savings</span>
+        </div>
+      </div>
+
+      <!-- My Orders Callout Card -->
+      <div class="my-orders-banner-card" (click)="openOrders()">
+        <div class="banner-left">
+          <div class="orders-icon-wrap">📦</div>
+          <div class="orders-text-col">
+            <h3 class="orders-title">My Orders</h3>
+            <p class="orders-sub">Track, manage and reorder your purchases</p>
+          </div>
+        </div>
+        <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+      </div>
+
+      <!-- 2x4 Quick Access Grid -->
+      <div class="quick-access-grid">
+        <div class="grid-card" (click)="openAddresses()">
+          <span class="grid-card-icon">📍</span>
+          <span class="grid-card-label">Saved Addresses</span>
+        </div>
+
+        <div class="grid-card" routerLink="/checkout">
+          <span class="grid-card-icon">💳</span>
+          <span class="grid-card-label">Payment Methods</span>
+        </div>
+
+        <div class="grid-card" routerLink="/discovery">
+          <span class="grid-card-icon">🏷️</span>
+          <span class="grid-card-label">Offers & Coupons</span>
+        </div>
+
+        <div class="grid-card" (click)="openNotifications()">
+          <span class="grid-card-icon">🔔</span>
+          <span class="grid-card-label">Notifications</span>
+        </div>
+
+        <div class="grid-card" (click)="openOrders()">
+          <span class="grid-card-icon">⭐</span>
+          <span class="grid-card-label">My Reviews</span>
+        </div>
+
+        <div class="grid-card" (click)="openHelp()">
+          <span class="grid-card-icon">🎧</span>
+          <span class="grid-card-label">Help & Support</span>
+        </div>
+
+        <div class="grid-card" (click)="openHelp()">
+          <span class="grid-card-icon">❓</span>
+          <span class="grid-card-label">FAQs</span>
+        </div>
+
+        <div class="grid-card" (click)="openPrivacy()">
+          <span class="grid-card-icon">🛡️</span>
+          <span class="grid-card-label">Privacy & Security</span>
+        </div>
+      </div>
+
+      <!-- Settings, Refer, and About Menu List -->
+      <div class="menu-list-card">
+        <div class="menu-item">
+          <div class="menu-left">
+            <span class="menu-icon">⚙️</span>
+            <div class="menu-texts">
+              <span class="menu-title">App Settings</span>
+              <span class="menu-desc">Language, theme, notifications and more</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-item">
+          <div class="menu-left">
+            <span class="menu-icon">👥</span>
+            <div class="menu-texts">
+              <span class="menu-title">Refer & Earn</span>
+              <span class="menu-desc">Invite friends and get rewards</span>
+            </div>
+          </div>
+          <span class="earn-pill">🎁 Earn ₹100</span>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-item">
+          <div class="menu-left">
+            <span class="menu-icon">ℹ️</span>
+            <div class="menu-texts">
+              <span class="menu-title">About NukkadNow</span>
+              <span class="menu-desc">App version, terms, policies and more</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+      </div>
+
+      <!-- Logout Button -->
+      <button class="logout-pill-btn" (click)="logout()">
+        <svg viewBox="0 0 24 24" class="logout-svg"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+</app-customer-shell>

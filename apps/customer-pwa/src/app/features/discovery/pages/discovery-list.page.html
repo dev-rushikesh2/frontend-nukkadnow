@@ -1,10 +1,235 @@
-﻿<div class="discovery-container">
-  <h2>Discovery</h2>
-  @if (store.loading()) {
-    <p>Loading...</p>
-  } @else {
-    @for (item of store.items(); track item.id) {
-      <app-discovery-card [item]="item"></app-discovery-card>
-    }
-  }
-</div>
+<app-customer-shell [showHeader]="true" [showNav]="true">
+  <div class="search-page-view">
+
+    <!-- Top Page Title Row -->
+    <header class="search-header-title">
+      <a routerLink="/home" class="icon-back-btn" aria-label="Go to Home">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div class="title-wrap">
+        <h2 class="search-main-title">Search</h2>
+        <p class="search-sub-title">Find products, shops or categories near you</p>
+      </div>
+    </header>
+
+    <!-- Search Input Bar with Clear Button & QR Scanner -->
+    <section class="search-bar-container">
+      <div class="search-input-box">
+        <span class="lens-icon">🔍</span>
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="Search for fresh vegetables, milk..."
+          class="realtime-input" />
+        @if (searchQuery()) {
+          <button type="button" class="clear-btn" (click)="clearSearch()" aria-label="Clear Search">✕</button>
+        }
+      </div>
+      <a routerLink="/pickup-token/scan" class="qr-btn" aria-label="Scan QR Code">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6D28D9" stroke-width="2.2" stroke-linecap="round">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+          <rect x="7" y="7" width="3" height="3" fill="#6D28D9"/>
+          <rect x="14" y="7" width="3" height="3" fill="#6D28D9"/>
+          <rect x="7" y="14" width="3" height="3" fill="#6D28D9"/>
+        </svg>
+      </a>
+    </section>
+
+    <!-- Primary Filter Tabs (All / Products / Shops / Categories) -->
+    <section class="filter-tabs-row" role="tablist">
+      <button
+        type="button"
+        class="tab-pill"
+        [class.active]="activeTab() === 'ALL'"
+        (click)="setTab('ALL')"
+        role="tab">
+        <span class="tab-icon">▦</span>
+        <span>All</span>
+      </button>
+      <button
+        type="button"
+        class="tab-pill"
+        [class.active]="activeTab() === 'PRODUCTS'"
+        (click)="setTab('PRODUCTS')"
+        role="tab">
+        <span class="tab-icon">🛍️</span>
+        <span>Products</span>
+      </button>
+      <button
+        type="button"
+        class="tab-pill"
+        [class.active]="activeTab() === 'SHOPS'"
+        (click)="setTab('SHOPS')"
+        role="tab">
+        <span class="tab-icon">🏪</span>
+        <span>Shops</span>
+      </button>
+      <button
+        type="button"
+        class="tab-pill"
+        [class.active]="activeTab() === 'CATEGORIES'"
+        (click)="setTab('CATEGORIES')"
+        role="tab">
+        <span class="tab-icon">📑</span>
+        <span>Categories</span>
+      </button>
+    </section>
+
+    <!-- Secondary Filter Chips Row -->
+    <section class="chips-filter-row">
+      <div class="filter-chip">
+        <span>📍 Within 3 km</span>
+        <span class="chip-arrow">▾</span>
+      </div>
+      <div class="filter-chip">
+        <span>⇅ Sort: Relevance</span>
+        <span class="chip-arrow">▾</span>
+      </div>
+      <button
+        type="button"
+        class="filter-chip chip-toggle"
+        [class.chip-active]="offersOnly()"
+        (click)="offersOnly.set(!offersOnly())">
+        <span>🏷️ Offers Only</span>
+        <span class="switch-toggle" [class.on]="offersOnly()"></span>
+      </button>
+      <button
+        type="button"
+        class="filter-chip chip-toggle"
+        [class.chip-active]="openNowOnly()"
+        (click)="openNowOnly.set(!openNowOnly())">
+        <span class="green-dot">●</span>
+        <span>Open Now</span>
+      </button>
+    </section>
+
+    <!-- Products (42 results) Section -->
+    <section class="results-section">
+      <div class="results-title-row">
+        <div class="title-left">
+          <span class="bag-icon">🛍️</span>
+          <h3 class="results-heading">Products</h3>
+          <span class="results-count">(42 results)</span>
+        </div>
+        <a routerLink="/categories" class="view-link">View All →</a>
+      </div>
+
+      <!-- Horizontal scrollable product cards -->
+      <div class="products-grid-scroller">
+        @for (prod of products(); track prod.id) {
+          <div class="product-search-card" (click)="viewProduct(prod.id)">
+            <!-- Thumbnail -->
+            <div class="prod-thumb-wrap">
+              <span class="prod-emoji">{{ prod.image }}</span>
+              @if (prod.discountBadge) {
+                <span class="discount-pill">{{ prod.discountBadge }}</span>
+              }
+              <button
+                type="button"
+                class="prod-fav-btn"
+                [class.faved]="prod.isFavourite"
+                (click)="toggleProductFav(prod.id, $event)"
+                aria-label="Toggle Favourite">
+                {{ prod.isFavourite ? '❤️' : '🤍' }}
+              </button>
+            </div>
+
+            <!-- Details -->
+            <div class="prod-details">
+              <h4 class="prod-name">{{ prod.name }}</h4>
+              <span class="prod-unit">{{ prod.unit }}</span>
+              <div class="prod-price-row">
+                <div class="price-stack">
+                  <strong class="price-val">₹{{ prod.price }}</strong>
+                  @if (prod.originalPrice) {
+                    <span class="orig-val">₹{{ prod.originalPrice }}</span>
+                  }
+                </div>
+                <button
+                  type="button"
+                  class="add-plus-btn"
+                  (click)="addToCart(prod.id, $event)"
+                  aria-label="Add to Cart">
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Shops (8 results) Section -->
+    <section class="results-section">
+      <div class="results-title-row">
+        <div class="title-left">
+          <span class="shop-icon">🏪</span>
+          <h3 class="results-heading">Shops</h3>
+          <span class="results-count">(8 results)</span>
+        </div>
+        <a routerLink="/discovery" class="view-link">View All →</a>
+      </div>
+
+      <div class="shops-vertical-list">
+        @for (shop of shops(); track shop.id) {
+          <div class="shop-search-card" (click)="viewShop(shop.id)">
+            <div class="shop-avatar-box">
+              <span class="shop-avatar-emoji">{{ shop.image }}</span>
+            </div>
+            <div class="shop-details-col">
+              <h4 class="shop-name">{{ shop.name }}</h4>
+              <div class="shop-meta">
+                <span class="status-pill-open">Open</span>
+                <span class="rating-text">⭐ {{ shop.rating }} ({{ shop.reviewsCount }})</span>
+                <span class="dot">•</span>
+                <span class="dist-text">{{ shop.distance }}</span>
+              </div>
+              <p class="shop-cats">{{ shop.categories.join(' • ') }}</p>
+            </div>
+            <button type="button" class="view-shop-btn" (click)="viewShop(shop.id)">
+              <span>View Shop</span>
+              <span>→</span>
+            </button>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Recent & Trending Searches -->
+    <section class="searches-tag-section">
+      <!-- Recent Searches -->
+      <div class="searches-box">
+        <div class="searches-head">
+          <span class="tag-icon">🕒</span>
+          <h4 class="searches-title">Recent Searches</h4>
+          <button type="button" class="clear-all-link" (click)="clearRecentSearches()">Clear All</button>
+        </div>
+        <div class="tags-cluster">
+          @for (tag of recentSearches(); track tag) {
+            <button type="button" class="search-tag-chip" (click)="setSearchTerm(tag)">{{ tag }}</button>
+          }
+        </div>
+      </div>
+
+      <!-- Trending Searches -->
+      <div class="searches-box">
+        <div class="searches-head">
+          <span class="tag-icon">📈</span>
+          <h4 class="searches-title">Trending Searches</h4>
+        </div>
+        <div class="tags-cluster">
+          @for (trend of trendingSearches(); track trend) {
+            <button type="button" class="search-tag-chip trending" (click)="setSearchTerm(trend)">
+              <span>🔥</span>
+              <span>{{ trend }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+  </div>
+</app-customer-shell>

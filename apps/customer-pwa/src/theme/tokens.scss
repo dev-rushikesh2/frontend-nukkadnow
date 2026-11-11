@@ -1,10 +1,80 @@
-﻿:root {
-  --color-primary: #F97316;
-  --color-secondary: #0F172A;
-  --color-accent: #F59E0B;
-  --color-success: #10B981;
-  --color-warning: #EAB308;
-  --color-error: #EF4444;
-  --color-background: #FAFAF9;
-  --color-surface: #FFFFFF;
+:root {
+  /* Brand Primary - Royal Purple */
+  --nn-purple-900: #1e1035;
+  --nn-purple-800: #2e1065;
+  --nn-purple-700: #4c1d95;
+  --nn-purple-600: #6d28d9;
+  --nn-purple-500: #7c3aed;
+  --nn-purple-400: #8b5cf6;
+  --nn-purple-300: #c4b5fd;
+  --nn-purple-200: #ddd6fe;
+  --nn-purple-100: #ede9fe;
+  --nn-purple-50: #f5f3ff;
+
+  /* Brand Secondary / Conversion CTA - Vibrant Orange */
+  --nn-orange-700: #c2410c;
+  --nn-orange-600: #ea580c;
+  --nn-orange-500: #ff5a1f;
+  --nn-orange-400: #fb923c;
+  --nn-orange-300: #fdba74;
+  --nn-orange-100: #ffedd5;
+  --nn-orange-50: #fff7ed;
+  --nn-orange-gradient: linear-gradient(135deg, #ff7a1a 0%, #ff5000 100%);
+  --nn-purple-gradient: linear-gradient(135deg, #7c3aed 0%, #581c87 100%);
+
+  /* Semantics */
+  --nn-success: #10b981;
+  --nn-success-bg: #ecfdf5;
+  --nn-success-text: #047857;
+  --nn-warning: #f59e0b;
+  --nn-warning-bg: #fffbeb;
+  --nn-warning-text: #b45309;
+  --nn-error: #ef4444;
+  --nn-error-bg: #fef2f2;
+  --nn-error-text: #b91c1c;
+  --nn-info: #3b82f6;
+  --nn-info-bg: #eff6ff;
+  --nn-info-text: #1d4ed8;
+
+  /* Neutrals & Surfaces */
+  --nn-bg-app: #f8fafc;
+  --nn-surface: #ffffff;
+  --nn-surface-tinted: #fcfbfe;
+  --nn-border: #e2e8f0;
+  --nn-border-light: #f1f5f9;
+  --nn-text-primary: #0f172a;
+  --nn-text-secondary: #475569;
+  --nn-text-muted: #94a3b8;
+
+  /* Legacy tokens backward-compat */
+  --color-primary: var(--nn-purple-600);
+  --color-secondary: var(--nn-text-primary);
+  --color-accent: var(--nn-orange-500);
+  --color-success: var(--nn-success);
+  --color-warning: var(--nn-warning);
+  --color-error: var(--nn-error);
+  --color-background: var(--nn-bg-app);
+  --color-surface: var(--nn-surface);
+
+  /* Geometry & Shadows */
+  --nn-radius-sm: 8px;
+  --nn-radius-md: 12px;
+  --nn-radius-lg: 16px;
+  --nn-radius-card: 18px;
+  --nn-radius-pill: 9999px;
+
+  --nn-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --nn-shadow-card: 0 4px 20px -2px rgba(109, 40, 217, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --nn-shadow-elevated: 0 10px 25px -3px rgba(109, 40, 217, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --nn-shadow-fab: 0 8px 24px -4px rgba(109, 40, 217, 0.38);
+
+  /* Fluid Spacing */
+  --nn-space-xs: 4px;
+  --nn-space-sm: 8px;
+  --nn-space-md: 14px;
+  --nn-space-lg: 20px;
+  --nn-space-xl: 28px;
+
+  /* Touch Target */
+  --nn-touch-target: 48px;
 }

@@ -1,10 +1,552 @@
-﻿<div class="checkout-container">
-  <h2>Checkout</h2>
-  @if (store.loading()) {
-    <p>Loading...</p>
-  } @else {
-    @for (item of store.items(); track item.id) {
-      <app-checkout-card [item]="item"></app-checkout-card>
+<div class="checkout-page-viewport">
+  <!-- Brand Header -->
+  <header class="checkout-header">
+    <button class="nav-btn" (click)="goBack()" aria-label="Go Back">
+      <svg viewBox="0 0 24 24" class="svg-icon">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+
+    <div class="brand-center">
+      <div class="brand-logo-mark">
+        <svg viewBox="0 0 24 24" class="logo-icon" fill="currentColor">
+          <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+        </svg>
+      </div>
+      <div class="brand-meta">
+        <span class="brand-name">Nukkad<span class="brand-now">Now</span></span>
+        <span class="brand-tagline">Your Neighbourhood Marketplace</span>
+      </div>
+    </div>
+
+    <div class="header-spacer"></div>
+  </header>
+
+  <div class="checkout-content-scroll">
+    <!-- Title and Subheading -->
+    <div class="page-title-block">
+      @if (currentStep() === 'fulfilment') {
+        @if (fulfilmentMethod() === 'pickup') {
+          <h1 class="page-title">Pickup Slot Selection</h1>
+          <p class="page-subtitle">Choose a convenient time to collect your order from the shop</p>
+        } @else {
+          <h1 class="page-title">Checkout — Fulfilment</h1>
+          <p class="page-subtitle">Choose how you want to receive your order</p>
+        }
+      } @else {
+        <h1 class="page-title">Payment</h1>
+        <p class="page-subtitle">Choose your preferred payment method</p>
+      }
+    </div>
+
+    <!-- 4-Step Stepper -->
+    <div class="checkout-stepper-row">
+      <!-- Step 1: Cart -->
+      <div class="stepper-node completed" routerLink="/cart">
+        <div class="node-circle">
+          <svg viewBox="0 0 24 24" class="node-icon"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        </div>
+        <span class="node-text">Cart</span>
+      </div>
+
+      <div class="stepper-connector" [class.active]="true"></div>
+
+      <!-- Step 2: Fulfilment -->
+      <div class="stepper-node" [class.active]="currentStep() === 'fulfilment'" [class.completed]="currentStep() === 'payment'">
+        <div class="node-circle">
+          <svg viewBox="0 0 24 24" class="node-icon"><path d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4.48L19 10.35V7zM7 17c-.55 0-1-.45-1-1h2c0 .55-.45 1-1 1zm12-7.35l-2.65 3.35H15V8h2.35l1.65 1.65z"/></svg>
+        </div>
+        <span class="node-text">Fulfilment</span>
+      </div>
+
+      <div class="stepper-connector" [class.active]="currentStep() === 'payment'"></div>
+
+      <!-- Step 3: Payment -->
+      <div class="stepper-node" [class.active]="currentStep() === 'payment'">
+        <div class="node-circle">
+          <svg viewBox="0 0 24 24" class="node-icon"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        </div>
+        <span class="node-text">Payment</span>
+      </div>
+
+      <div class="stepper-connector"></div>
+
+      <!-- Step 4: Confirmation -->
+      <div class="stepper-node">
+        <div class="node-circle">✓</div>
+        <span class="node-text">Confirmation</span>
+      </div>
+    </div>
+
+    <!-- Order From Shop Card -->
+    <div class="order-from-card">
+      <div class="shop-thumb-wrap">
+        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=200&q=80" alt="Shree Fresh Mart" class="shop-img" />
+      </div>
+
+      <div class="shop-info-col">
+        <span class="label-muted">Order from</span>
+        <div class="shop-name-row">
+          <h2 class="shop-title">Shree Fresh Mart</h2>
+          <span class="verified-dot">✓</span>
+        </div>
+        <span class="shop-cats">Fruits • Vegetables • Groceries</span>
+        @if (fulfilmentMethod() === 'pickup' && currentStep() === 'fulfilment') {
+          <span class="shop-rating">★ 4.7 (328 reviews)</span>
+        }
+      </div>
+
+      <div class="shop-items-pill">
+        <span class="bag-emoji">🛍️</span>
+        <span>3 items • ₹102</span>
+      </div>
+    </div>
+
+    <!-- ==================== SUB-STEP 1: FULFILMENT ==================== -->
+    @if (currentStep() === 'fulfilment') {
+      <!-- Fulfilment Method Selector -->
+      <div class="section-card">
+        <div class="card-title-row">
+          <span class="section-icon">🚚</span>
+          <h3 class="section-heading">Fulfilment Method</h3>
+        </div>
+
+        <div class="fulfilment-options-grid">
+          <div
+            class="method-box"
+            [class.selected]="fulfilmentMethod() === 'home_delivery'"
+            (click)="setFulfilmentMethod('home_delivery')"
+          >
+            <div class="radio-indicator">
+              <span class="radio-dot"></span>
+            </div>
+
+            <div class="method-body">
+              <span class="method-icon-big">🛵</span>
+              <div class="method-texts">
+                <span class="method-title">Home Delivery</span>
+                <span class="method-desc">Get it delivered to your address</span>
+                <span class="method-sla">🕒 Within 30 – 45 min</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="method-box"
+            [class.selected]="fulfilmentMethod() === 'pickup'"
+            (click)="setFulfilmentMethod('pickup')"
+          >
+            <div class="radio-indicator">
+              <span class="radio-dot"></span>
+            </div>
+
+            <div class="method-body">
+              <span class="method-icon-big">🏪</span>
+              <div class="method-texts">
+                <span class="method-title">Pickup from Shop</span>
+                <span class="method-desc">Collect your order from the store</span>
+                <span class="method-sla">🕒 Ready in 10 – 15 min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME DELIVERY PATH -->
+      @if (fulfilmentMethod() === 'home_delivery') {
+        <!-- Delivery Address Card -->
+        <div class="section-card">
+          <div class="card-title-row">
+            <span class="section-icon">📍</span>
+            <h3 class="section-heading">Delivery Address</h3>
+          </div>
+
+          <div class="address-select-card selected">
+            <div class="radio-indicator">
+              <span class="radio-dot"></span>
+            </div>
+
+            <div class="address-info-col">
+              <span class="address-type-badge">Home</span>
+              <p class="address-line">Flat 302, Sai Residency, Civil Lines, Amravati – 444601</p>
+            </div>
+
+            <button class="edit-addr-btn" aria-label="Edit Address">
+              <svg viewBox="0 0 24 24" class="edit-svg"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              <span>Edit</span>
+            </button>
+          </div>
+
+          <button class="add-addr-dash-btn">
+            <span class="plus-icon">+</span>
+            <span>Add New Address</span>
+          </button>
+        </div>
+
+        <!-- Delivery Instructions Input -->
+        <div class="section-card">
+          <div class="card-title-row">
+            <span class="section-icon">💬</span>
+            <h3 class="section-heading">Delivery Instructions <span class="opt-label">(Optional)</span></h3>
+          </div>
+
+          <div class="input-wrap">
+            <input
+              type="text"
+              class="instructions-input"
+              placeholder="e.g. Leave at the door, Call on arrival, etc."
+              [ngModel]="deliveryInstructions()"
+              (ngModelChange)="deliveryInstructions.set($event)"
+            />
+          </div>
+        </div>
+
+        <!-- Delivery Preferences -->
+        <div class="section-card">
+          <div class="card-title-row">
+            <span class="section-icon">🕒</span>
+            <h3 class="section-heading">Delivery Preferences</h3>
+          </div>
+
+          <div class="delivery-prefs-row">
+            <div
+              class="pref-option-box"
+              [class.selected]="deliveryPreference() === 'asap'"
+              (click)="setDeliveryPreference('asap')"
+            >
+              <div class="radio-indicator">
+                <span class="radio-dot"></span>
+              </div>
+              <span class="pref-emoji">⚡</span>
+              <div class="pref-desc-col">
+                <span class="pref-heading">As Soon As Possible</span>
+                <span class="pref-time">Within 30 – 45 min</span>
+              </div>
+            </div>
+
+            <div
+              class="pref-option-box"
+              [class.selected]="deliveryPreference() === 'schedule'"
+              (click)="setDeliveryPreference('schedule')"
+            >
+              <div class="radio-indicator">
+                <span class="radio-dot"></span>
+              </div>
+              <span class="pref-emoji">📅</span>
+              <div class="pref-desc-col">
+                <span class="pref-heading">Schedule for Later</span>
+                <span class="pref-time">Choose date & time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- PICKUP FROM SHOP PATH (SCREEN 12) -->
+      @if (fulfilmentMethod() === 'pickup') {
+        <!-- Pickup Shop Address -->
+        <div class="section-card pickup-shop-banner">
+          <div class="shop-badge-icon">🏪</div>
+          <div class="pickup-address-col">
+            <span class="pickup-title">Pickup from Shop</span>
+            <span class="pickup-loc">Civil Lines, Amravati – 444601</span>
+          </div>
+          <button class="view-map-pill" routerLink="/discovery/map">
+            <span class="pin-icon">📍</span>
+            <span>View on Map</span>
+          </button>
+        </div>
+
+        <!-- Select Pickup Date -->
+        <div class="section-card">
+          <div class="card-title-row">
+            <span class="section-icon">📅</span>
+            <h3 class="section-heading">Select Pickup Date</h3>
+          </div>
+
+          <div class="date-pills-row">
+            @for (d of pickupDates; track d.id) {
+              <button
+                type="button"
+                class="date-pill"
+                [class.selected]="selectedPickupDateId() === d.id"
+                (click)="selectPickupDate(d.id)"
+              >
+                <span class="day-label">{{ d.day }}</span>
+                <span class="date-label">{{ d.date }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Select Pickup Time Slot -->
+        <div class="section-card">
+          <div class="card-title-row">
+            <span class="section-icon">🕒</span>
+            <h3 class="section-heading">Select Pickup Time Slot</h3>
+          </div>
+
+          <div class="slots-grid">
+            @for (s of pickupSlots; track s.id) {
+              <div
+                class="slot-card"
+                [class.selected]="selectedPickupSlotId() === s.id"
+                (click)="selectPickupSlot(s.id)"
+              >
+                <div class="radio-indicator">
+                  <span class="radio-dot"></span>
+                </div>
+                <div class="slot-text-col">
+                  <span class="slot-time">{{ s.time }}</span>
+                  @if (s.sla) {
+                    <span class="slot-sla-badge">{{ s.sla }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Pickup Information Callout -->
+        <div class="pickup-info-callout">
+          <div class="info-content-left">
+            <div class="info-header">
+              <span class="info-icon">ℹ️</span>
+              <h4 class="info-title">Pickup Information</h4>
+            </div>
+
+            <ul class="info-points">
+              <li>We'll prepare your order and notify you when it's ready.</li>
+              <li>Please carry your order ID or show this screen at the shop.</li>
+              <li>Orders are usually ready within 10 – 15 minutes.</li>
+            </ul>
+          </div>
+
+          <div class="pickup-bag-graphic">
+            <div class="purple-bag-art">
+              <span class="bag-handle"></span>
+              <span class="bag-check">✓</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Order Summary Card -->
+      <div class="section-card bill-card">
+        <div class="card-title-row">
+          <span class="section-icon">🧾</span>
+          <h3 class="section-heading">Order Summary</h3>
+        </div>
+
+        <div class="bill-row">
+          <span class="bill-label">Item Total (3 items)</span>
+          <span class="bill-val">₹{{ itemsTotal() }}</span>
+        </div>
+
+        <div class="bill-row discount">
+          <span class="bill-label">Shop Discount (10% on tomatoes)</span>
+          <span class="bill-val">−₹{{ shopDiscount() }}</span>
+        </div>
+
+        <div class="bill-row">
+          <span class="bill-label">Delivery Fee ℹ️</span>
+          <span class="bill-val">{{ deliveryFee() > 0 ? '₹' + deliveryFee() : 'FREE' }}</span>
+        </div>
+
+        <div class="bill-divider"></div>
+
+        <div class="bill-total-row">
+          <span class="total-label">Total Payable</span>
+          <span class="total-val">₹{{ totalPayable() }}</span>
+        </div>
+      </div>
+
+      <!-- Sticky Continue CTA -->
+      <div class="sticky-footer-bar">
+        <button class="primary-checkout-btn" (click)="continueToPayment()">
+          <span>Continue to Payment ₹{{ totalPayable() }}</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42 5.43 5.43H5v2z"/></svg>
+        </button>
+      </div>
     }
-  }
+
+    <!-- ==================== SUB-STEP 2: PAYMENT (SCREEN 13) ==================== -->
+    @if (currentStep() === 'payment') {
+      <!-- Order Summary in Payment Screen -->
+      <div class="section-card bill-card">
+        <div class="card-title-row">
+          <span class="section-icon">🧾</span>
+          <h3 class="section-heading">Order Summary</h3>
+        </div>
+
+        <div class="bill-row">
+          <span class="bill-label">Item Total (3 items)</span>
+          <span class="bill-val">₹{{ itemsTotal() }}</span>
+        </div>
+
+        <div class="bill-row discount">
+          <span class="bill-label">Shop Discount (10% on tomatoes)</span>
+          <span class="bill-val">−₹{{ shopDiscount() }}</span>
+        </div>
+
+        <div class="bill-row">
+          <span class="bill-label">Delivery Fee ℹ️</span>
+          <span class="bill-val">{{ deliveryFee() > 0 ? '₹' + deliveryFee() : 'FREE' }}</span>
+        </div>
+
+        <div class="bill-divider"></div>
+
+        <div class="bill-total-row">
+          <span class="total-label">Total Payable</span>
+          <span class="total-val">₹{{ totalPayable() }}</span>
+        </div>
+      </div>
+
+      <!-- Select Payment Method Section -->
+      <div class="section-card payment-methods-card">
+        <div class="card-title-row">
+          <span class="section-icon">💳</span>
+          <h3 class="section-heading">Select Payment Method</h3>
+        </div>
+
+        <!-- 1. UPI -->
+        <div
+          class="payment-option-row"
+          [class.selected]="selectedPaymentMethod() === 'upi'"
+          (click)="setPaymentMethod('upi')"
+        >
+          <div class="radio-indicator">
+            <span class="radio-dot"></span>
+          </div>
+
+          <span class="pay-method-icon">🌐</span>
+
+          <div class="pay-text-col">
+            <span class="pay-title">UPI</span>
+            <span class="pay-desc">(Google Pay, PhonePe, Paytm, etc.)</span>
+          </div>
+
+          <div class="brand-badges-group">
+            <span class="pay-badge gpay">GPay</span>
+            <span class="pay-badge phonepe">पे</span>
+            <span class="pay-badge paytm">Paytm</span>
+          </div>
+
+          <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <!-- 2. Debit / Credit Card -->
+        <div
+          class="payment-option-row"
+          [class.selected]="selectedPaymentMethod() === 'card'"
+          (click)="setPaymentMethod('card')"
+        >
+          <div class="radio-indicator">
+            <span class="radio-dot"></span>
+          </div>
+
+          <span class="pay-method-icon">💳</span>
+
+          <div class="pay-text-col">
+            <span class="pay-title">Debit / Credit Card</span>
+          </div>
+
+          <div class="brand-badges-group">
+            <span class="pay-badge visa">VISA</span>
+            <span class="pay-badge mc">🔴🟠</span>
+            <span class="pay-badge rupay">RuPay</span>
+          </div>
+
+          <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <!-- 3. Net Banking -->
+        <div
+          class="payment-option-row"
+          [class.selected]="selectedPaymentMethod() === 'netbanking'"
+          (click)="setPaymentMethod('netbanking')"
+        >
+          <div class="radio-indicator">
+            <span class="radio-dot"></span>
+          </div>
+
+          <span class="pay-method-icon">🏛️</span>
+
+          <div class="pay-text-col">
+            <span class="pay-title">Net Banking</span>
+          </div>
+
+          <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <!-- 4. Wallets -->
+        <div
+          class="payment-option-row"
+          [class.selected]="selectedPaymentMethod() === 'wallets'"
+          (click)="setPaymentMethod('wallets')"
+        >
+          <div class="radio-indicator">
+            <span class="radio-dot"></span>
+          </div>
+
+          <span class="pay-method-icon">👛</span>
+
+          <div class="pay-text-col">
+            <span class="pay-title">Wallets</span>
+          </div>
+
+          <div class="brand-badges-group">
+            <span class="pay-badge paytm">Paytm</span>
+            <span class="pay-badge amazon">amazon pay</span>
+          </div>
+
+          <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <!-- 5. COD -->
+        <div
+          class="payment-option-row"
+          [class.selected]="selectedPaymentMethod() === 'cod'"
+          (click)="setPaymentMethod('cod')"
+        >
+          <div class="radio-indicator">
+            <span class="radio-dot"></span>
+          </div>
+
+          <span class="pay-method-icon">💵</span>
+
+          <div class="pay-text-col">
+            <span class="pay-title">Cash on Delivery (COD)</span>
+            <span class="pay-desc">Pay when you receive your order</span>
+          </div>
+
+          <svg viewBox="0 0 24 24" class="chevron-svg"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+      </div>
+
+      <!-- Safe & Secure Payment Card -->
+      <div class="secure-guarantee-card">
+        <div class="shield-col">
+          <svg viewBox="0 0 24 24" class="shield-svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+        </div>
+
+        <div class="secure-texts">
+          <h4 class="secure-title">Safe & Secure Payment</h4>
+          <p class="secure-sub">Your payment is encrypted and protected by industry-standard security.</p>
+        </div>
+
+        <div class="padlock-badge">
+          🔒
+        </div>
+      </div>
+
+      <!-- Sticky Pay CTA -->
+      <div class="sticky-footer-bar">
+        <button class="primary-checkout-btn pay-btn" (click)="confirmPayment()">
+          <svg viewBox="0 0 24 24" class="lock-svg"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <span>Pay ₹{{ totalPayable() }}</span>
+        </button>
+      </div>
+    }
+  </div>
 </div>

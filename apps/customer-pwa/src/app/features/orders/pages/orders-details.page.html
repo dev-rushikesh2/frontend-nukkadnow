@@ -1,0 +1,251 @@
+<div class="order-details-viewport">
+  <!-- Brand Header -->
+  <header class="details-header">
+    <button class="nav-btn" (click)="goBack()" aria-label="Go Back">
+      <svg viewBox="0 0 24 24" class="svg-icon">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+
+    <div class="brand-center">
+      <div class="brand-logo-mark">
+        <svg viewBox="0 0 24 24" class="logo-icon" fill="currentColor">
+          <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+        </svg>
+      </div>
+      <div class="brand-meta">
+        <span class="brand-name">Nukkad<span class="brand-now">Now</span></span>
+        <span class="brand-tagline">Your Neighbourhood Marketplace</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="action-btn" routerLink="/discovery" aria-label="Search">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+      </button>
+      <button class="action-btn" routerLink="/notifications" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+        </svg>
+        <span class="notification-badge-dot"></span>
+      </button>
+      <button class="action-btn" routerLink="/account" aria-label="Account">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="details-scroll-content">
+    <!-- Title -->
+    <div class="title-block">
+      <h1 class="page-title">Order Details</h1>
+      <p class="page-subtitle">Complete information about your order</p>
+    </div>
+
+    <!-- Shop & Order Info Banner -->
+    <div class="order-main-banner-card">
+      <div class="shop-thumb-wrap">
+        <img [src]="order().shopImage" [alt]="order().shopName" class="shop-img" />
+      </div>
+
+      <div class="banner-info-col">
+        <div class="shop-name-row">
+          <h2 class="shop-name">{{ order().shopName }}</h2>
+          <span class="verified-dot">✓</span>
+        </div>
+
+        <div class="order-id-row" (click)="copyOrderId()">
+          <span>Order ID: {{ orderId() }}</span>
+          <svg viewBox="0 0 24 24" class="copy-svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+          @if (copied()) {
+            <span class="copied-badge">Copied</span>
+          }
+        </div>
+
+        <span class="placed-date">Placed on: {{ order().placedDate }}</span>
+      </div>
+
+      <div class="status-price-col">
+        <span class="status-badge delivered">✓ {{ order().status }}</span>
+        <span class="total-price">₹{{ order().totalAmount }}</span>
+      </div>
+    </div>
+
+    <!-- Order Timeline Card -->
+    <div class="timeline-section-card">
+      <div class="card-title-row">
+        <span class="icon-glyph">📈</span>
+        <h3 class="section-title">Order Timeline</h3>
+      </div>
+
+      <div class="timeline-steps-row">
+        @for (step of order().timeline; track step.step; let last = $last) {
+          <div class="step-point">
+            <div class="circle-check green">✓</div>
+            <span class="step-name">{{ step.step }}</span>
+            <span class="step-time">{{ step.time }}</span>
+            <span class="step-date">{{ step.date }}</span>
+          </div>
+          @if (!last) {
+            <div class="timeline-line green"></div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Delivery Details & Rider Partner Strip -->
+    <div class="delivery-partner-strip">
+      <div class="delivery-address-col">
+        <div class="pin-title-row">
+          <span class="pin-icon">📍</span>
+          <h4 class="addr-heading">Delivery Details</h4>
+        </div>
+        <p class="addr-text">{{ order().deliveryAddress }}</p>
+      </div>
+
+      <div class="partner-card-sub">
+        <div class="partner-avatar-wrap">
+          <img [src]="order().rider.avatar" [alt]="order().rider.name" class="rider-img" />
+          <span class="online-dot"></span>
+        </div>
+
+        <div class="partner-texts">
+          <span class="partner-label">Delivery Partner</span>
+          <span class="partner-name">{{ order().rider.name }}</span>
+          <span class="partner-rating">★ {{ order().rider.rating }} ({{ order().rider.deliveries }})</span>
+        </div>
+
+        <div class="partner-mini-actions">
+          <button class="icon-circle-btn" (click)="callRider()" aria-label="Call Rider">
+            <svg viewBox="0 0 24 24" class="btn-svg"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.44-5.15-3.75-6.59-6.59l1.97-1.57c.28-.28.37-.68.25-1.02A11.36 11.36 0 018.57 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.62c0-.55-.45-1-.99-1z"/></svg>
+          </button>
+          <button class="icon-circle-btn" (click)="chatRider()" aria-label="Chat with Rider">
+            <svg viewBox="0 0 24 24" class="btn-svg"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ordered Items List Card -->
+    <div class="ordered-items-card">
+      <div class="card-title-row">
+        <span class="icon-glyph">🛍️</span>
+        <h3 class="section-title">Ordered Items ({{ order().items.length }})</h3>
+      </div>
+
+      <div class="items-list-body">
+        @for (item of order().items; track item.name) {
+          <div class="item-entry-row">
+            <div class="thumb-square">
+              <img [src]="item.image" [alt]="item.name" class="item-img" />
+            </div>
+
+            <div class="item-desc-col">
+              <span class="item-title">{{ item.name }}</span>
+              <span class="item-meta">{{ item.meta }}</span>
+            </div>
+
+            <span class="item-cost">₹{{ item.price }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Two-Columns: Payment Info & Price Summary -->
+    <div class="info-columns-grid">
+      <!-- Payment Information -->
+      <div class="column-card">
+        <div class="card-title-row">
+          <span class="icon-glyph">💳</span>
+          <h3 class="section-title">Payment Information</h3>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Payment Method</span>
+          <div class="val-with-logo">
+            <span class="upi-logo">UPI</span>
+            <span class="info-val">UPI</span>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Payment Status</span>
+          <span class="status-badge-inline green">Paid</span>
+        </div>
+
+        <div class="info-row" (click)="copyTransactionId()">
+          <span class="info-label">Transaction ID</span>
+          <div class="copy-val-wrap">
+            <span class="info-val code">{{ order().payment.transactionId }}</span>
+            <svg viewBox="0 0 24 24" class="copy-svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            @if (txCopied()) {
+              <span class="copied-badge">Copied</span>
+            }
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Paid On</span>
+          <span class="info-val">{{ order().payment.paidOn }}</span>
+        </div>
+      </div>
+
+      <!-- Price Summary -->
+      <div class="column-card">
+        <div class="card-title-row">
+          <span class="icon-glyph">🧾</span>
+          <h3 class="section-title">Price Summary</h3>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Item Total ({{ order().items.length }} items)</span>
+          <span class="info-val">₹{{ order().pricing.itemTotal }}</span>
+        </div>
+
+        <div class="info-row discount">
+          <span class="info-label">Shop Discount (10% on tomatoes)</span>
+          <span class="info-val">−₹{{ order().pricing.discount }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Delivery Fee</span>
+          <span class="info-val">₹{{ order().pricing.deliveryFee }}</span>
+        </div>
+
+        <div class="bill-divider"></div>
+
+        <div class="info-row total-row">
+          <span class="total-label">Total Paid</span>
+          <span class="total-val">₹{{ order().pricing.totalPaid }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Bottom Action Buttons -->
+    <div class="details-bottom-actions">
+      <button class="action-btn-item primary-solid" (click)="trackOrder()">
+        <span class="btn-glyph">📍</span>
+        <span>Track Order</span>
+      </button>
+
+      <button class="action-btn-item outline" (click)="orderAgain()">
+        <span class="btn-glyph">🔄</span>
+        <span>Order Again</span>
+      </button>
+
+      <button class="action-btn-item outline" (click)="downloadInvoice()">
+        <span class="btn-glyph">📥</span>
+        <span>Download Invoice</span>
+      </button>
+
+      <button class="action-btn-item outline" (click)="reportIssue()">
+        <span class="btn-glyph">⚠️</span>
+        <span>Report Issue</span>
+      </button>
+    </div>
+  </div>
+</div>

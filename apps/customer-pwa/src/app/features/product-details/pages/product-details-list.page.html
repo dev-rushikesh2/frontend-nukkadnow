@@ -1,10 +1,293 @@
-﻿<div class="product-details-container">
-  <h2>ProductDetails</h2>
-  @if (store.loading()) {
-    <p>Loading...</p>
-  } @else {
-    @for (item of store.items(); track item.id) {
-      <app-product-details-card [item]="item"></app-product-details-card>
-    }
-  }
+<div class="product-page-viewport">
+  <!-- Top App Header -->
+  <header class="product-header">
+    <button class="nav-btn" (click)="goBack()" aria-label="Go Back">
+      <svg viewBox="0 0 24 24" class="svg-icon">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+
+    <div class="brand-center">
+      <div class="brand-logo-mark">
+        <svg viewBox="0 0 24 24" class="logo-icon" fill="currentColor">
+          <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+        </svg>
+      </div>
+      <div class="brand-meta">
+        <span class="brand-name">Nukkad<span class="brand-now">Now</span></span>
+        <span class="brand-tagline">Your Neighbourhood Marketplace</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="nav-btn" routerLink="/discovery" aria-label="Search">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+      </button>
+
+      <button class="nav-btn cart-btn" routerLink="/cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+        <span class="badge-dot">3</span>
+      </button>
+
+      <button class="nav-btn" aria-label="More">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="product-content-scroll">
+    <!-- Hero Image Card -->
+    <div class="hero-image-card">
+      <img [src]="product().images[0]" [alt]="product().name" class="main-prod-img" />
+
+      <span class="discount-badge-pill">10% OFF</span>
+
+      <button
+        class="fav-circle-btn"
+        [class.is-fav]="isFavorite()"
+        (click)="toggleFavorite()"
+        aria-label="Add to favorites"
+      >
+        <svg viewBox="0 0 24 24" class="heart-icon">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </button>
+
+      <button class="expand-circle-btn" aria-label="View Fullscreen">
+        <svg viewBox="0 0 24 24" class="expand-icon">
+          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+      </button>
+
+      <div class="carousel-dots-pill">
+        <span class="c-dot active"></span>
+        <span class="c-dot"></span>
+        <span class="c-dot"></span>
+      </div>
+    </div>
+
+    <!-- Product Summary Card -->
+    <div class="summary-section">
+      <button class="merchant-chip-btn" (click)="goToShop()">
+        <span class="chip-store-icon">🏪</span>
+        <span class="chip-store-name">{{ product().shopName }}</span>
+        <svg viewBox="0 0 24 24" class="chevron-icon">
+          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+        </svg>
+      </button>
+
+      <h1 class="product-title">{{ product().name }}</h1>
+      <p class="product-subtitle">{{ product().subtitle }}</p>
+
+      <div class="rating-strip">
+        <span class="star-rating">★ {{ product().rating }}</span>
+        <span class="reviews-count">({{ product().reviewsCount }} reviews)</span>
+      </div>
+
+      <div class="pricing-stock-row">
+        <div class="price-stack">
+          <span class="currency-symbol">₹</span>
+          <span class="price-number">{{ currentPrice() }}</span>
+          <span class="per-unit">/ {{ selectedPackId() }}</span>
+          @if (currentOriginalPrice()) {
+            <span class="original-price">₹{{ currentOriginalPrice() }}</span>
+          }
+          <span class="discount-tag">10% OFF</span>
+        </div>
+
+        <span class="stock-badge">
+          <svg viewBox="0 0 24 24" class="check-icon"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>In Stock</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- 3 Trust Badges Strip -->
+    <div class="trust-cards-row">
+      <div class="trust-item">
+        <span class="trust-emoji">🌿</span>
+        <div class="trust-info">
+          <span class="trust-label">Farm Fresh</span>
+          <span class="trust-desc">Direct from farms</span>
+        </div>
+      </div>
+
+      <div class="trust-item">
+        <span class="trust-emoji">🛡️</span>
+        <div class="trust-info">
+          <span class="trust-label">Quality Checked</span>
+          <span class="trust-desc">Clean & Safe</span>
+        </div>
+      </div>
+
+      <div class="trust-item">
+        <span class="trust-emoji">🍲</span>
+        <div class="trust-info">
+          <span class="trust-label">Daily Stock</span>
+          <span class="trust-desc">Freshly replenished</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pack Size & Quantity Row -->
+    <div class="pack-quantity-row">
+      <div class="pack-size-col">
+        <label class="section-label">Pack Size</label>
+        <div class="pack-options-group">
+          @for (pack of packSizes(); track pack.id) {
+            <button
+              type="button"
+              class="pack-pill"
+              [class.active]="selectedPackId() === pack.id"
+              (click)="selectPack(pack.id)"
+            >
+              <span class="pack-weight">{{ pack.label }}</span>
+              <span class="pack-price">₹{{ pack.price }}</span>
+              @if (pack.savingsBadge) {
+                <span class="save-tag">{{ pack.savingsBadge }}</span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="quantity-col">
+        <label class="section-label">Quantity</label>
+        <div class="quantity-stepper">
+          <button class="step-btn minus" (click)="decrementQuantity()" aria-label="Decrease quantity">−</button>
+          <span class="step-val">{{ quantity() }}</span>
+          <button class="step-btn plus" (click)="incrementQuantity()" aria-label="Increase quantity">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery & Pickup SLAs Bar -->
+    <div class="sla-banner">
+      <div class="sla-item">
+        <span class="sla-icon">🛵</span>
+        <div class="sla-text">
+          <span class="sla-title">Delivery</span>
+          <span class="sla-time">Within 30–45 min</span>
+        </div>
+        <span class="sla-check">✓</span>
+      </div>
+
+      <div class="sla-divider"></div>
+
+      <div class="sla-item">
+        <span class="sla-icon">🏪</span>
+        <div class="sla-text">
+          <span class="sla-title">Pickup</span>
+          <span class="sla-time">Ready in 10–15 min</span>
+        </div>
+        <span class="sla-check">✓</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav-bar">
+      <button
+        class="tab-link"
+        [class.active]="activeTab() === 'info'"
+        (click)="selectTab('info')"
+      >
+        <span class="tab-icon">ℹ️</span>
+        <span>Product Info</span>
+      </button>
+
+      <button
+        class="tab-link"
+        [class.active]="activeTab() === 'reviews'"
+        (click)="selectTab('reviews')"
+      >
+        <span class="tab-icon">⭐</span>
+        <span>Reviews (328)</span>
+      </button>
+
+      <button
+        class="tab-link"
+        [class.active]="activeTab() === 'similar'"
+        (click)="selectTab('similar')"
+      >
+        <span class="tab-icon">⊞</span>
+        <span>Similar Products</span>
+      </button>
+    </div>
+
+    <!-- Product Details Section -->
+    <div class="details-section">
+      <h2 class="subheading">Product Details</h2>
+      <p class="description-body">{{ product().description }}</p>
+
+      <div class="specs-table">
+        <div class="spec-row">
+          <span class="spec-label">🌱 Type</span>
+          <span class="spec-val">{{ product().type }}</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">⚖️ Net Weight</span>
+          <span class="spec-val">{{ product().netWeight }}</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">📍 Origin</span>
+          <span class="spec-val">{{ product().origin }}</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">📅 Harvest</span>
+          <span class="spec-val">{{ product().harvest }}</span>
+        </div>
+      </div>
+
+      <!-- Why Buy from Merchant Callout -->
+      <div class="why-buy-callout">
+        <div class="callout-header">
+          <span class="callout-graphic">🍅🍅</span>
+          <h3 class="callout-title">Why Buy from {{ product().shopName }}?</h3>
+        </div>
+
+        <ul class="callout-list">
+          <li><span class="check-pill">✓</span> Fresh & handpicked produce</li>
+          <li><span class="check-pill">✓</span> Hygienic handling & packing</li>
+          <li><span class="check-pill">✓</span> Fair & transparent pricing</li>
+          <li><span class="check-pill">✓</span> Trusted local seller</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Dual Action Bottom Bar -->
+  <div class="sticky-action-bar">
+    <div class="price-display">
+      <div class="price-primary">
+        <span class="price-curr">₹</span>
+        <span class="price-digit">{{ currentPrice() }}</span>
+      </div>
+      @if (currentOriginalPrice()) {
+        <span class="original-digit">₹{{ currentOriginalPrice() }}</span>
+      }
+      <span class="discount-badge">10% OFF</span>
+    </div>
+
+    <div class="cta-actions">
+      <button class="add-cart-btn" (click)="addToCart()">
+        <svg viewBox="0 0 24 24" class="btn-icon">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+        <span>Add to Cart</span>
+      </button>
+
+      <button class="buy-now-btn" (click)="buyNow()">
+        <svg viewBox="0 0 24 24" class="btn-icon">
+          <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+        </svg>
+        <span>Buy Now</span>
+      </button>
+    </div>
+  </div>
 </div>

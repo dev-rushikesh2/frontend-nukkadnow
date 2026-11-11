@@ -1,10 +1,155 @@
-﻿<div class="categories-container">
-  <h2>Categories</h2>
-  @if (store.loading()) {
-    <p>Loading...</p>
-  } @else {
-    @for (item of store.items(); track item.id) {
-      <app-categories-card [item]="item"></app-categories-card>
-    }
-  }
-</div>
+<app-customer-shell activeNav="categories">
+  <div class="categories-page">
+    <!-- Top Brand Header -->
+    <header class="brand-header">
+      <div class="brand-left">
+        <div class="brand-logo-mark">
+          <svg viewBox="0 0 24 24" class="logo-icon" fill="currentColor">
+            <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <span class="brand-name">Nukkad<span class="brand-now">Now</span></span>
+          <span class="brand-tagline">Your Neighbourhood Marketplace</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="action-btn" (click)="openNotifications()" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" class="action-icon">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+          </svg>
+          <span class="notification-badge-dot"></span>
+        </button>
+
+        <button class="action-btn avatar-btn" (click)="openAccount()" aria-label="Account Profile">
+          <svg viewBox="0 0 24 24" class="action-icon">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Title Bar -->
+    <div class="page-title-bar">
+      <button class="back-circle-btn" (click)="goBack()" aria-label="Go Back">
+        <svg viewBox="0 0 24 24" class="back-icon">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+      </button>
+      <div class="title-meta">
+        <h1 class="page-heading">Explore Categories</h1>
+        <p class="page-subheading">Shop from local stores across multiple categories</p>
+      </div>
+    </div>
+
+    <!-- Search Input Bar -->
+    <div class="search-bar-wrap">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" class="search-icon">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search categories, products or shops"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+        @if (searchQuery()) {
+          <button class="clear-btn" (click)="searchQuery.set('')" aria-label="Clear Search">
+            <svg viewBox="0 0 24 24" class="clear-icon">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Purple Promo Banner -->
+    <div class="promo-banner">
+      <div class="banner-content">
+        <h2 class="banner-headline">
+          Everything <br>in Your <span class="highlight">Neighbourhood</span>
+        </h2>
+        <p class="banner-subtext">
+          Groceries, Fresh Produce, Food, Pharmacy and more – from local shops!
+        </p>
+
+        <div class="carousel-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+
+      <div class="banner-graphic">
+        <div class="shopping-bag-mockup">
+          <div class="bag-items">
+            <span class="produce-item leafy">🥬</span>
+            <span class="produce-item bottle">🥛</span>
+            <span class="produce-item bread">🥖</span>
+            <span class="produce-item tomato">🍅</span>
+            <span class="produce-item pepper">🫑</span>
+          </div>
+          <div class="bag-body">
+            <div class="bag-logo">
+              <span class="bag-logo-icon">🛍️</span>
+              <span class="bag-logo-text">NukkadNow</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- All Categories Section Header -->
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <span class="grid-icon">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/>
+          </svg>
+        </span>
+        <h2 class="section-title">All Categories</h2>
+      </div>
+      <button class="view-all-link" (click)="viewAllShops()">
+        <span>View All Shops</span>
+        <svg viewBox="0 0 24 24" class="arrow-icon">
+          <path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42 5.43 5.43H5v2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 4-Column Categories Grid -->
+    <div class="categories-grid">
+      @for (cat of filteredCategories(); track cat.id) {
+        <button
+          type="button"
+          class="category-card"
+          [class.more-card]="cat.isMore"
+          [style.background]="cat.bgColor"
+          (click)="openCategory(cat)"
+        >
+          <div class="card-art">
+            @if (cat.isMore) {
+              <div class="more-squares">
+                <span></span><span></span><span></span><span></span>
+              </div>
+            } @else {
+              <span class="emoji-illustration">{{ cat.emoji }}</span>
+            }
+          </div>
+
+          <div class="card-details">
+            <span class="category-name">{{ cat.name }}</span>
+            @if (cat.isMore) {
+              <span class="more-link">Explore All &rarr;</span>
+            } @else {
+              <span class="shop-count">{{ cat.shopsCount }} Shops</span>
+            }
+          </div>
+        </button>
+      }
+    </div>
+  </div>
+</app-customer-shell>
