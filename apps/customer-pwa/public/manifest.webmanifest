@@ -1,0 +1,21 @@
+﻿{
+  "name": "NukkadNow - Locality Marketplace",
+  "short_name": "NukkadNow",
+  "description": "Locality-first commerce, order pickup, and hyper-local shopping",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF9",
+  "theme_color": "#F97316",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

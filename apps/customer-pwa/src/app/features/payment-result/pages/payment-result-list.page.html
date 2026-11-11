@@ -1,0 +1,10 @@
+﻿<div class="payment-result-container">
+  <h2>PaymentResult</h2>
+  @if (store.loading()) {
+    <p>Loading...</p>
+  } @else {
+    @for (item of store.items(); track item.id) {
+      <app-payment-result-card [item]="item"></app-payment-result-card>
+    }
+  }
+</div>

@@ -1,0 +1,10 @@
+﻿<div class="categories-container">
+  <h2>Categories</h2>
+  @if (store.loading()) {
+    <p>Loading...</p>
+  } @else {
+    @for (item of store.items(); track item.id) {
+      <app-categories-card [item]="item"></app-categories-card>
+    }
+  }
+</div>

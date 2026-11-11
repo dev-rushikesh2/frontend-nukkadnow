@@ -1,0 +1,10 @@
+﻿<div class="checkout-container">
+  <h2>Checkout</h2>
+  @if (store.loading()) {
+    <p>Loading...</p>
+  } @else {
+    @for (item of store.items(); track item.id) {
+      <app-checkout-card [item]="item"></app-checkout-card>
+    }
+  }
+</div>

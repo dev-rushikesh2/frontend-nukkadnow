@@ -1,0 +1,13 @@
+﻿@import './tokens.scss';
+@import './typography.scss';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  background-color: var(--color-background);
+  color: var(--color-secondary);
+}

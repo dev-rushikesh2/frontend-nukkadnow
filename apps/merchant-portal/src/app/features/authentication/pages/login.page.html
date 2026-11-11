@@ -1,0 +1,38 @@
+﻿<div class="auth-container">
+  <div class="auth-card">
+    <div class="brand-header">
+      <div class="brand-badge">NUKKADNOW MERCHANT</div>
+      <h1>Sign in to your store</h1>
+      <p class="subtitle">Enter your registered mobile number to manage orders, inventory, and kitchen queue.</p>
+    </div>
+
+    @if (authFacade.error()) {
+      <ui-error-banner [message]="authFacade.error()!"></ui-error-banner>
+    }
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <ui-input
+        label="Mobile Number"
+        prefix="+91"
+        type="tel"
+        placeholder="98765 43210"
+        [value]="phone()"
+        [error]="validationError()"
+        (valueChanged)="onPhoneChange($event)">
+      </ui-input>
+
+      <ui-button
+        type="submit"
+        variant="primary"
+        size="lg"
+        [fullWidth]="true"
+        [loading]="authFacade.loading()">
+        Send Verification Code
+      </ui-button>
+    </form>
+
+    <footer class="auth-footer">
+      <p>By proceeding, you agree to NukkadNow Merchant <a href="/terms">Terms of Service</a> & <a href="/privacy">Privacy Policy</a>.</p>
+    </footer>
+  </div>
+</div>

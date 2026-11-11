@@ -1,0 +1,30 @@
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: 'dashboard', loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES) },
+  { path: 'order-inbox', loadChildren: () => import('./features/order-inbox/order-inbox.routes').then(m => m.ORDER_INBOX_ROUTES) },
+  { path: 'walkin-orders', loadChildren: () => import('./features/walkin-orders/walkin-orders.routes').then(m => m.WALKIN_ORDERS_ROUTES) },
+  { path: 'queue-board', loadChildren: () => import('./features/queue-board/queue-board.routes').then(m => m.QUEUE_BOARD_ROUTES) },
+  { path: 'catalogue', loadChildren: () => import('./features/catalogue/catalogue.routes').then(m => m.CATALOGUE_ROUTES) },
+  { path: 'variants', loadChildren: () => import('./features/variants/variants.routes').then(m => m.VARIANTS_ROUTES) },
+  { path: 'inventory', loadChildren: () => import('./features/inventory/inventory.routes').then(m => m.INVENTORY_ROUTES) },
+  { path: 'preorders', loadChildren: () => import('./features/preorders/preorders.routes').then(m => m.PREORDERS_ROUTES) },
+  { path: 'batches', loadChildren: () => import('./features/batches/batches.routes').then(m => m.BATCHES_ROUTES) },
+  { path: 'capacity-settings', loadChildren: () => import('./features/capacity-settings/capacity-settings.routes').then(m => m.CAPACITY_SETTINGS_ROUTES) },
+  { path: 'pickup-slots', loadChildren: () => import('./features/pickup-slots/pickup-slots.routes').then(m => m.PICKUP_SLOTS_ROUTES) },
+  { path: 'qr-ordering', loadChildren: () => import('./features/qr-ordering/qr-ordering.routes').then(m => m.QR_ORDERING_ROUTES) },
+  { path: 'delivery-settings', loadChildren: () => import('./features/delivery-settings/delivery-settings.routes').then(m => m.DELIVERY_SETTINGS_ROUTES) },
+  { path: 'staff-access', loadChildren: () => import('./features/staff-access/staff-access.routes').then(m => m.STAFF_ACCESS_ROUTES) },
+  { path: 'outlets', loadChildren: () => import('./features/outlets/outlets.routes').then(m => m.OUTLETS_ROUTES) },
+  { path: 'seller-modes', loadChildren: () => import('./features/seller-modes/seller-modes.routes').then(m => m.SELLER_MODES_ROUTES) },
+  { path: 'business-profile', loadChildren: () => import('./features/business-profile/business-profile.routes').then(m => m.BUSINESS_PROFILE_ROUTES) },
+  { path: 'subscriptions', loadChildren: () => import('./features/subscriptions/subscriptions.routes').then(m => m.SUBSCRIPTIONS_ROUTES) },
+  { path: 'billing', loadChildren: () => import('./features/billing/billing.routes').then(m => m.BILLING_ROUTES) },
+  { path: 'analytics', loadChildren: () => import('./features/analytics/analytics.routes').then(m => m.ANALYTICS_ROUTES) },
+  { path: 'notifications', loadChildren: () => import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES) },
+  { path: 'settings', loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES) },
+  { path: 'onboarding', loadChildren: () => import('./features/onboarding/onboarding.routes').then(m => m.ONBOARDING_ROUTES) },
+  { path: 'auth', loadChildren: () => import('./features/authentication/authentication.routes').then(m => m.AUTHENTICATION_ROUTES) },
+  { path: '**', redirectTo: 'dashboard' }
+];

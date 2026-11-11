@@ -1,0 +1,183 @@
+﻿<div class="inbox-page">
+  <div class="top-bar">
+    <div class="header-titles">
+      <h2>Live Order Inbox</h2>
+      <p class="subtitle">Unified marketplace, walk-in counter, and table QR order management.</p>
+    </div>
+
+    <div class="header-actions">
+      <button
+        type="button"
+        class="sound-toggle-btn"
+        [class.muted]="!store.isSoundEnabled()"
+        (click)="store.toggleSound()"
+        title="Toggle audio alert chime">
+        {{ store.isSoundEnabled() ? 'ðŸ”” Sound: ON' : 'ðŸ”• Sound: MUTED' }}
+      </button>
+
+      <ui-button variant="outline" size="sm" (clicked)="store.simulateNewOrder()">
+        + Simulate New Order
+      </ui-button>
+    </div>
+  </div>
+
+  <!-- Status Tabs -->
+  <div class="inbox-tabs">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="store.activeTab() === 'NEW'"
+      (click)="store.setTab('NEW')">
+      <span>ðŸ”” New Orders</span>
+      @if (store.newOrdersCount() > 0) {
+        <span class="count-badge count-badge--pulse">{{ store.newOrdersCount() }}</span>
+      }
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="store.activeTab() === 'PREPARING'"
+      (click)="store.setTab('PREPARING')">
+      <span>â³ Preparing</span>
+      <span class="count-badge">{{ store.preparingCount() }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="store.activeTab() === 'READY'"
+      (click)="store.setTab('READY')">
+      <span>âœ… Ready for Pickup</span>
+      <span class="count-badge">{{ store.readyCount() }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="store.activeTab() === 'COMPLETED'"
+      (click)="store.setTab('COMPLETED')">
+      <span>ðŸ“œ Completed</span>
+    </button>
+  </div>
+
+  <!-- Order Cards List -->
+  <div class="orders-list">
+    @for (order of store.visibleOrders(); track order.id) {
+      <div class="order-card" [class.order-card--new]="order.status === 'PLACED'">
+        <div class="card-header">
+          <div class="order-meta">
+            <span class="order-id">{{ order.orderNumber }}</span>
+            <span class="source-tag source-tag--{{ order.source.toLowerCase() }}">{{ order.source }}</span>
+            <span class="received-time">{{ order.receivedAgo }}</span>
+          </div>
+
+          <ui-price-display [amountPaise]="order.totalPaise"></ui-price-display>
+        </div>
+
+        <div class="customer-info-row">
+          <div class="customer-name">
+            <strong>{{ order.customerName }}</strong>
+            <span class="customer-phone">{{ order.customerPhoneMasked }}</span>
+          </div>
+
+          @if (order.pickupSlotTime) {
+            <div class="pickup-time-pill">
+              ðŸ•’ {{ order.pickupSlotTime }}
+            </div>
+          }
+        </div>
+
+        <!-- Items Summary List -->
+        <div class="items-summary-box">
+          @for (item of order.items; track item.title) {
+            <div class="item-line">
+              <span class="qty">{{ item.quantity }}x</span>
+              <span class="name">{{ item.title }}</span>
+              @if (item.notes) {
+                <span class="item-notes">({{ item.notes }})</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Action Row Based on Lifecycle State -->
+        <div class="card-actions-row">
+          @if (order.status === 'PLACED') {
+            <div class="new-order-actions">
+              <ui-button variant="danger" size="md" (clicked)="openRejectDialog(order)">Reject</ui-button>
+              <ui-button variant="primary" size="md" (clicked)="openAcceptDialog(order)">Accept Order</ui-button>
+            </div>
+          } @else if (order.status === 'PREPARING') {
+            <div class="prep-actions">
+              <span class="prep-timer">â±ï¸ <strong>{{ order.countdownMinutes }} mins</strong> remaining</span>
+              <ui-button variant="primary" size="md" (clicked)="store.markReady(order.id)">Mark Ready for Pickup</ui-button>
+            </div>
+          } @else if (order.status === 'READY') {
+            <div class="ready-actions">
+              <span class="ready-token-msg">Customer has token for pickup</span>
+              <ui-button variant="secondary" size="md" (clicked)="store.completeOrder(order.id)">Verify Token & Handover</ui-button>
+            </div>
+          } @else {
+            <span class="completed-label">âœ“ Order Completed</span>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-inbox">
+        <span class="empty-icon">â˜•</span>
+        <h3>No active orders in this queue</h3>
+        <p>New customer marketplace or counter QR orders will appear here automatically with sound alert.</p>
+      </div>
+    }
+  </div>
+
+  <!-- Accept Order Dialog -->
+  <ui-dialog
+    [isOpen]="isAcceptModalOpen()"
+    title="Accept Customer Order"
+    (close)="isAcceptModalOpen.set(false)">
+    @if (selectedOrder(); as ord) {
+      <div class="modal-dialog-body">
+        <p>Accepting order <strong>{{ ord.orderNumber }}</strong> for {{ ord.customerName }}.</p>
+        <span class="prep-select-label">Select Kitchen Preparation Time:</span>
+
+        <div class="prep-presets">
+          <button type="button" [class.selected]="selectedPrepMinutes() === 15" (click)="selectedPrepMinutes.set(15)">15 Mins</button>
+          <button type="button" [class.selected]="selectedPrepMinutes() === 25" (click)="selectedPrepMinutes.set(25)">25 Mins</button>
+          <button type="button" [class.selected]="selectedPrepMinutes() === 40" (click)="selectedPrepMinutes.set(40)">40 Mins</button>
+          <button type="button" [class.selected]="selectedPrepMinutes() === 60" (click)="selectedPrepMinutes.set(60)">1 Hour</button>
+        </div>
+
+        <div class="dialog-footer-actions">
+          <ui-button variant="outline" (clicked)="isAcceptModalOpen.set(false)">Cancel</ui-button>
+          <ui-button variant="primary" (clicked)="confirmAccept()">Confirm & Start Preparation</ui-button>
+        </div>
+      </div>
+    }
+  </ui-dialog>
+
+  <!-- Reject Order Dialog -->
+  <ui-dialog
+    [isOpen]="isRejectModalOpen()"
+    title="Reject Customer Order"
+    (close)="isRejectModalOpen.set(false)">
+    @if (selectedOrder(); as ord) {
+      <div class="modal-dialog-body">
+        <p>Reason for rejecting <strong>{{ ord.orderNumber }}</strong>:</p>
+
+        <select class="custom-select" [value]="rejectReason()" (change)="rejectReason.set($any($event.target).value)">
+          <option value="OUT_OF_STOCK">Item Out of Stock</option>
+          <option value="KITCHEN_BUSY">Kitchen Rush / Over Capacity</option>
+          <option value="STORE_CLOSING">Store Closing Soon</option>
+          <option value="OTHER">Other Reason</option>
+        </select>
+
+        <div class="dialog-footer-actions">
+          <ui-button variant="outline" (clicked)="isRejectModalOpen.set(false)">Cancel</ui-button>
+          <ui-button variant="danger" (clicked)="confirmReject()">Confirm Rejection</ui-button>
+        </div>
+      </div>
+    }
+  </ui-dialog>
+</div>

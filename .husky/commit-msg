@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Ensure conventional commit message format
+npx --no -- commitlint --edit "$1"

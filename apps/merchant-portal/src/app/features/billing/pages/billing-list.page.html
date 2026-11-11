@@ -1,0 +1,124 @@
+<div class="billing-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Financial Compliance</span>
+        <span class="badge badge-success">GST Verified Seller</span>
+      </div>
+      <h1>Billing, Tax Invoices & Bank Payouts</h1>
+      <p class="subtitle">
+        Review platform subscription tax invoices, download Input Tax Credit (ITC) compliant bills, and inspect daily bank settlement UTRs.
+      </p>
+    </div>
+  </header>
+
+  <!-- Merchant Tax & Payout Summary -->
+  <div class="tax-summary-banner">
+    <div class="tax-info-card">
+      <span class="tax-label">Registered Business GSTIN</span>
+      <span class="tax-val">{{ store.merchantGstin() }}</span>
+      <span class="tax-sub">State: 27 (Maharashtra) • Eligible for 18% Input Tax Credit</span>
+    </div>
+    <div class="tax-info-card">
+      <span class="tax-label">Linked Settlement Account</span>
+      <span class="tax-val">HDFC Bank ••••••4102</span>
+      <span class="tax-sub">IFSC: HDFC0000124 (Dharampeth Branch) • T+1 Auto Payout</span>
+    </div>
+  </div>
+
+  <!-- Monthly GST Tax Invoices Section -->
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Monthly Platform GST Invoices</h2>
+        <p class="section-desc">Download official tax invoices for platform SaaS subscription and payment processing fees.</p>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Invoice Number</th>
+            <th>Billing Period</th>
+            <th>Invoice Date</th>
+            <th>HSN / SAC</th>
+            <th>Taxable Value</th>
+            <th>CGST + SGST (18%)</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th class="th-actions">Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of store.invoices(); track inv.invoiceNumber) {
+            <tr>
+              <td><span class="font-bold text-slate">{{ inv.invoiceNumber }}</span></td>
+              <td>{{ inv.period }}</td>
+              <td>{{ inv.invoiceDate }}</td>
+              <td><code>{{ inv.platformHsn }}</code></td>
+              <td>{{ formatPrice(inv.subtotalPaise) }}</td>
+              <td>{{ formatPrice(inv.cgstPaise + inv.sgstPaise) }}</td>
+              <td><strong class="text-orange">{{ formatPrice(inv.totalPaise) }}</strong></td>
+              <td>
+                <span class="status-badge paid">✓ {{ inv.paymentStatus }}</span>
+              </td>
+              <td class="td-actions">
+                <button 
+                  type="button" 
+                  class="btn-download" 
+                  (click)="download(inv)">
+                  📥 Tax Invoice CSV
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Daily Settlement Ledger Section -->
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Daily Bank Payout Ledger (T+1 Settlements)</h2>
+        <p class="section-desc">Itemized settlement of orders reconciled with bank UTR transaction numbers.</p>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Settlement Date</th>
+            <th>Bank UTR Reference</th>
+            <th>Orders Reconciled</th>
+            <th>Gross Value</th>
+            <th>Platform Fee (2%)</th>
+            <th>Net Credited to Bank</th>
+            <th>Bank Account</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payout of store.settlements(); track payout.utrNumber) {
+            <tr>
+              <td>{{ payout.settlementDate }}</td>
+              <td><code>{{ payout.utrNumber }}</code></td>
+              <td>{{ payout.orderCount }} orders</td>
+              <td>{{ formatPrice(payout.grossOrdersPaise) }}</td>
+              <td class="text-red">- {{ formatPrice(payout.platformFeeDeductedPaise) }}</td>
+              <td><strong class="text-green">{{ formatPrice(payout.netCreditedPaise) }}</strong></td>
+              <td>{{ payout.bankAccountMasked }}</td>
+              <td>
+                <span class="status-badge settled">✓ {{ payout.status }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

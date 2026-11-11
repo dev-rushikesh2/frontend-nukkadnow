@@ -1,0 +1,124 @@
+<div class="notif-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Operational Alerts</span>
+        @if (network.isOnline()) {
+          <span class="badge badge-success">✓ Realtime WebSocket Online</span>
+        } @else {
+          <span class="badge badge-danger">⚠️ Offline Mode Active</span>
+        }
+      </div>
+      <h1>Notifications, Audio Chimes & Pilot UAT</h1>
+      <p class="subtitle">
+        Configure order alert sounds, monitor capacity warnings, and verify the Nagpur Pilot operational checklist.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-test-chime" (click)="store.testChime()">
+        🔊 Test Loud Order Chime
+      </button>
+      <button type="button" class="btn-secondary" (click)="store.markAllRead()">
+        Mark All Read
+      </button>
+    </div>
+  </header>
+
+  <!-- Offline Status Alert Banner -->
+  @if (!network.isOnline()) {
+    <div class="offline-banner">
+      <span class="offline-icon">📡</span>
+      <div class="offline-content">
+        <span class="offline-title">Offline Network Detected</span>
+        <p class="offline-desc">
+          Showing cached orders and products. Walk-in POS drafts are safely stored locally in memory.
+          Marketplace status transitions will sync automatically when your internet connection is restored.
+        </p>
+      </div>
+      <button type="button" class="btn-sync" (click)="network.syncQueue()">
+        {{ network.isSyncing() ? 'Syncing...' : 'Retry Connection' }}
+      </button>
+    </div>
+  }
+
+  <div class="grid-2col">
+    <!-- Left: Notifications Feed -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">Live Notifications ({{ store.unreadCount() }} Unread)</h2>
+      </div>
+
+      <div class="notif-list">
+        @for (item of store.notifications(); track item.id) {
+          <div 
+            class="notif-item" 
+            [class.is-unread]="!item.isRead"
+            (click)="store.markRead(item.id); navigateTo(item.actionRoute)">
+            <div class="notif-top">
+              <span class="badge-cat" [ngClass]="getCategoryBadge(item.category)">
+                {{ item.category.replace('_', ' ') }}
+              </span>
+              <span class="notif-time">{{ item.timestamp }}</span>
+            </div>
+            <span class="notif-title">{{ item.title }}</span>
+            <p class="notif-msg">{{ item.message }}</p>
+            @if (item.actionRoute) {
+              <span class="notif-action-hint">Click to open {{ item.actionRoute }} →</span>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Right: Audio Settings & Nagpur Pilot Verification -->
+    <div class="right-stack">
+      <!-- Audio & Alert Preferences Card -->
+      <section class="card">
+        <h2 class="card-title">Audio & Device Alert Preferences</h2>
+        <p class="card-desc">Designed to be heard across a noisy kitchen or retail counter.</p>
+
+        <div class="pref-rows">
+          <div class="pref-row" (click)="store.toggleSound()">
+            <div>
+              <span class="pref-title">Dual-Chime Order Synthesizer</span>
+              <span class="pref-desc">Plays high-pitch 800Hz / 1200Hz synthesized sound for new orders.</span>
+            </div>
+            <input type="checkbox" class="toggle-cb" [checked]="store.preferences().soundChimeEnabled" tabindex="-1" />
+          </div>
+
+          <div class="pref-row" (click)="store.togglePush()">
+            <div>
+              <span class="pref-title">Background Push Notifications</span>
+              <span class="pref-desc">Receive order notifications even when the app/browser tab is in background.</span>
+            </div>
+            <input type="checkbox" class="toggle-cb" [checked]="store.preferences().pushNotificationsEnabled" tabindex="-1" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Nagpur Pilot Launch Checklist Card -->
+      <section class="card pilot-card">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Nagpur Pilot Launch UAT Sign-off</h2>
+            <p class="card-desc">Ground-reality readiness checklist verified across 5 pilot stores.</p>
+          </div>
+          <span class="badge-uat">100% READY</span>
+        </div>
+
+        <div class="checklist-items">
+          @for (chk of pilotChecklist; track chk.title) {
+            <div class="chk-item">
+              <span class="chk-icon">✅</span>
+              <div class="chk-info">
+                <span class="chk-title">{{ chk.title }}</span>
+                <span class="chk-notes">{{ chk.notes }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

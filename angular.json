@@ -1,0 +1,196 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "apps",
+  "projects": {
+    "customer-pwa": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss",
+          "standalone": true,
+          "changeDetection": "OnPush"
+        }
+      },
+      "root": "apps/customer-pwa",
+      "sourceRoot": "apps/customer-pwa/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": "dist/apps/customer-pwa",
+            "index": "apps/customer-pwa/src/index.html",
+            "browser": "apps/customer-pwa/src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "apps/customer-pwa/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/customer-pwa/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "apps/customer-pwa/src/assets",
+                "output": "assets"
+              }
+            ],
+            "styles": [
+              "apps/customer-pwa/src/theme/variables.scss",
+              "apps/customer-pwa/src/theme/tokens.scss",
+              "apps/customer-pwa/src/global.scss"
+            ],
+            "scripts": [],
+            "serviceWorker": "apps/customer-pwa/ngsw-config.json"
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "customer-pwa:build:production"
+            },
+            "development": {
+              "buildTarget": "customer-pwa:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "apps/customer-pwa/tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/customer-pwa/public"
+              }
+            ],
+            "styles": ["apps/customer-pwa/src/global.scss"],
+            "scripts": []
+          }
+        }
+      }
+    },
+    "merchant-portal": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss",
+          "standalone": true,
+          "changeDetection": "OnPush"
+        }
+      },
+      "root": "apps/merchant-portal",
+      "sourceRoot": "apps/merchant-portal/src",
+      "prefix": "merchant",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": "dist/apps/merchant-portal",
+            "index": "apps/merchant-portal/src/index.html",
+            "browser": "apps/merchant-portal/src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "apps/merchant-portal/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/merchant-portal/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "apps/merchant-portal/src/assets",
+                "output": "assets"
+              }
+            ],
+            "styles": [
+              "apps/merchant-portal/src/styles/tokens.scss",
+              "apps/merchant-portal/src/styles/typography.scss",
+              "apps/merchant-portal/src/styles/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "merchant-portal:build:production"
+            },
+            "development": {
+              "buildTarget": "merchant-portal:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "apps/merchant-portal/tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/merchant-portal/public"
+              }
+            ],
+            "styles": ["apps/merchant-portal/src/styles/styles.scss"],
+            "scripts": []
+          }
+        }
+      }
+    }
+  }
+}

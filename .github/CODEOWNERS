@@ -1,0 +1,20 @@
+# Global Frontend Codeowners
+* @nukkadnow/frontend-architects
+
+# Customer PWA Application
+/apps/customer-pwa/ @nukkadnow/customer-team
+
+# Merchant Portal Application
+/apps/merchant-portal/ @nukkadnow/merchant-team
+
+# Shared Design System and UI Primitives
+/libs/ui/ @nukkadnow/design-systems-team
+
+# API Clients & Domain Models
+/libs/api-client/ @nukkadnow/platform-contracts
+/libs/domain-models/ @nukkadnow/platform-contracts
+/libs/auth-client/ @nukkadnow/security-team
+
+# Internationalization and Local Utilities
+/libs/i18n/ @nukkadnow/core-frontend
+/libs/utilities/ @nukkadnow/core-frontend

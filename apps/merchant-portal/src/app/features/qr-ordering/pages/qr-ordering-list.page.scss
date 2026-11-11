@@ -1,0 +1,406 @@
+.qr-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+
+    &.badge-accent {
+      background: rgba(249, 115, 22, 0.12);
+      color: #ea580c;
+    }
+
+    &.badge-success {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+}
+
+.btn-secondary {
+  padding: 10px 18px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.metric-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+
+  .metric-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .card-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+
+      &.text-blue { color: #2563eb; }
+      &.text-green { color: #16a34a; }
+      &.text-orange { color: #ea580c; font-size: 15px; word-break: break-all; }
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+  }
+}
+
+.section-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .tables-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.standees-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
+}
+
+.standee-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  .qr-preview-box {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+
+    .details-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+
+      .standee-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .badge-tag {
+        font-size: 11px;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .table-badge {
+        font-size: 11px;
+        font-weight: 700;
+        background: #ea580c;
+        color: #ffffff;
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+    }
+
+    .target-url {
+      font-size: 11px;
+      color: #94a3b8;
+      word-break: break-all;
+    }
+
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+
+      .stat-pill {
+        font-size: 12px;
+        color: #334155;
+      }
+
+      .stat-time {
+        font-size: 11px;
+        color: #94a3b8;
+      }
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+  }
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &.btn-print {
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #0f172a;
+
+    &:hover { background: #1e293b; }
+  }
+
+  &.btn-outline {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+
+    &:hover { background: #f8fafc; }
+  }
+
+  &.btn-danger-outline {
+    border: 1px solid #fca5a5;
+    background: #ffffff;
+    color: #dc2626;
+
+    &:hover { background: #fef2f2; }
+  }
+}
+
+/* Standee Print Preview Template */
+.printable-standee-preview {
+  background: #ffffff;
+  border: 2px solid #0f172a;
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 360px;
+  margin: 0 auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+  .standee-top-bar {
+    background: #f97316;
+    color: #ffffff;
+    text-align: center;
+    padding: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+
+  .standee-inner {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+
+    .store-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .store-locality {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .table-indicator {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    .big-qr-box {
+      width: 220px;
+      height: 220px;
+      background: #ffffff;
+      padding: 8px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .callout-heading {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ea580c;
+      margin: 0;
+    }
+
+    .callout-sub {
+      font-size: 12px;
+      color: #475569;
+      margin: 4px 0 0 0;
+    }
+
+    .upi-logos-row {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .standee-footer-text {
+      font-size: 10px;
+      color: #94a3b8;
+      border-top: 1px dashed #e2e8f0;
+      padding-top: 10px;
+      width: 100%;
+    }
+  }
+}
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 0;
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+
+    &:focus { border-color: #f97316; }
+  }
+
+  .form-hint {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}

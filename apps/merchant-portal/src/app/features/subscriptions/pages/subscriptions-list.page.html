@@ -1,0 +1,169 @@
+<div class="subs-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">SaaS Platform Plans</span>
+        <span class="badge badge-success">Active Subscription</span>
+      </div>
+      <h1>Subscription Plans & Quota Limits</h1>
+      <p class="subtitle">
+        Transparent pricing built for independent neighborhood merchants. Scalable with your store's growth.
+      </p>
+    </div>
+  </header>
+
+  @if (store.upgradeSuccess(); as msg) {
+    <div class="alert-success">{{ msg }}</div>
+  }
+
+  @if (store.subscription().isInGracePeriod) {
+    <div class="alert-grace">
+      <span class="grace-icon">⚠️</span>
+      <div class="grace-text">
+        <strong>Billing Grace Period Active:</strong> Last renewal attempt was unsuccessful. You have
+        <strong>{{ store.subscription().gracePeriodDaysRemaining }} days</strong> remaining to update payment methods.
+        Your store, menu, and incoming orders remain 100% active.
+      </div>
+    </div>
+  }
+
+  <!-- Current Plan & Quota Usage Meters -->
+  <section class="quota-container">
+    <div class="quota-head">
+      <div>
+        <span class="quota-badge">CURRENT PLAN: {{ store.subscription().currentTier.replace('_', ' ') }}</span>
+        <h2 class="quota-title">{{ formatPrice(store.subscription().pricePaise) }}</h2>
+        <span class="quota-sub">Next renewal on {{ store.subscription().nextRenewalDate }}</span>
+      </div>
+      <div class="quota-meters-grid">
+        <!-- Outlets -->
+        <div class="meter-card">
+          <div class="meter-labels">
+            <span>Outlets: <strong>{{ store.subscription().quotas.outletsUsed }} / {{ store.subscription().quotas.outletsLimit }}</strong></span>
+            <span>{{ getMeterPercent(store.subscription().quotas.outletsUsed, store.subscription().quotas.outletsLimit) }}%</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill" [style.width.%]="getMeterPercent(store.subscription().quotas.outletsUsed, store.subscription().quotas.outletsLimit)"></div>
+          </div>
+        </div>
+
+        <!-- Staff -->
+        <div class="meter-card">
+          <div class="meter-labels">
+            <span>Staff Accounts: <strong>{{ store.subscription().quotas.staffUsed }} / {{ store.subscription().quotas.staffLimit }}</strong></span>
+            <span>{{ getMeterPercent(store.subscription().quotas.staffUsed, store.subscription().quotas.staffLimit) }}%</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill" [style.width.%]="getMeterPercent(store.subscription().quotas.staffUsed, store.subscription().quotas.staffLimit)"></div>
+          </div>
+        </div>
+
+        <!-- Products -->
+        <div class="meter-card">
+          <div class="meter-labels">
+            <span>Catalogue Items: <strong>{{ store.subscription().quotas.productsUsed }} / {{ store.subscription().quotas.productsLimit >= 9999 ? 'Unlimited' : store.subscription().quotas.productsLimit }}</strong></span>
+            <span>Active</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill" style="width: 38%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plans Grid -->
+  <div class="plans-grid">
+    <!-- Starter Tier -->
+    <div class="plan-card" [class.is-current]="store.subscription().currentTier === 'STARTER'">
+      <div class="plan-top">
+        <span class="plan-name">Starter Pilot</span>
+        <span class="plan-price">₹0 <span>/ month</span></span>
+        <span class="plan-desc">For home sellers, seasonal makers, and small single stalls.</span>
+      </div>
+
+      <div class="plan-features">
+        <div class="feature-item">✓ 1 Store Outlet</div>
+        <div class="feature-item">✓ 2 Staff Logins (Owner + Cashier)</div>
+        <div class="feature-item">✓ Up to 50 Products</div>
+        <div class="feature-item">✓ Counter Walk-in POS & Audio Chime</div>
+        <div class="feature-item muted">✕ Advanced Analytics & Rush Hours</div>
+        <div class="feature-item muted">✕ Geofenced Self-Delivery</div>
+      </div>
+
+      <div class="plan-footer">
+        @if (store.subscription().currentTier === 'STARTER') {
+          <span class="current-plan-pill">Current Active Plan</span>
+        } @else {
+          <button 
+            type="button" 
+            class="btn-plan" 
+            (click)="upgrade('STARTER')">
+            Downgrade to Starter
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Pro Retailer Tier -->
+    <div class="plan-card popular-card" [class.is-current]="store.subscription().currentTier === 'PRO'">
+      <span class="popular-ribbon">MOST POPULAR</span>
+      <div class="plan-top">
+        <span class="plan-name">Pro Retailer</span>
+        <span class="plan-price">₹999 <span>/ month</span></span>
+        <span class="plan-desc">For busy sweet shops, bakeries, cafes, and restaurants.</span>
+      </div>
+
+      <div class="plan-features">
+        <div class="feature-item">✓ 1 Store Outlet</div>
+        <div class="feature-item">✓ 5 Staff Logins with PIN Switch</div>
+        <div class="feature-item font-semibold">✓ Unlimited Menu & Products</div>
+        <div class="feature-item font-semibold">✓ Peak Rush Hour Analytics & Heatmap</div>
+        <div class="feature-item">✓ Merchant-Managed Self-Delivery</div>
+        <div class="feature-item">✓ Table Tent & Standee QR Generator</div>
+      </div>
+
+      <div class="plan-footer">
+        @if (store.subscription().currentTier === 'PRO') {
+          <span class="current-plan-pill">Current Active Plan</span>
+        } @else {
+          <nukkad-button variant="primary" (buttonClick)="upgrade('PRO')">
+            Upgrade to Pro
+          </nukkad-button>
+        }
+      </div>
+    </div>
+
+    <!-- Multi-Outlet Pro Tier -->
+    <div class="plan-card" [class.is-current]="store.subscription().currentTier === 'MULTI_OUTLET'">
+      <div class="plan-top">
+        <span class="plan-name">Multi-Outlet Enterprise</span>
+        <span class="plan-price">₹2,499 <span>/ month</span></span>
+        <span class="plan-desc">For multi-branch sweet brands, central kitchens, and franchises.</span>
+      </div>
+
+      <div class="plan-features">
+        <div class="feature-item font-semibold">✓ Up to 5 Outlets & Cloud Kitchens</div>
+        <div class="feature-item font-semibold">✓ Unlimited Staff Logins</div>
+        <div class="feature-item">✓ Consolidated Cross-Outlet Analytics</div>
+        <div class="feature-item">✓ Shared Central Inventory & Restock</div>
+        <div class="feature-item">✓ Priority 24/7 Nagpur Ops Support</div>
+        <div class="feature-item">✓ Custom GST Invoicing & Tax Ledger</div>
+      </div>
+
+      <div class="plan-footer">
+        @if (store.subscription().currentTier === 'MULTI_OUTLET') {
+          <span class="current-plan-pill">Current Active Plan</span>
+        } @else {
+          <button 
+            type="button" 
+            class="btn-plan" 
+            (click)="upgrade('MULTI_OUTLET')">
+            Upgrade to Multi-Outlet
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

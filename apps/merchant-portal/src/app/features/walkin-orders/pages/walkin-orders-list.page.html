@@ -1,0 +1,14 @@
+﻿<div class="merchant-walkin-orders-container">
+  <div class="header-row">
+    <h2>WalkinOrders Management</h2>
+  </div>
+  @if (store.loading()) {
+    <p>Loading records...</p>
+  } @else {
+    <div class="cards-grid">
+      @for (item of store.items(); track item.id) {
+        <merchant-walkin-orders-card [item]="item"></merchant-walkin-orders-card>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,11 @@
+﻿{
+  "name": "merchant-portal",
+  "projectType": "application",
+  "root": "apps/merchant-portal",
+  "sourceRoot": "apps/merchant-portal/src",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application"
+    }
+  }
+}

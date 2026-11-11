@@ -1,0 +1,89 @@
+﻿<div class="catalogue-page">
+  <div class="top-header">
+    <div class="title-meta">
+      <h2>Products & Catalogue</h2>
+      <p class="subtitle">Manage items, live stock availability, and made-to-order prep times.</p>
+    </div>
+    <ui-button variant="primary" (clicked)="createProduct()">+ Add Product</ui-button>
+  </div>
+
+  <!-- Search & Stock Overview Stats -->
+  <div class="controls-bar">
+    <div class="search-box">
+      <ui-input
+        placeholder="Search product name or ingredients..."
+        (valueChanged)="onSearch($event)">
+      </ui-input>
+    </div>
+
+    <div class="stock-stats">
+      <span class="stat-pill">Total: <strong>{{ store.products().length }}</strong></span>
+      <span class="stat-pill stat-pill--instock">In Stock: <strong>{{ store.inStockCount() }}</strong></span>
+      <span class="stat-pill stat-pill--out">Out of Stock: <strong>{{ store.outOfStockCount() }}</strong></span>
+    </div>
+  </div>
+
+  <!-- Category Pills -->
+  <div class="category-pills">
+    @for (cat of store.categories(); track cat) {
+      <button
+        type="button"
+        class="cat-pill"
+        [class.cat-pill--active]="store.selectedCategory() === cat"
+        (click)="store.setCategory(cat)">
+        {{ cat }}
+      </button>
+    }
+  </div>
+
+  <!-- Products Grid -->
+  <div class="products-grid">
+    @for (product of store.filteredProducts(); track product.id) {
+      <div class="product-card" [class.product-card--out]="!product.inStock">
+        <div class="card-thumb-wrapper">
+          <div class="dietary-marker">
+            <ui-dietary-tag [isVeg]="product.isVeg"></ui-dietary-tag>
+          </div>
+          @if (product.imageUrl) {
+            <img [src]="product.imageUrl" [alt]="product.title" class="product-img" />
+          } @else {
+            <div class="placeholder-img">ðŸ“¦</div>
+          }
+        </div>
+
+        <div class="card-content">
+          <div class="card-title-row">
+            <h4>{{ product.title }}</h4>
+            <ui-price-display [amountPaise]="product.pricePaise"></ui-price-display>
+          </div>
+
+          <p class="product-desc">{{ product.description }}</p>
+
+          @if (product.isMadeToOrder) {
+            <div class="lead-time-tag">
+              â³ Made to order ({{ product.leadTimeMinutes }}m lead time)
+            </div>
+          }
+
+          <div class="card-footer">
+            <div class="stock-status">
+              <ui-toggle
+                [checked]="product.inStock"
+                (toggled)="store.toggleAvailability(product.id)">
+              </ui-toggle>
+              <span class="stock-label">
+                {{ product.inStock ? product.stockCount + ' in stock' : 'Out of Stock' }}
+              </span>
+            </div>
+
+            <ui-button variant="outline" size="sm" (clicked)="editProduct(product)">Edit</ui-button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <p>No products found matching your search.</p>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,36 @@
+name: Deploy Customer PWA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/customer-pwa/**'
+      - 'libs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  deploy-pwa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Customer PWA for Production
+        run: pnpm build:customer
+
+      - name: Deploy to Static Hosting / CDN
+        run: |
+          echo "Deploying dist/apps/customer-pwa to Edge CDN / Cloudflare Pages / AWS S3..."
+          # Deploy step configured via secrets

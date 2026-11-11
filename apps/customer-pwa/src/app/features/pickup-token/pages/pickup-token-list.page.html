@@ -1,0 +1,10 @@
+﻿<div class="pickup-token-container">
+  <h2>PickupToken</h2>
+  @if (store.loading()) {
+    <p>Loading...</p>
+  } @else {
+    @for (item of store.items(); track item.id) {
+      <app-pickup-token-card [item]="item"></app-pickup-token-card>
+    }
+  }
+</div>

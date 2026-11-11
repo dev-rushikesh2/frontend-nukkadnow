@@ -1,0 +1,14 @@
+﻿<div class="merchant-business-profile-container">
+  <div class="header-row">
+    <h2>BusinessProfile Management</h2>
+  </div>
+  @if (store.loading()) {
+    <p>Loading records...</p>
+  } @else {
+    <div class="cards-grid">
+      @for (item of store.items(); track item.id) {
+        <merchant-business-profile-card [item]="item"></merchant-business-profile-card>
+      }
+    </div>
+  }
+</div>

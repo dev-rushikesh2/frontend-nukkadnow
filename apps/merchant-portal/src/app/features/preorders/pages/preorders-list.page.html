@@ -1,0 +1,132 @@
+<div class="preorders-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Scheduled Operations</span>
+        <span class="badge badge-success">Guaranteed Advance Orders</span>
+      </div>
+      <h1>Pre-orders & Scheduled Pickups</h1>
+      <p class="subtitle">
+        Review customer orders scheduled for upcoming pickup slots or specific production batches.
+      </p>
+    </div>
+  </header>
+
+  <!-- Metric Banner -->
+  <div class="metric-banner">
+    <div class="metric-card">
+      <span class="card-label">Total Pre-orders</span>
+      <span class="card-val">{{ store.filteredPreorders().length }}</span>
+      <span class="card-sub">Active scheduled bookings</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Scheduled Value</span>
+      <span class="card-val text-green">{{ formatPrice(store.totalPreorderValuePaise()) }}</span>
+      <span class="card-sub">100% advance collected via UPI</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">On-time Preparation</span>
+      <span class="card-val text-blue">98.4%</span>
+      <span class="card-sub">Average pickup ready time</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="filter-label">Date:</span>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="store.filterDate() === 'ALL'"
+        (click)="store.setDateFilter('ALL')">
+        All Dates
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="store.filterDate() === 'TODAY'"
+        (click)="store.setDateFilter('TODAY')">
+        Today (11 Nov)
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="store.filterDate() === 'TOMORROW'"
+        (click)="store.setDateFilter('TOMORROW')">
+        Tomorrow (12 Nov)
+      </button>
+    </div>
+  </div>
+
+  <!-- Pre-orders Table / List -->
+  <div class="preorders-list">
+    @for (po of store.filteredPreorders(); track po.orderId) {
+      <div class="order-card">
+        <div class="order-top">
+          <div class="order-id-group">
+            <span class="token-pill">{{ po.tokenNumber }}</span>
+            <span class="order-id">{{ po.orderId }}</span>
+            <span class="badge-paid">✓ PAID</span>
+          </div>
+          <span class="status-pill" [ngClass]="getStatusClass(po.status)">
+            {{ po.status.replace('_', ' ') }}
+          </span>
+        </div>
+
+        <div class="customer-row">
+          <span class="customer-name">{{ po.customerName }}</span>
+          <span class="customer-phone">{{ po.customerPhoneMasked }}</span>
+        </div>
+
+        <div class="slot-callout">
+          <span class="callout-icon">⏰</span>
+          <span class="callout-text">
+            Pickup Date: <strong>{{ po.scheduledFulfillmentDate }}</strong> | Slot: <strong>{{ po.scheduledTimeSlot }}</strong>
+          </span>
+        </div>
+
+        @if (po.batchName) {
+          <div class="batch-callout">
+            <span class="batch-icon">🏷️</span>
+            <span class="batch-text">Batch: {{ po.batchName }}</span>
+          </div>
+        }
+
+        <!-- Items list -->
+        <div class="items-list">
+          @for (item of po.items; track item.name) {
+            <div class="item-row">
+              <span class="item-name">{{ item.quantity }}x {{ item.name }}</span>
+              <span class="item-price">{{ formatPrice(item.unitPricePaise * item.quantity) }}</span>
+            </div>
+          }
+        </div>
+
+        @if (po.specialInstructions) {
+          <div class="instructions-box">
+            <strong>Note:</strong> {{ po.specialInstructions }}
+          </div>
+        }
+
+        <div class="order-footer">
+          <div class="total-group">
+            <span class="total-label">Total Amount:</span>
+            <span class="total-val">{{ formatPrice(po.totalAmountPaise) }}</span>
+          </div>
+
+          <button 
+            type="button" 
+            class="btn-action" 
+            [disabled]="po.status === 'COLLECTED'"
+            (click)="store.advancePreorderStatus(po.orderId)">
+            {{ getActionLabel(po.status) }} →
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">No pre-orders found for the selected criteria.</div>
+    }
+  </div>
+</div>

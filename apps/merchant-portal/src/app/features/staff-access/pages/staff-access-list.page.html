@@ -1,0 +1,254 @@
+<div class="staff-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Access Control & Security</span>
+        <span class="badge badge-info">Multi-Staff Shared POS</span>
+      </div>
+      <h1>Staff Directory & Outlet Roles</h1>
+      <p class="subtitle">
+        Assign permissions (Manager, Chef, Cashier) and manage 4-digit PINs for quick shift handovers on shared counter tablets.
+      </p>
+    </div>
+    <div class="header-actions">
+      <!-- Active staff switcher pill -->
+      <button type="button" class="btn-active-staff" (click)="openPinModal()">
+        <span class="active-dot"></span>
+        <span class="staff-info">
+          Unlocked as: <strong>{{ store.activeStaffOnDevice().name }}</strong> ({{ store.activeStaffOnDevice().role }})
+        </span>
+        <span class="switch-badge">Switch User (PIN) ⚡</span>
+      </button>
+
+      <nukkad-button variant="primary" (buttonClick)="openInviteModal()">
+        + Invite Team Member
+      </nukkad-button>
+    </div>
+  </header>
+
+  <!-- Metric Banner -->
+  <div class="metric-banner">
+    <div class="metric-card">
+      <span class="card-label">Active Team Members</span>
+      <span class="card-val">{{ store.totalActiveStaff() }} Staff</span>
+      <span class="card-sub">Authorized on store outlets</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Shared Tablet Mode</span>
+      <span class="card-val text-green">SECURE PIN LOCK</span>
+      <span class="card-sub">Fast switch without full OTP re-login</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Protected Permissions</span>
+      <span class="card-val text-purple">8 Granular Policies</span>
+      <span class="card-sub">Orders, Pricing, Stock & Invoices</span>
+    </div>
+  </div>
+
+  <!-- Role Permission Matrix Info Box -->
+  <div class="permission-matrix-card">
+    <h3 class="matrix-title">Role Permission Breakdown</h3>
+    <div class="matrix-grid">
+      <div class="role-desc-card">
+        <span class="role-badge role-owner">OWNER</span>
+        <p>Full unrestricted control. Manages payouts, bank details, subscriptions, invoices, and staff invites.</p>
+      </div>
+      <div class="role-desc-card">
+        <span class="role-badge role-manager">OUTLET MANAGER</span>
+        <p>Runs outlet day-to-day. Manages catalogue pricing, pause/open schedules, stock levels, and refunds.</p>
+      </div>
+      <div class="role-desc-card">
+        <span class="role-badge role-chef">KITCHEN / CHEF</span>
+        <p>Focuses on food prep. Can accept orders, view kitchen notes, update prep status to Ready, and report stock-outs.</p>
+      </div>
+      <div class="role-desc-card">
+        <span class="role-badge role-cashier">CASHIER</span>
+        <p>POS counter billing. Creates walk-in orders, accepts cash/UPI payments, prints thermal tokens, and hands over parcels.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff Members Table -->
+  <div class="table-container">
+    <table class="staff-table">
+      <thead>
+        <tr>
+          <th>Team Member</th>
+          <th>Role</th>
+          <th>Assigned Outlets</th>
+          <th>4-Digit POS PIN</th>
+          <th>Status</th>
+          <th>Last Active</th>
+          <th class="th-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (staff of store.staffList(); track staff.id) {
+          <tr [class.is-suspended]="staff.status === 'SUSPENDED'">
+            <td>
+              <div class="user-meta">
+                <span class="user-name">{{ staff.name }}</span>
+                <span class="user-phone">{{ staff.phoneMasked }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="role-badge" [ngClass]="getRoleBadgeClass(staff.role)">
+                {{ staff.role }}
+              </span>
+            </td>
+            <td>
+              <div class="outlet-badges">
+                @for (outlet of staff.assignedOutlets; track outlet) {
+                  <span class="outlet-pill">{{ outlet }}</span>
+                }
+              </div>
+            </td>
+            <td>
+              <div class="pin-cell">
+                <span class="pin-digits">
+                  {{ revealedPins[staff.id] ? staff.pin : '••••' }}
+                </span>
+                <button 
+                  type="button" 
+                  class="btn-pin-peek" 
+                  (click)="toggleRevealPin(staff.id)">
+                  {{ revealedPins[staff.id] ? 'Hide' : 'Show' }}
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-pin-reset" 
+                  (click)="store.resetPin(staff.id)">
+                  Reset
+                </button>
+              </div>
+            </td>
+            <td>
+              <span class="status-pill" [class.active]="staff.status === 'ACTIVE'" [class.suspended]="staff.status === 'SUSPENDED'">
+                {{ staff.status }}
+              </span>
+            </td>
+            <td>
+              <span class="time-text">{{ staff.lastActiveAt }}</span>
+            </td>
+            <td class="td-actions">
+              @if (staff.role !== 'OWNER') {
+                <button 
+                  type="button" 
+                  class="btn-table-action" 
+                  (click)="store.toggleSuspend(staff.id)">
+                  {{ staff.status === 'ACTIVE' ? 'Suspend' : 'Reactivate' }}
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-table-action text-red" 
+                  (click)="store.removeStaff(staff.id)">
+                  Revoke
+                </button>
+              } @else {
+                <span class="owner-immutable">Owner Account</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Quick 4-Digit PIN Switcher Modal -->
+<nukkad-dialog 
+  [isOpen]="showPinModal" 
+  title="Fast Staff Switch (Enter 4-Digit PIN)"
+  (closed)="showPinModal = false">
+  <div class="pin-modal-content">
+    <p class="pin-intro">
+      Shared tablet counter mode: Enter your 4-digit PIN to switch operator instantly without logging out.
+    </p>
+
+    <!-- PIN Display Dots -->
+    <div class="pin-display">
+      <div class="pin-dot" [class.filled]="enteredPin.length >= 1"></div>
+      <div class="pin-dot" [class.filled]="enteredPin.length >= 2"></div>
+      <div class="pin-dot" [class.filled]="enteredPin.length >= 3"></div>
+      <div class="pin-dot" [class.filled]="enteredPin.length >= 4"></div>
+    </div>
+
+    @if (store.pinError(); as err) {
+      <div class="pin-error-alert">{{ err }}</div>
+    }
+
+    <!-- Keypad -->
+    <div class="pin-keypad">
+      @for (d of ['1','2','3','4','5','6','7','8','9','C','0','✓']; track d) {
+        <button 
+          type="button" 
+          class="key-btn" 
+          [class.key-clear]="d === 'C'"
+          [class.key-submit]="d === '✓'"
+          (click)="d === 'C' ? clearPin() : (d === '✓' ? submitPin() : appendPinDigit(d))">
+          {{ d }}
+        </button>
+      }
+    </div>
+
+    <!-- Demo PIN Cheat Sheet -->
+    <div class="pin-demo-hint">
+      <strong>Dev/Demo PINs:</strong> Owner (<code>1111</code>) • Manager (<code>2222</code>) • Chef (<code>3333</code>) • Cashier (<code>4444</code>)
+    </div>
+  </div>
+</nukkad-dialog>
+
+<!-- Invite Staff Modal -->
+<nukkad-dialog 
+  [isOpen]="showInviteModal" 
+  title="Invite Team Member"
+  (closed)="showInviteModal = false">
+  <div class="modal-form">
+    <div class="form-field">
+      <label class="form-label" for="staffFullName">Full Name</label>
+      <input 
+        id="staffFullName"
+        type="text" 
+        class="form-input" 
+        [(ngModel)]="newStaffName" 
+        placeholder="e.g. Rajesh Khurana" />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="staffPhoneNum">Indian Mobile Number</label>
+      <div class="phone-input-row">
+        <span class="phone-prefix">+91</span>
+        <input 
+          id="staffPhoneNum"
+          type="tel" 
+          maxlength="10" 
+          class="form-input" 
+          [(ngModel)]="newStaffPhone" 
+          placeholder="9823012345" />
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="staffRoleSelect">Role & Responsibilities</label>
+      <select id="staffRoleSelect" class="form-input" [(ngModel)]="newStaffRole">
+        <option value="OUTLET_MANAGER">Outlet Manager (Full Store Operations)</option>
+        <option value="CHEF">Kitchen / Chef (Order Prep & Stock Reporting)</option>
+        <option value="CASHIER">Cashier (Walk-in Counter POS Billing)</option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">Assign to Outlets</label>
+      <label class="checkbox-row">
+        <input type="checkbox" checked disabled />
+        <span>Dharampeth Main Store</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="modal-footer-actions" slot="footer">
+    <button type="button" class="btn-secondary" (click)="showInviteModal = false">Cancel</button>
+    <nukkad-button variant="primary" (buttonClick)="sendInvite()">Send SMS Invitation</nukkad-button>
+  </div>
+</nukkad-dialog>

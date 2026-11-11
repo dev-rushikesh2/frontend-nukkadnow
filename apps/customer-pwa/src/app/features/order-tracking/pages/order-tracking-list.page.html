@@ -1,0 +1,10 @@
+﻿<div class="order-tracking-container">
+  <h2>OrderTracking</h2>
+  @if (store.loading()) {
+    <p>Loading...</p>
+  } @else {
+    @for (item of store.items(); track item.id) {
+      <app-order-tracking-card [item]="item"></app-order-tracking-card>
+    }
+  }
+</div>

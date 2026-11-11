@@ -1,0 +1,14 @@
+﻿<div class="merchant-queue-board-container">
+  <div class="header-row">
+    <h2>QueueBoard Management</h2>
+  </div>
+  @if (store.loading()) {
+    <p>Loading records...</p>
+  } @else {
+    <div class="cards-grid">
+      @for (item of store.items(); track item.id) {
+        <merchant-queue-board-card [item]="item"></merchant-queue-board-card>
+      }
+    </div>
+  }
+</div>

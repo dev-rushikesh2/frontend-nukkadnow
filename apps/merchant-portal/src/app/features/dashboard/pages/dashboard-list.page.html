@@ -1,0 +1,140 @@
+<div class="dashboard-page">
+  <!-- Header -->
+  <header class="dash-header">
+    <div class="header-left">
+      <div class="badge-row">
+        <span class="badge badge-accent">Operational Pulse</span>
+        <span class="badge badge-live">● Live Storefront</span>
+      </div>
+      <h1>Today's Merchant Operations</h1>
+      <p class="subtitle">Dharampeth Main Store • Real-time overview of orders, kitchen capacity, and billing.</p>
+    </div>
+    <div class="header-right">
+      <button type="button" class="btn-sound-check" (click)="playAlertSound()">
+        🔊 Test Kitchen Chime
+      </button>
+      <a routerLink="/walkin-orders" class="btn-pos">
+        ⚡ Rapid Walk-in POS
+      </a>
+    </div>
+  </header>
+
+  <!-- Urgent Action Callout (if pending orders exist) -->
+  @if (store.kpis().pendingActionOrders > 0) {
+    <div class="action-callout">
+      <div class="callout-content">
+        <span class="callout-icon">🚨</span>
+        <div>
+          <strong class="callout-title">{{ store.kpis().pendingActionOrders }} New Orders Awaiting Acceptance!</strong>
+          <p class="callout-desc">Accept orders immediately to start the preparation timer and keep customer pickup slots on schedule.</p>
+        </div>
+      </div>
+      <a routerLink="/order-inbox" class="btn-action-inbox">
+        Open Order Inbox ({{ store.kpis().pendingActionOrders }}) →
+      </a>
+    </div>
+  }
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid">
+    <div class="kpi-card highlight-green">
+      <span class="kpi-label">Today's Reconciled Sales</span>
+      <span class="kpi-val text-green">{{ formatPrice(store.kpis().todaysNetPayoutPaise) }}</span>
+      <span class="kpi-sub">Gross: {{ formatPrice(store.kpis().todaysGrossSalesPaise) }} ({{ store.kpis().ordersToday }} orders)</span>
+    </div>
+
+    <div class="kpi-card">
+      <span class="kpi-label">Kitchen Status</span>
+      <span class="kpi-val">
+        <span class="badge-prep">{{ store.kpis().inPrepOrders }} Preparing</span>
+        <span class="badge-ready">{{ store.kpis().readyOrders }} Ready</span>
+      </span>
+      <span class="kpi-sub">
+        <a routerLink="/queue-board" class="link-kds">View Kitchen Board →</a>
+      </span>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label-row">
+        <span class="kpi-label">Next Slot Capacity</span>
+        <span class="slot-time-badge">{{ store.kpis().nextSlotTime }}</span>
+      </div>
+      <span class="kpi-val">{{ store.kpis().nextSlotBookedCount }} / {{ store.kpis().nextSlotCapacity }}</span>
+      <div class="mini-bar">
+        <div class="mini-bar-fill" [style.width.%]="(store.kpis().nextSlotBookedCount / store.kpis().nextSlotCapacity) * 100"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card" [class.warn-card]="store.kpis().lowStockCount > 0">
+      <span class="kpi-label">Low Stock Alerts</span>
+      <span class="kpi-val text-orange">{{ store.kpis().lowStockCount }} Items</span>
+      <span class="kpi-sub">
+        <a routerLink="/inventory" class="link-inv">Update stock in 1 tap →</a>
+      </span>
+    </div>
+  </div>
+
+  <!-- Operational Shortcuts & Live Activity -->
+  <div class="split-section">
+    <!-- Quick Operation Shortcuts -->
+    <div class="card shortcuts-card">
+      <h2 class="card-title">Quick Operational Actions</h2>
+      <div class="shortcuts-grid">
+        <a routerLink="/walkin-orders" class="shortcut-btn">
+          <span class="sc-icon">🧾</span>
+          <span class="sc-label">Counter Billing</span>
+          <span class="sc-hint">&lt; 5s Walk-in POS</span>
+        </a>
+
+        <a routerLink="/order-inbox" class="shortcut-btn">
+          <span class="sc-icon">🔔</span>
+          <span class="sc-label">Order Inbox</span>
+          <span class="sc-hint">Accept, Prep, Ready</span>
+        </a>
+
+        <a routerLink="/queue-board" class="shortcut-btn">
+          <span class="sc-icon">📋</span>
+          <span class="sc-label">Kitchen Display</span>
+          <span class="sc-hint">Full-screen KDS</span>
+        </a>
+
+        <a routerLink="/pickup-slots" class="shortcut-btn">
+          <span class="sc-icon">⏱️</span>
+          <span class="sc-label">Pickup Slots</span>
+          <span class="sc-hint">Pause / Unblock Slots</span>
+        </a>
+
+        <a routerLink="/qr-ordering" class="shortcut-btn">
+          <span class="sc-icon">📱</span>
+          <span class="sc-label">Standee QR</span>
+          <span class="sc-hint">Print Table Tent Cards</span>
+        </a>
+
+        <a routerLink="/batches" class="shortcut-btn">
+          <span class="sc-icon">🥖</span>
+          <span class="sc-label">Fresh Batches</span>
+          <span class="sc-hint">Scheduled Pre-orders</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Live Activity Feed -->
+    <div class="card activity-card">
+      <div class="card-head">
+        <h2 class="card-title">Live Store Activity</h2>
+        <span class="pulse-indicator">● Updated live</span>
+      </div>
+      <div class="activity-list">
+        @for (act of store.activities(); track act.id) {
+          <div class="activity-item">
+            <span class="act-dot" [ngClass]="act.type.toLowerCase()"></span>
+            <div class="act-details">
+              <span class="act-title">{{ act.title }}</span>
+              <span class="act-time">{{ act.time }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

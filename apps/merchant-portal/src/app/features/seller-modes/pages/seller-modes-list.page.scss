@@ -1,0 +1,15 @@
+﻿.merchant-seller-modes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}

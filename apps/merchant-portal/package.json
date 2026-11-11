@@ -1,0 +1,24 @@
+﻿{
+  "name": "@nukkadnow/merchant-portal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "ng serve --project=merchant-portal --port=4201",
+    "build": "ng build merchant-portal",
+    "test": "ng test merchant-portal",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@angular/common": "^18.2.11",
+    "@angular/core": "^18.2.11",
+    "@angular/forms": "^18.2.11",
+    "@angular/router": "^18.2.11",
+    "@nukkadnow/ui": "workspace:*",
+    "@nukkadnow/api-client": "workspace:*",
+    "@nukkadnow/auth-client": "workspace:*",
+    "@nukkadnow/domain-models": "workspace:*",
+    "@nukkadnow/utilities": "workspace:*",
+    "@nukkadnow/i18n": "workspace:*",
+    "rxjs": "^7.8.1"
+  }
+}

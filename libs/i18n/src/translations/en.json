@@ -1,0 +1,9 @@
+﻿{
+  "common": {
+    "appName": "NukkadNow",
+    "tagline": "Your Local Market at Your Fingertips",
+    "searchPlaceholder": "Search nearby shops or items...",
+    "pickup": "Pickup",
+    "delivery": "Delivery"
+  }
+}

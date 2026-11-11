@@ -1,0 +1,48 @@
+﻿<div class="outlets-page">
+  <div class="header-row">
+    <div>
+      <h2>Store Outlets & Branches</h2>
+      <p class="subtitle">Manage physical branches, active status, and weekly operating hours.</p>
+    </div>
+  </div>
+
+  <div class="outlets-grid">
+    @for (outlet of store.outlets(); track outlet.id) {
+      <div class="outlet-card" [class.outlet-card--active]="outlet.id === store.activeOutletId()">
+        <div class="card-header">
+          <div>
+            <h3>{{ outlet.name }}</h3>
+            <span class="locality">{{ outlet.locality }}, Nagpur - {{ outlet.pincode }}</span>
+          </div>
+          @if (outlet.id === store.activeOutletId()) {
+            <ui-badge tone="brand">Active Workspace</ui-badge>
+          }
+        </div>
+
+        <p class="address">{{ outlet.address }}</p>
+
+        <div class="metrics-row">
+          <div class="metric">
+            <span class="label">Status:</span>
+            <strong [class]="'status-' + outlet.status.toLowerCase()">{{ outlet.status }}</strong>
+          </div>
+          <div class="metric">
+            <span class="label">Live Orders:</span>
+            <strong>{{ outlet.activeOrdersCount }} active</strong>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          @if (outlet.id !== store.activeOutletId()) {
+            <ui-button variant="outline" size="sm" (clicked)="store.selectOutlet(outlet.id)">
+              Switch to this Outlet
+            </ui-button>
+          }
+          <ui-button variant="secondary" size="sm" (clicked)="openSchedule(outlet)">
+            Operating Hours & Calendar
+          </ui-button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,24 @@
+name: Frontend Security & Audit
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - name: Dependency Vulnerability Audit
+        run: pnpm audit --prod --audit-level=high

@@ -1,0 +1,292 @@
+<div class="capacity-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Operations & Fulfillment</span>
+        @if (store.saveSuccess()) {
+          <span class="badge badge-success">✓ Settings Saved & Active</span>
+        }
+      </div>
+      <h1>Fulfillment Capacity & Throttling</h1>
+      <p class="subtitle">
+        Control pickup slot intervals, concurrent kitchen limits, and automated overbooking guards.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button 
+        type="button" 
+        class="btn-secondary" 
+        (click)="store.resetDefaults()">
+        Reset Defaults
+      </button>
+      <nukkad-button 
+        variant="primary" 
+        [loading]="store.isSaving()" 
+        [disabled]="!store.dirty()"
+        (buttonClick)="store.saveSettings()">
+        Save Changes
+      </nukkad-button>
+    </div>
+  </header>
+
+  <!-- Metric Banner -->
+  <div class="metric-banner">
+    <div class="metric-card">
+      <span class="metric-label">Estimated Daily Slot Capacity</span>
+      <span class="metric-val">{{ store.totalDailyCapacityEstimate() }} orders</span>
+      <span class="metric-sub">Based on operational hours & interval rules</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Max Active Kitchen Rush</span>
+      <span class="metric-val">{{ store.config().maxConcurrentActiveOrders }} orders</span>
+      <span class="metric-sub">Peak concurrent orders in PREPARING</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Slot Duration</span>
+      <span class="metric-val">{{ store.config().slotIntervalMinutes }} mins</span>
+      <span class="metric-sub">Pickup customer reservation window</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Auto-Throttling Guard</span>
+      <span class="metric-val status-val" [class.active]="store.config().autoPauseOnFullCapacity">
+        {{ store.config().autoPauseOnFullCapacity ? 'ACTIVE' : 'OFF' }}
+      </span>
+      <span class="metric-sub">Automated slot shift on overload</span>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+    <!-- Left Column: Slot Intervals & Capacity Sliders -->
+    <section class="settings-card">
+      <h2 class="card-title">Pickup Slot Frequency</h2>
+      <p class="card-desc">Select customer pickup scheduling window frequency.</p>
+
+      <div class="interval-selector">
+        <button 
+          type="button"
+          class="interval-pill" 
+          [class.selected]="store.config().slotIntervalMinutes === 15"
+          (click)="onIntervalChange(15)">
+          <span class="pill-title">15 Minutes</span>
+          <span class="pill-desc">Fast-food, Chai, Quick Snacks</span>
+        </button>
+
+        <button 
+          type="button"
+          class="interval-pill" 
+          [class.selected]="store.config().slotIntervalMinutes === 30"
+          (click)="onIntervalChange(30)">
+          <span class="pill-title">30 Minutes</span>
+          <span class="pill-desc">Standard Bakery, Fresh Meals</span>
+        </button>
+
+        <button 
+          type="button"
+          class="interval-pill" 
+          [class.selected]="store.config().slotIntervalMinutes === 45"
+          (click)="onIntervalChange(45)">
+          <span class="pill-title">45 Minutes</span>
+          <span class="pill-desc">Catering, Special Platters</span>
+        </button>
+
+        <button 
+          type="button"
+          class="interval-pill" 
+          [class.selected]="store.config().slotIntervalMinutes === 60"
+          (click)="onIntervalChange(60)">
+          <span class="pill-title">60 Minutes</span>
+          <span class="pill-desc">Made-to-order Artisan Cakes</span>
+        </button>
+      </div>
+
+      <hr class="card-divider" />
+
+      <!-- Max Orders Slider -->
+      <div class="form-group">
+        <div class="slider-header">
+          <label class="form-label" for="maxOrders">Orders Per Interval Window</label>
+          <span class="slider-val">{{ store.config().maxOrdersPerSlot }} orders</span>
+        </div>
+        <input 
+          id="maxOrders"
+          type="range" 
+          min="1" 
+          max="50" 
+          step="1"
+          [value]="store.config().maxOrdersPerSlot"
+          (input)="onMaxOrdersChange($event)"
+          class="range-slider" />
+        <span class="form-hint">Maximum marketplace orders allowed in any {{ store.config().slotIntervalMinutes }}-minute slot.</span>
+      </div>
+
+      <!-- Max Concurrent Kitchen Active Orders -->
+      <div class="form-group">
+        <div class="slider-header">
+          <label class="form-label" for="concurrentOrders">Max Concurrent Kitchen Orders</label>
+          <span class="slider-val">{{ store.config().maxConcurrentActiveOrders }} orders</span>
+        </div>
+        <input 
+          id="concurrentOrders"
+          type="range" 
+          min="2" 
+          max="40" 
+          step="1"
+          [value]="store.config().maxConcurrentActiveOrders"
+          (input)="onMaxConcurrentChange($event)"
+          class="range-slider" />
+        <span class="form-hint">Kitchen throttle limit. When active orders reach this number, new marketplace orders receive +10m prep estimate.</span>
+      </div>
+
+      <!-- Buffer time -->
+      <div class="form-group">
+        <div class="slider-header">
+          <label class="form-label" for="bufferTime">Safety Buffer Between Slots</label>
+          <span class="slider-val">{{ store.config().bufferMinutes }} mins</span>
+        </div>
+        <input 
+          id="bufferTime"
+          type="range" 
+          min="0" 
+          max="20" 
+          step="5"
+          [value]="store.config().bufferMinutes"
+          (input)="onBufferChange($event)"
+          class="range-slider" />
+        <span class="form-hint">Unbooked buffer to absorb kitchen delays and customer walk-ins.</span>
+      </div>
+    </section>
+
+    <!-- Right Column: Lead Time, Overbooking Guard & Blackout Windows -->
+    <section class="settings-card">
+      <h2 class="card-title">Fulfillment Guardrails</h2>
+      <p class="card-desc">Automated rules to protect kitchen staff from overwhelm.</p>
+
+      <!-- Auto pause toggle -->
+      <div class="toggle-row" (click)="store.toggleAutoPause()">
+        <div class="toggle-text">
+          <span class="toggle-title">Auto-Shift When Slot is Full</span>
+          <span class="toggle-desc">Automatically nudge buyers to the next available slot when a time slot hits capacity.</span>
+        </div>
+        <input 
+          type="checkbox" 
+          class="native-toggle" 
+          [checked]="store.config().autoPauseOnFullCapacity" 
+          tabindex="-1" />
+      </div>
+
+      <!-- Walk-in slot bypass -->
+      <div class="toggle-row" (click)="store.toggleWalkinBypass()">
+        <div class="toggle-text">
+          <span class="toggle-title">Allow Walk-in Counter Bypass</span>
+          <span class="toggle-desc">Staff counter POS can take immediate walk-in orders even if online slots are fully booked.</span>
+        </div>
+        <input 
+          type="checkbox" 
+          class="native-toggle" 
+          [checked]="store.config().allowWalkinSlotBypass" 
+          tabindex="-1" />
+      </div>
+
+      <!-- Advance Lead Time -->
+      <div class="form-group">
+        <div class="slider-header">
+          <label class="form-label" for="leadTime">Minimum Pre-order Advance Notice</label>
+          <span class="slider-val">{{ store.config().leadTimeAdvanceMinutes }} mins</span>
+        </div>
+        <input 
+          id="leadTime"
+          type="range" 
+          min="5" 
+          max="90" 
+          step="5"
+          [value]="store.config().leadTimeAdvanceMinutes"
+          (input)="onLeadTimeChange($event)"
+          class="range-slider" />
+        <span class="form-hint">Customers cannot place instant pickup orders with less than {{ store.config().leadTimeAdvanceMinutes }} minutes prep time.</span>
+      </div>
+
+      <hr class="card-divider" />
+
+      <!-- Blackout Windows Section -->
+      <div class="blackout-section">
+        <div class="blackout-header">
+          <div>
+            <h3 class="blackout-title">Scheduled Blackout Windows</h3>
+            <p class="form-hint">Times when pickup slots are blocked (e.g. afternoon cleaning, restock).</p>
+          </div>
+          <button type="button" class="btn-sm btn-outline" (click)="openAddBlackoutModal()">
+            + Add Window
+          </button>
+        </div>
+
+        <div class="blackout-list">
+          @for (bw of store.config().blackoutWindows; track bw.id) {
+            <div class="blackout-item" [class.inactive]="!bw.isActive">
+              <div class="blackout-info">
+                <span class="blackout-name">{{ bw.name }}</span>
+                <span class="blackout-time">{{ bw.startTime }} – {{ bw.endTime }} (Every day)</span>
+              </div>
+              <div class="blackout-actions">
+                <button 
+                  type="button" 
+                  class="btn-text" 
+                  (click)="store.toggleBlackoutWindow(bw.id)">
+                  {{ bw.isActive ? 'Active' : 'Paused' }}
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-text-danger" 
+                  (click)="store.removeBlackoutWindow(bw.id)">
+                  Remove
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-blackouts">No blackout windows configured. Slots open throughout operating hours.</div>
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Add Blackout Modal -->
+<nukkad-dialog 
+  [isOpen]="showAddBlackoutModal" 
+  title="Add Blackout Window"
+  (closed)="showAddBlackoutModal = false">
+  <div class="modal-body">
+    <div class="modal-field">
+      <label class="form-label" for="blackoutName">Window Name</label>
+      <input 
+        id="blackoutName"
+        type="text" 
+        class="form-input" 
+        [(ngModel)]="newBlackoutName" 
+        placeholder="e.g. Afternoon Cleaning or Prayer Break" />
+    </div>
+    <div class="time-range-row">
+      <div class="modal-field">
+        <label class="form-label" for="blackoutStart">Start Time</label>
+        <input 
+          id="blackoutStart"
+          type="time" 
+          class="form-input" 
+          [(ngModel)]="newBlackoutStart" />
+      </div>
+      <div class="modal-field">
+        <label class="form-label" for="blackoutEnd">End Time</label>
+        <input 
+          id="blackoutEnd"
+          type="time" 
+          class="form-input" 
+          [(ngModel)]="newBlackoutEnd" />
+      </div>
+    </div>
+  </div>
+  <div class="modal-actions" slot="footer">
+    <button type="button" class="btn-secondary" (click)="showAddBlackoutModal = false">Cancel</button>
+    <nukkad-button variant="primary" (buttonClick)="saveNewBlackout()">Add Window</nukkad-button>
+  </div>
+</nukkad-dialog>

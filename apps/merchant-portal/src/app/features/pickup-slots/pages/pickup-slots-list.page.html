@@ -1,0 +1,177 @@
+<div class="slots-page">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Live Store Operations</span>
+        <span class="badge badge-info">Authoritative Server Reservations</span>
+      </div>
+      <h1>Pickup Slots & Schedule Grid</h1>
+      <p class="subtitle">
+        Monitor real-time customer pickup bookings per interval. Pause, throttle, or add emergency slot capacity.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button 
+        type="button" 
+        class="btn-emergency" 
+        (click)="store.blockAllRemaining()">
+        ⚠️ Emergency Block All
+      </button>
+      <button 
+        type="button" 
+        class="btn-secondary" 
+        (click)="store.unblockAll()">
+        Resume All Slots
+      </button>
+    </div>
+  </header>
+
+  <!-- Date Switcher Tabs -->
+  <div class="date-tabs">
+    @for (d of dates; track d.value) {
+      <button 
+        type="button" 
+        class="date-tab" 
+        [class.active]="store.selectedDate() === d.value"
+        (click)="selectDate(d.value)">
+        {{ d.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Realtime Summary Banner -->
+  <div class="summary-banner">
+    <div class="summary-card">
+      <span class="card-label">Booked Orders</span>
+      <span class="card-val">{{ store.summary().totalOrdersBooked }}</span>
+      <span class="card-sub">Active reservations today</span>
+    </div>
+    <div class="summary-card">
+      <span class="card-label">Available Slots</span>
+      <span class="card-val text-green">{{ store.summary().availableSlots }}</span>
+      <span class="card-sub">Accepting orders</span>
+    </div>
+    <div class="summary-card">
+      <span class="card-label">Full / Sold Out Slots</span>
+      <span class="card-val text-orange">{{ store.summary().fullSlots }}</span>
+      <span class="card-sub">100% capacity reached</span>
+    </div>
+    <div class="summary-card">
+      <span class="card-label">Blocked by Merchant</span>
+      <span class="card-val text-red">{{ store.summary().blockedSlots }}</span>
+      <span class="card-sub">Paused or blacked out</span>
+    </div>
+    <div class="summary-card">
+      <span class="card-label">Capacity Utilization</span>
+      <span class="card-val">{{ store.summary().utilizationRate }}%</span>
+      <div class="mini-progress-bar">
+        <div class="mini-progress-fill" [style.width.%]="store.summary().utilizationRate"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Pills -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filterStatus() === 'ALL'"
+      (click)="setFilter('ALL')">
+      All Slots ({{ store.slots().length }})
+    </button>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filterStatus() === 'AVAILABLE'"
+      (click)="setFilter('AVAILABLE')">
+      Open ({{ store.summary().availableSlots }})
+    </button>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filterStatus() === 'FULL'"
+      (click)="setFilter('FULL')">
+      Sold Out ({{ store.summary().fullSlots }})
+    </button>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filterStatus() === 'BLOCKED'"
+      (click)="setFilter('BLOCKED')">
+      Blocked ({{ store.summary().blockedSlots }})
+    </button>
+  </div>
+
+  <!-- Slots Grid -->
+  <div class="slots-grid">
+    @for (slot of store.filteredSlots(); track slot.id) {
+      <div class="slot-card" [class.is-blocked]="slot.isBlocked" [class.is-full]="slot.status === 'FULL'">
+        <div class="slot-header">
+          <span class="slot-time">{{ slot.startTime }} – {{ slot.endTime }}</span>
+          <span class="status-badge" [ngClass]="getSlotStatusClass(slot.status)">
+            {{ slot.status }}
+          </span>
+        </div>
+
+        <div class="slot-body">
+          <div class="capacity-row">
+            <span class="cap-text">
+              <strong>{{ slot.bookedCount }}</strong> / {{ slot.maxCapacity }} orders
+            </span>
+            <span class="cap-pct">
+              {{ getSlotProgressWidth(slot.bookedCount, slot.maxCapacity) }}%
+            </span>
+          </div>
+
+          <div class="capacity-meter">
+            <div 
+              class="meter-fill" 
+              [ngClass]="getSlotStatusClass(slot.status)"
+              [style.width.%]="getSlotProgressWidth(slot.bookedCount, slot.maxCapacity)">
+            </div>
+          </div>
+
+          @if (slot.activeOrderIds.length > 0) {
+            <div class="active-orders-hint">
+              Orders: {{ slot.activeOrderIds.join(', ') }}
+            </div>
+          } @else {
+            <div class="active-orders-hint empty">No orders booked yet</div>
+          }
+        </div>
+
+        <div class="slot-footer">
+          <div class="stepper">
+            <button 
+              type="button" 
+              class="btn-step" 
+              [disabled]="slot.isBlocked || slot.maxCapacity <= slot.bookedCount"
+              (click)="adjustCap(slot.id, -1)">
+              -
+            </button>
+            <span class="step-label">Cap: {{ slot.maxCapacity }}</span>
+            <button 
+              type="button" 
+              class="btn-step" 
+              [disabled]="slot.isBlocked"
+              (click)="adjustCap(slot.id, 1)">
+              +
+            </button>
+          </div>
+
+          <button 
+            type="button" 
+            class="btn-slot-toggle" 
+            [class.unblock]="slot.isBlocked"
+            (click)="toggleBlock(slot.id)">
+            {{ slot.isBlocked ? 'Unblock' : 'Block Slot' }}
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-slots">No slots match the selected filter.</div>
+    }
+  </div>
+</div>

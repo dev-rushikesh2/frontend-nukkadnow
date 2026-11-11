@@ -1,0 +1,10 @@
+﻿<div class="authentication-container">
+  <h2>Authentication</h2>
+  @if (store.loading()) {
+    <p>Loading...</p>
+  } @else {
+    @for (item of store.items(); track item.id) {
+      <app-authentication-card [item]="item"></app-authentication-card>
+    }
+  }
+</div>

@@ -1,0 +1,240 @@
+<div class="qr-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Storefront Marketing</span>
+        <span class="badge badge-success">Zero Queue Friction</span>
+      </div>
+      <h1>Storefront Standee & QR Ordering</h1>
+      <p class="subtitle">
+        Generate print-ready table tents and counter standees. Walk-in customers scan, browse menu, and pay directly.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-secondary" (click)="openBatchModal()">
+        + Generate Table Batch
+      </button>
+      <nukkad-button variant="primary" (buttonClick)="openCreateModal()">
+        + Custom Standee QR
+      </nukkad-button>
+    </div>
+  </header>
+
+  <!-- Metric Banner -->
+  <div class="metric-banner">
+    <div class="metric-card">
+      <span class="card-label">Active Standees</span>
+      <span class="card-val">{{ store.standees().length }}</span>
+      <span class="card-sub">Deployed across tables & counter</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Total Scans (All-time)</span>
+      <span class="card-val text-blue">{{ store.totalScans() }} scans</span>
+      <span class="card-sub">Customer camera engagements</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Direct QR Orders</span>
+      <span class="card-val text-green">{{ store.totalQrOrders() }} orders</span>
+      <span class="card-sub">Placed without waiting in queue</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Storefront Link</span>
+      <span class="card-val text-orange">nukkadnow.in/m/{{ store.merchantSlug() }}</span>
+      <span class="card-sub">Direct marketplace PWA entry</span>
+    </div>
+  </div>
+
+  <!-- Standees List -->
+  <div class="section-container">
+    <h2 class="section-title">Counter & Storefront QRs</h2>
+    <div class="standees-grid">
+      @for (st of store.counterStandees(); track st.id) {
+        <div class="standee-card">
+          <div class="qr-preview-box" [innerHTML]="sanitizeSvg(st.qrSvgDataUri)"></div>
+          <div class="card-details">
+            <div class="details-top">
+              <span class="standee-title">{{ st.label }}</span>
+              <span class="badge-tag">{{ st.sourceTag }}</span>
+            </div>
+            <span class="target-url">{{ st.targetUrl }}</span>
+
+            <div class="stats-row">
+              <span class="stat-pill"><strong>{{ st.scanCount }}</strong> Scans</span>
+              <span class="stat-pill"><strong>{{ st.orderCount }}</strong> Orders</span>
+              <span class="stat-time">Last: {{ st.lastScannedAt }}</span>
+            </div>
+
+            <div class="card-actions">
+              <button 
+                type="button" 
+                class="btn-sm btn-print" 
+                (click)="openPrintPreview(st)">
+                🖨️ Print Standee A5
+              </button>
+              <button 
+                type="button" 
+                class="btn-sm btn-outline" 
+                (click)="store.toggleActive(st.id)">
+                {{ st.isActive ? 'Active' : 'Paused' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Tables Section -->
+  <div class="section-container">
+    <div class="tables-header">
+      <h2 class="section-title">Dine-in Table Tent Cards ({{ store.tableStandees().length }})</h2>
+      <button type="button" class="btn-sm btn-outline" (click)="openBatchModal()">+ Add More Tables</button>
+    </div>
+
+    <div class="standees-grid">
+      @for (st of store.tableStandees(); track st.id) {
+        <div class="standee-card table-variant">
+          <div class="qr-preview-box" [innerHTML]="sanitizeSvg(st.qrSvgDataUri)"></div>
+          <div class="card-details">
+            <div class="details-top">
+              <span class="table-badge">TABLE {{ st.tableNumber }}</span>
+              <span class="standee-title">{{ st.label }}</span>
+            </div>
+            <span class="target-url">{{ st.targetUrl }}</span>
+
+            <div class="stats-row">
+              <span class="stat-pill"><strong>{{ st.scanCount }}</strong> Scans</span>
+              <span class="stat-pill"><strong>{{ st.orderCount }}</strong> Orders</span>
+            </div>
+
+            <div class="card-actions">
+              <button 
+                type="button" 
+                class="btn-sm btn-print" 
+                (click)="openPrintPreview(st)">
+                🖨️ Print Tent Card
+              </button>
+              <button 
+                type="button" 
+                class="btn-sm btn-danger-outline" 
+                (click)="store.deleteStandee(st.id)">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Print Preview Modal -->
+<nukkad-dialog 
+  [isOpen]="store.selectedForPrint() !== null" 
+  title="Print-Ready Standee Template"
+  (closed)="closePrintPreview()">
+  @if (store.selectedForPrint(); as selected) {
+    <div class="printable-standee-preview" id="printableStandee">
+      <div class="standee-top-bar">
+        <span class="standee-brand-tag">NUKKADNOW DIRECT ORDERING</span>
+      </div>
+
+      <div class="standee-inner">
+        <div class="store-badge">
+          <h2 class="store-title">{{ store.merchantName() }}</h2>
+          <span class="store-locality">{{ store.locality() }}</span>
+        </div>
+
+        @if (selected.type === 'TABLE') {
+          <div class="table-indicator">
+            TABLE #{{ selected.tableNumber }}
+          </div>
+        }
+
+        <div class="big-qr-box" [innerHTML]="sanitizeSvg(selected.qrSvgDataUri)"></div>
+
+        <div class="callout-block">
+          <h3 class="callout-heading">SCAN TO ORDER & PAY</h3>
+          <p class="callout-sub">Browse full menu • Customize items • Zero wait time</p>
+        </div>
+
+        <div class="upi-logos-row">
+          <span>Google Pay</span> • <span>PhonePe</span> • <span>Paytm</span> • <span>Any UPI App</span>
+        </div>
+
+        <div class="standee-footer-text">
+          Powered by NukkadNow Local Commerce
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="modal-footer-actions" slot="footer">
+    <button type="button" class="btn-secondary" (click)="closePrintPreview()">Close</button>
+    <nukkad-button variant="primary" (buttonClick)="printStandee()">🖨️ Send to Printer</nukkad-button>
+  </div>
+</nukkad-dialog>
+
+<!-- Batch Generate Tables Modal -->
+<nukkad-dialog 
+  [isOpen]="showBatchModal" 
+  title="Batch Generate Table Tent Cards"
+  (closed)="showBatchModal = false">
+  <div class="modal-form">
+    <p class="form-hint">Automatically generate numbered QR tent cards for your dining tables.</p>
+    <div class="form-grid-2">
+      <div class="form-field">
+        <label class="form-label" for="startTbl">Start Table Number</label>
+        <input 
+          id="startTbl"
+          type="number" 
+          class="form-input" 
+          [(ngModel)]="startTable" />
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="endTbl">End Table Number</label>
+        <input 
+          id="endTbl"
+          type="number" 
+          class="form-input" 
+          [(ngModel)]="endTable" />
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer-actions" slot="footer">
+    <button type="button" class="btn-secondary" (click)="showBatchModal = false">Cancel</button>
+    <nukkad-button variant="primary" (buttonClick)="generateBatch()">Generate {{ endTable - startTable + 1 }} Tables</nukkad-button>
+  </div>
+</nukkad-dialog>
+
+<!-- Custom Standee Modal -->
+<nukkad-dialog 
+  [isOpen]="showCreateModal" 
+  title="Create Custom QR Standee"
+  (closed)="showCreateModal = false">
+  <div class="modal-form">
+    <div class="form-field">
+      <label class="form-label" for="customLabel">Standee Label</label>
+      <input 
+        id="customLabel"
+        type="text" 
+        class="form-input" 
+        [(ngModel)]="newLabel" 
+        placeholder="e.g. Pickup Parcel Window or Drive-thru" />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="standeeType">Placement Type</label>
+      <select id="standeeType" class="form-input" [(ngModel)]="newType">
+        <option value="COUNTER">Counter Standee</option>
+        <option value="WINDOW">Storefront Window Poster</option>
+        <option value="CUSTOM">Custom Promotional Standee</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer-actions" slot="footer">
+    <button type="button" class="btn-secondary" (click)="showCreateModal = false">Cancel</button>
+    <nukkad-button variant="primary" (buttonClick)="createSingle()">Create Standee</nukkad-button>
+  </div>
+</nukkad-dialog>

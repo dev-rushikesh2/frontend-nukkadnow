@@ -1,0 +1,10 @@
+﻿<div class="merchant-delivery-container">
+  <h2>MerchantDelivery</h2>
+  @if (store.loading()) {
+    <p>Loading...</p>
+  } @else {
+    @for (item of store.items(); track item.id) {
+      <app-merchant-delivery-card [item]="item"></app-merchant-delivery-card>
+    }
+  }
+</div>

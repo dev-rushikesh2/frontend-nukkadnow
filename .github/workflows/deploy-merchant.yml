@@ -1,0 +1,36 @@
+name: Deploy Merchant Portal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/merchant-portal/**'
+      - 'libs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  deploy-portal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Merchant Portal for Production
+        run: pnpm build:merchant
+
+      - name: Deploy to Merchant Static Hosting / CDN
+        run: |
+          echo "Deploying dist/apps/merchant-portal to merchant.nukkadnow.example..."
+          # Deploy step configured via secrets

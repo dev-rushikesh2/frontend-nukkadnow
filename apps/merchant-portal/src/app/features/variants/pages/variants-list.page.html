@@ -1,0 +1,14 @@
+﻿<div class="merchant-variants-container">
+  <div class="header-row">
+    <h2>Variants Management</h2>
+  </div>
+  @if (store.loading()) {
+    <p>Loading records...</p>
+  } @else {
+    <div class="cards-grid">
+      @for (item of store.items(); track item.id) {
+        <merchant-variants-card [item]="item"></merchant-variants-card>
+      }
+    </div>
+  }
+</div>

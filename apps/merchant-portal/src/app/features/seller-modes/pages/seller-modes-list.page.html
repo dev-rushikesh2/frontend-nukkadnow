@@ -1,0 +1,14 @@
+﻿<div class="merchant-seller-modes-container">
+  <div class="header-row">
+    <h2>SellerModes Management</h2>
+  </div>
+  @if (store.loading()) {
+    <p>Loading records...</p>
+  } @else {
+    <div class="cards-grid">
+      @for (item of store.items(); track item.id) {
+        <merchant-seller-modes-card [item]="item"></merchant-seller-modes-card>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,11 @@
+﻿{
+  "name": "customer-pwa",
+  "projectType": "application",
+  "root": "apps/customer-pwa",
+  "sourceRoot": "apps/customer-pwa/src",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application"
+    }
+  }
+}

@@ -1,0 +1,226 @@
+﻿<div class="onboarding-container">
+  <div class="onboarding-card">
+    <header class="wizard-header">
+      <div class="step-indicator">
+        Step {{ store.currentStep() }} of 7
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="(store.currentStep() / 7) * 100"></div>
+      </div>
+    </header>
+
+    @if (store.submitted()) {
+      <div class="submission-success">
+        <div class="success-icon">ðŸŽ‰</div>
+        <h2>Application Submitted for Verification!</h2>
+        <p>Our Nagpur locality team will review your business details within 24 hours. You can explore your dashboard in preview mode.</p>
+        <ui-button variant="primary" (clicked)="router.navigate(['/dashboard'])">Go to Merchant Dashboard</ui-button>
+      </div>
+    } @else {
+      <!-- STEP 1: SELLER TYPE -->
+      @if (store.currentStep() === 1) {
+        <section class="wizard-step">
+          <h2>Select your seller type</h2>
+          <p class="step-desc">Choose how you operate so we tailor your store controls and privacy settings.</p>
+
+          <div class="modes-grid">
+            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'RETAIL'" (click)="selectMode('RETAIL')">
+              <span class="icon">ðŸª</span>
+              <h3>Permanent Shop / Retail</h3>
+              <p>Physical store with walk-in customers and set daily hours.</p>
+            </div>
+
+            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'HOME_MAKER'" (click)="selectMode('HOME_MAKER')">
+              <span class="icon">ðŸ¡</span>
+              <h3>Home Business</h3>
+              <p>Home bakery, tiffin, or crafts. <strong>Your private address is protected.</strong></p>
+            </div>
+
+            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'PRODUCER'" (click)="selectMode('PRODUCER')">
+              <span class="icon">ðŸŒ¾</span>
+              <h3>Maker / Small Producer</h3>
+              <p>Specialty producer with batch schedules and custom lead time.</p>
+            </div>
+
+            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'SEASONAL'" (click)="selectMode('SEASONAL')">
+              <span class="icon">ðŸŽª</span>
+              <h3>Seasonal / Pop-Up Stall</h3>
+              <p>Festival specials, exhibition stalls, or seasonal fruit stalls.</p>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- STEP 2: BRAND PROFILE -->
+      @if (store.currentStep() === 2) {
+        <section class="wizard-step">
+          <h2>Your Store Details</h2>
+          <p class="step-desc">What will local customers see on NukkadNow?</p>
+
+          <ui-input
+            label="Business Name"
+            placeholder="e.g. Ramesh Sweet Mart"
+            [required]="true"
+            [value]="store.draft().businessName"
+            (valueChanged)="store.updateDraft({ businessName: $event })">
+          </ui-input>
+
+          <div class="form-group">
+            <label class="form-label">Primary Category</label>
+            <select class="custom-select" [value]="store.draft().category" (change)="store.updateDraft({ category: $any($event.target).value })">
+              @for (cat of categories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
+
+          <ui-input
+            label="Short Description"
+            placeholder="e.g. Traditional Nagpur sweets, samosas, and fresh namkeen made daily."
+            [value]="store.draft().description"
+            (valueChanged)="store.updateDraft({ description: $event })">
+          </ui-input>
+        </section>
+      }
+
+      <!-- STEP 3: LOCATION & PRIVACY -->
+      @if (store.currentStep() === 3) {
+        <section class="wizard-step">
+          <h2>Location & Address Privacy</h2>
+          <p class="step-desc">Help neighborhood customers discover you nearby.</p>
+
+          @if (store.isHomeMaker()) {
+            <div class="privacy-alert">
+              <span class="shield">ðŸ›¡ï¸</span>
+              <div>
+                <strong>Home Seller Privacy Protected</strong>
+                <p>Your residential street address is strictly private. Customers only see your locality or designated pickup point.</p>
+              </div>
+            </div>
+          }
+
+          <ui-input
+            label="Locality / Area (Nagpur)"
+            placeholder="e.g. Dharampeth, Ramdaspeth, Sadar"
+            [required]="true"
+            [value]="store.draft().locality"
+            (valueChanged)="store.updateDraft({ locality: $event })">
+          </ui-input>
+
+          <ui-input
+            [label]="store.isHomeMaker() ? 'Designated Pickup Landmark' : 'Shop Address Line'"
+            [placeholder]="store.isHomeMaker() ? 'e.g. Near Coffee House Square' : 'e.g. Shop 4, West High Court Road'"
+            [value]="store.draft().addressLine"
+            (valueChanged)="store.updateDraft({ addressLine: $event })">
+          </ui-input>
+
+          <ui-input
+            label="PIN Code"
+            type="tel"
+            maxLength="6"
+            placeholder="440010"
+            [value]="store.draft().pincode"
+            (valueChanged)="store.updateDraft({ pincode: $event })">
+          </ui-input>
+        </section>
+      }
+
+      <!-- STEP 4: FULFILMENT MODES -->
+      @if (store.currentStep() === 4) {
+        <section class="wizard-step">
+          <h2>Fulfilment Modes</h2>
+          <p class="step-desc">How do customers receive their orders from you?</p>
+
+          <div class="toggle-card">
+            <div class="toggle-info">
+              <strong>Store Pickup</strong>
+              <p>Customers order in advance and collect at your pickup point or counter.</p>
+            </div>
+            <ui-toggle [checked]="store.draft().enablePickup" (toggled)="store.updateDraft({ enablePickup: $event })"></ui-toggle>
+          </div>
+
+          <div class="toggle-card">
+            <div class="toggle-info">
+              <strong>Merchant-Managed Delivery</strong>
+              <p>You or your staff deliver orders directly to customers nearby.</p>
+            </div>
+            <ui-toggle [checked]="store.draft().enableDelivery" (toggled)="store.updateDraft({ enableDelivery: $event })"></ui-toggle>
+          </div>
+
+          @if (store.draft().enableDelivery) {
+            <div class="delivery-radius-field">
+              <label>Delivery Radius: <strong>{{ store.draft().deliveryRadiusKm }} km</strong></label>
+              <input type="range" min="1" max="10" [value]="store.draft().deliveryRadiusKm" (input)="store.updateDraft({ deliveryRadiusKm: +$any($event.target).value })" />
+            </div>
+          }
+        </section>
+      }
+
+      <!-- STEP 5: SCHEDULE -->
+      @if (store.currentStep() === 5) {
+        <section class="wizard-step">
+          <h2>Store Timing</h2>
+          <p class="step-desc">When are you open to accept orders?</p>
+          <div class="timing-badge">ðŸ•’ Standard Timing: 9:00 AM â€“ 9:00 PM (Configurable in Settings)</div>
+        </section>
+      }
+
+      <!-- STEP 6: COMPLIANCE -->
+      @if (store.currentStep() === 6) {
+        <section class="wizard-step">
+          <h2>Compliance & KYC</h2>
+          <p class="step-desc">Category verification (Required for food categories before public orders).</p>
+
+          <ui-input
+            label="FSSAI Registration Number (Optional for Home Bakers in Pilot)"
+            placeholder="14-digit FSSAI number"
+            [value]="store.draft().fssaiNumber || ''"
+            (valueChanged)="store.updateDraft({ fssaiNumber: $event })">
+          </ui-input>
+
+          <ui-input
+            label="GSTIN (Optional for small businesses)"
+            placeholder="15-character GSTIN"
+            [value]="store.draft().gstin || ''"
+            (valueChanged)="store.updateDraft({ gstin: $event })">
+          </ui-input>
+        </section>
+      }
+
+      <!-- STEP 7: REVIEW & SUBMIT -->
+      @if (store.currentStep() === 7) {
+        <section class="wizard-step">
+          <h2>Review & Submit</h2>
+          <p class="step-desc">Confirm your business setup before submitting for review.</p>
+
+          <div class="summary-box">
+            <div class="summary-item"><span>Business:</span> <strong>{{ store.draft().businessName }}</strong></div>
+            <div class="summary-item"><span>Type:</span> <strong>{{ store.draft().sellerMode }}</strong></div>
+            <div class="summary-item"><span>Locality:</span> <strong>{{ store.draft().locality }}, Nagpur - {{ store.draft().pincode }}</strong></div>
+            <div class="summary-item"><span>Pickup:</span> <strong>{{ store.draft().enablePickup ? 'Enabled' : 'Disabled' }}</strong></div>
+            <div class="summary-item"><span>Delivery:</span> <strong>{{ store.draft().enableDelivery ? store.draft().deliveryRadiusKm + ' km radius' : 'Disabled' }}</strong></div>
+          </div>
+
+          <label class="terms-checkbox">
+            <input type="checkbox" [checked]="store.draft().termsAccepted" (change)="store.updateDraft({ termsAccepted: $any($event.target).checked })" />
+            <span>I declare that the information provided is accurate and I agree to NukkadNow Merchant Terms.</span>
+          </label>
+        </section>
+      }
+
+      <footer class="wizard-footer">
+        @if (store.currentStep() > 1) {
+          <ui-button variant="outline" (clicked)="store.prevStep()">Back</ui-button>
+        } @else {
+          <div></div>
+        }
+
+        @if (store.currentStep() < 7) {
+          <ui-button variant="primary" [disabled]="!canProceedStep()" (clicked)="store.nextStep()">Continue</ui-button>
+        } @else {
+          <ui-button variant="primary" [disabled]="!canProceedStep()" [loading]="store.submitting()" (clicked)="onFinish()">Submit Application</ui-button>
+        }
+      </footer>
+    }
+  </div>
+</div>

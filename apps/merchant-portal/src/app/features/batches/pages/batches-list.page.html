@@ -1,0 +1,258 @@
+<div class="batches-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-row">
+        <span class="badge badge-accent">Makers & Producers</span>
+        <span class="badge badge-info">Advance Pre-orders</span>
+      </div>
+      <h1>Fresh Food & Production Batches</h1>
+      <p class="subtitle">
+        Schedule limited-quantity production runs (morning bread, evening snacks, festive sweets) with hard preorder cutoffs.
+      </p>
+    </div>
+    <div class="header-actions">
+      <nukkad-button variant="primary" (buttonClick)="openCreateModal()">
+        + Schedule New Batch
+      </nukkad-button>
+    </div>
+  </header>
+
+  <!-- Metric Banner -->
+  <div class="metric-banner">
+    <div class="metric-card">
+      <span class="card-label">Active Batches</span>
+      <span class="card-val">{{ store.batches().length }}</span>
+      <span class="card-sub">Scheduled production runs</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Confirmed Pre-order Revenue</span>
+      <span class="card-val text-green">{{ formatPrice(store.totalPreorderValuePaise()) }}</span>
+      <span class="card-sub">Guaranteed advance sales</span>
+    </div>
+    <div class="metric-card">
+      <span class="card-label">Waste Prevention</span>
+      <span class="card-val text-orange">0% Food Loss</span>
+      <span class="card-sub">Made strictly to advance demand</span>
+    </div>
+  </div>
+
+  <!-- Filter Pills -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filter() === 'ALL'"
+      (click)="store.setFilter('ALL')">
+      All Batches ({{ store.batches().length }})
+    </button>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filter() === 'TODAY'"
+      (click)="store.setFilter('TODAY')">
+      Today's Batches
+    </button>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filter() === 'ACTIVE'"
+      (click)="store.setFilter('ACTIVE')">
+      In Production / Open
+    </button>
+    <button 
+      type="button" 
+      class="filter-pill" 
+      [class.active]="store.filter() === 'UPCOMING'"
+      (click)="store.setFilter('UPCOMING')">
+      Future Dates
+    </button>
+  </div>
+
+  <!-- Batch Cards Grid -->
+  <div class="batches-grid">
+    @for (batch of store.filteredBatches(); track batch.id) {
+      <div class="batch-card">
+        <div class="card-top">
+          <div class="title-group">
+            <span class="batch-name">{{ batch.batchName }}</span>
+            <span class="product-name">{{ batch.productName }} • {{ formatPrice(batch.unitPricePaise) }} / unit</span>
+          </div>
+          <span class="status-pill" [ngClass]="getStatusClass(batch.status)">
+            {{ batch.status.replace('_', ' ') }}
+          </span>
+        </div>
+
+        <div class="schedule-info">
+          <div class="info-row">
+            <span class="info-label">📅 Production Date:</span>
+            <span class="info-val font-semibold">{{ batch.productionDate }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">⏰ Ready for Pickup:</span>
+            <span class="info-val font-semibold">{{ batch.readyTime }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">⛔ Order Cutoff:</span>
+            <span class="info-val font-semibold text-red">{{ batch.cutoffTime }} (Orders lock automatically)</span>
+          </div>
+        </div>
+
+        <!-- Capacity Progress -->
+        <div class="progress-section">
+          <div class="progress-labels">
+            <span class="units-booked">
+              <strong>{{ batch.bookedUnits }}</strong> / {{ batch.totalCapacityUnits }} units booked
+            </span>
+            <span class="units-left">
+              {{ batch.totalCapacityUnits - batch.bookedUnits }} units remaining
+            </span>
+          </div>
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              [style.width.%]="(batch.bookedUnits / batch.totalCapacityUnits) * 100">
+            </div>
+          </div>
+        </div>
+
+        <!-- Pre-order Customer List snippet -->
+        @if (batch.preorders.length > 0) {
+          <div class="preorders-preview">
+            <span class="preview-title">Pre-orders Received ({{ batch.preorders.length }} buyers):</span>
+            <div class="buyer-tags">
+              @for (po of batch.preorders; track po.orderId) {
+                <span class="buyer-tag">
+                  {{ po.customerName }} ({{ po.quantity }}u) • {{ po.pickupSlot }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="card-actions">
+          <div class="left-actions">
+            <button 
+              type="button" 
+              class="btn-sm btn-outline" 
+              (click)="store.addCapacity(batch.id, 10)">
+              +10 Extra Units
+            </button>
+            @if (batch.status === 'OPEN_FOR_ORDERS') {
+              <button 
+                type="button" 
+                class="btn-sm btn-outline-danger" 
+                (click)="store.closeCutoffEarly(batch.id)">
+                Close Cutoff Now
+              </button>
+            }
+          </div>
+          <button 
+            type="button" 
+            class="btn-sm btn-primary" 
+            [disabled]="batch.status === 'COMPLETED'"
+            (click)="store.advanceBatchStatus(batch.id)">
+            {{ getNextActionLabel(batch.status) }} →
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-batches">
+        <p>No batches match the selected filter.</p>
+        <button type="button" class="btn-primary" (click)="openCreateModal()">Schedule Your First Batch</button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create Batch Modal -->
+<nukkad-dialog 
+  [isOpen]="showCreateModal" 
+  title="Schedule Fresh Production Batch"
+  (closed)="showCreateModal = false">
+  <div class="modal-form">
+    <div class="form-field">
+      <label class="form-label" for="batchName">Batch Title</label>
+      <input 
+        id="batchName"
+        type="text" 
+        class="form-input" 
+        [(ngModel)]="newBatchName" 
+        placeholder="e.g. Evening Hot Samosa & Jalebi Batch" />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="prodName">Catalogue Product</label>
+      <input 
+        id="prodName"
+        type="text" 
+        class="form-input" 
+        [(ngModel)]="newProductName" 
+        placeholder="e.g. Nagpur Tarri Samosa (Plate of 2)" />
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-field">
+        <label class="form-label" for="batchDate">Production Date</label>
+        <input 
+          id="batchDate"
+          type="date" 
+          class="form-input" 
+          [(ngModel)]="newDate" />
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="readyTime">Batch Ready Time</label>
+        <input 
+          id="readyTime"
+          type="time" 
+          class="form-input" 
+          [(ngModel)]="newReadyTime" />
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-field">
+        <label class="form-label" for="cutoffTime">Cutoff Time</label>
+        <input 
+          id="cutoffTime"
+          type="time" 
+          class="form-input" 
+          [(ngModel)]="newCutoffTime" />
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="batchCap">Max Units</label>
+        <input 
+          id="batchCap"
+          type="number" 
+          class="form-input" 
+          [(ngModel)]="newCapacity" />
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="unitPrice">Unit Price (₹)</label>
+        <input 
+          id="unitPrice"
+          type="number" 
+          class="form-input" 
+          [(ngModel)]="newPriceRupees" />
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="instructions">Preparation / Packing Notes</label>
+      <textarea 
+        id="instructions"
+        class="form-textarea" 
+        [(ngModel)]="newInstructions" 
+        rows="2" 
+        placeholder="e.g. Foil pack with fresh fried green chilies">
+      </textarea>
+    </div>
+  </div>
+
+  <div class="modal-footer" slot="footer">
+    <button type="button" class="btn-secondary" (click)="showCreateModal = false">Cancel</button>
+    <nukkad-button variant="primary" (buttonClick)="createBatch()">Publish Batch to Marketplace</nukkad-button>
+  </div>
+</nukkad-dialog>
