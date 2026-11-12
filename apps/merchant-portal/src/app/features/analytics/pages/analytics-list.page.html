@@ -1,137 +1,240 @@
-<div class="analytics-page">
+<div class="analytics-viewport">
+  <!-- Toast -->
+  @if (toast()) {
+    <aside class="ana-toast" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ toast() }}</span>
+    </aside>
+  }
+
   <!-- Header -->
   <header class="page-header">
-    <div class="header-content">
-      <div class="badge-row">
-        <span class="badge badge-accent">Business Intelligence</span>
-        <span class="badge badge-success">Bank-Reconciled Metrics</span>
-      </div>
-      <h1>Store Operational Analytics & Reports</h1>
-      <p class="subtitle">
-        Understand peak rush hours, sales channels, fulfillment speed, and reconcile daily bank payouts.
-      </p>
+    <div class="header-titles">
+      <h1 class="page-title">Business Analytics & Reports</h1>
+      <p class="page-subtitle">Track revenue growth, top-selling items, sales channel split, and bank payout reconciliation.</p>
     </div>
+
     <div class="header-actions">
-      <nukkad-button 
-        variant="primary" 
-        [loading]="store.isExporting()"
-        (buttonClick)="exportCsv()">
-        📥 Download Reconciliation CSV
-      </nukkad-button>
+      <button type="button" class="btn-export-csv" (click)="exportCsv()">
+        <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Download CSV Report</span>
+      </button>
     </div>
   </header>
 
-  <!-- Time Range Tabs -->
-  <div class="range-tabs">
-    @for (tr of timeRanges; track tr.value) {
-      <button 
-        type="button" 
-        class="range-tab" 
-        [class.active]="store.selectedRange() === tr.value"
-        (click)="selectRange(tr.value)">
-        {{ tr.label }}
-      </button>
-    }
+  <!-- Time Range Selector -->
+  <div class="range-selector-row">
+    <button 
+      type="button" 
+      class="range-btn" 
+      [class.active]="selectedRange() === 'TODAY'"
+      (click)="selectRange('TODAY')">
+      Today (Live)
+    </button>
+    <button 
+      type="button" 
+      class="range-btn" 
+      [class.active]="selectedRange() === 'YESTERDAY'"
+      (click)="selectRange('YESTERDAY')">
+      Yesterday
+    </button>
+    <button 
+      type="button" 
+      class="range-btn" 
+      [class.active]="selectedRange() === 'WEEK'"
+      (click)="selectRange('WEEK')">
+      Last 7 Days
+    </button>
+    <button 
+      type="button" 
+      class="range-btn" 
+      [class.active]="selectedRange() === 'MONTH'"
+      (click)="selectRange('MONTH')">
+      This Month
+    </button>
   </div>
 
-  <!-- Primary Financial & Operational KPIs -->
-  <div class="kpi-banner">
-    <div class="kpi-card highlight-card">
+  <!-- 4 Core Financial & Operational KPIs -->
+  <section class="kpi-grid" aria-label="Key financial metrics">
+    <div class="kpi-card purple-gradient">
       <span class="kpi-label">Gross Order Value (GMV)</span>
-      <span class="kpi-val">{{ formatPrice(store.summary().grossOrderValuePaise) }}</span>
-      <span class="kpi-sub">Total customer billing before platform fee</span>
+      <strong class="kpi-val">₹{{ gmv() | number }}</strong>
+      <span class="kpi-sub">Total customer billing before fees</span>
     </div>
 
-    <div class="kpi-card highlight-card success-border">
-      <span class="kpi-label">Net Reconciled Bank Payout</span>
-      <span class="kpi-val text-green">{{ formatPrice(store.summary().netReconciledPayoutPaise) }}</span>
-      <span class="kpi-sub">Transferred directly to merchant bank account</span>
-    </div>
-
-    <div class="kpi-card">
-      <span class="kpi-label">Orders Completed</span>
-      <span class="kpi-val">{{ store.summary().completedOrders }} / {{ store.summary().totalOrders }}</span>
-      <span class="kpi-sub">{{ store.summary().cancelledOrRejected }} cancellations/rejections</span>
+    <div class="kpi-card emerald-gradient">
+      <span class="kpi-label">Net Bank Payout</span>
+      <strong class="kpi-val emerald">₹{{ netPayout() | number }}</strong>
+      <span class="kpi-sub">Transferred to merchant bank account</span>
     </div>
 
     <div class="kpi-card">
-      <span class="kpi-label">Avg Kitchen Prep Time</span>
-      <span class="kpi-val">{{ store.summary().averagePrepTimeMinutes }} mins</span>
-      <span class="kpi-sub">Order accepted to ready for pickup</span>
+      <span class="kpi-label">Completed Orders</span>
+      <strong class="kpi-val">{{ totalOrders() }} Orders</strong>
+      <span class="kpi-sub">98.2% fulfillment completion</span>
     </div>
 
     <div class="kpi-card">
-      <span class="kpi-label">On-Time Pickup Rate</span>
-      <span class="kpi-val text-blue">{{ store.summary().onTimePickupRate }}%</span>
-      <span class="kpi-sub">Ready before promised slot window</span>
+      <span class="kpi-label">Avg Prep & Handover Time</span>
+      <strong class="kpi-val">{{ avgPrepTime() }} mins</strong>
+      <span class="kpi-sub">From order accept to ready</span>
     </div>
-  </div>
+  </section>
 
-  <!-- Channel Breakdown Pill -->
-  <div class="channel-card">
-    <div class="channel-header">
-      <span class="channel-title">Order Source Distribution</span>
-      <span class="channel-values">
-        Walk-in Counter: <strong>{{ store.summary().walkinPct }}%</strong> | Online Marketplace & QR: <strong>{{ store.summary().onlinePct }}%</strong>
-      </span>
-    </div>
-    <div class="channel-bar">
-      <div class="bar-walkin" [style.width.%]="store.summary().walkinPct"></div>
-      <div class="bar-online" [style.width.%]="store.summary().onlinePct"></div>
-    </div>
-  </div>
-
-  <div class="analytics-grid-2">
-    <!-- Left: Peak Rush Hour Heatmap (SVG Chart) -->
+  <!-- 2-Column Responsive Visual Charts Grid -->
+  <div class="charts-grid">
+    <!-- Visual Sales Trend Curve (SVG Responsive) -->
     <section class="chart-card">
-      <div class="card-head">
-        <div>
-          <h2 class="card-title">Peak Rush Hour Traffic</h2>
-          <p class="card-desc">Hourly order volume. Helps plan kitchen prep batches.</p>
+      <div class="chart-header">
+        <div class="chart-titles">
+          <h2 class="chart-title">Revenue Trajectory</h2>
+          <span class="chart-subtitle">Daily sales performance (INR)</span>
         </div>
-        <span class="badge-peak">Nagpur Peak: 5 PM – 8 PM</span>
+        <span class="growth-tag">+18.4% vs last cycle</span>
       </div>
 
-      <div class="bar-chart-container">
-        @for (pt of store.hourlyRush(); track pt.hourLabel) {
-          <div class="chart-col" [class.is-peak]="pt.isPeak">
-            <span class="col-count">{{ pt.ordersCount }}</span>
-            <div class="col-bar-track">
-              <div class="col-bar-fill" [style.height.%]="pt.intensityPct"></div>
-            </div>
-            <span class="col-label">{{ pt.hourLabel }}</span>
-          </div>
-        }
+      <!-- Vector Line Chart with Gradient -->
+      <div class="svg-chart-container">
+        <svg viewBox="0 0 500 200" class="line-chart-svg" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="purpleGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6D28D9" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#6D28D9" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Horizontal Gridlines -->
+          <line x1="0" y1="40" x2="500" y2="40" stroke="#F1F5F9" stroke-width="1"/>
+          <line x1="0" y1="90" x2="500" y2="90" stroke="#F1F5F9" stroke-width="1"/>
+          <line x1="0" y1="140" x2="500" y2="140" stroke="#F1F5F9" stroke-width="1"/>
+
+          <!-- Area Fill -->
+          <path d="M 0 170 Q 80 140, 160 120 T 320 80 T 500 30 L 500 200 L 0 200 Z" fill="url(#purpleGradient)"/>
+
+          <!-- Line Stroke -->
+          <path d="M 0 170 Q 80 140, 160 120 T 320 80 T 500 30" fill="none" stroke="#6D28D9" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- Data Points -->
+          <circle cx="80" cy="145" r="4" fill="#6D28D9"/>
+          <circle cx="160" cy="120" r="4" fill="#6D28D9"/>
+          <circle cx="240" cy="100" r="4" fill="#6D28D9"/>
+          <circle cx="320" cy="80" r="4" fill="#6D28D9"/>
+          <circle cx="410" cy="55" r="4" fill="#6D28D9"/>
+          <circle cx="500" cy="30" r="5" fill="#FF5A1F"/>
+        </svg>
+
+        <div class="chart-x-labels">
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+          <span>Sun</span>
+        </div>
       </div>
     </section>
 
-    <!-- Right: Top Selling Products & Stockouts -->
+    <!-- Channel Breakdown Card -->
     <section class="chart-card">
-      <div class="card-head">
-        <div>
-          <h2 class="card-title">Top Selling Menu Items</h2>
-          <p class="card-desc">Fast-moving items and lost sales due to stockouts.</p>
+      <div class="chart-header">
+        <div class="chart-titles">
+          <h2 class="chart-title">Sales Channel Breakdown</h2>
+          <span class="chart-subtitle">Contribution by customer ordering method</span>
         </div>
       </div>
 
-      <div class="products-list">
-        @for (prod of store.topProducts(); track prod.id) {
-          <div class="prod-row">
-            <div class="prod-info">
-              <span class="prod-name">{{ prod.name }}</span>
-              <span class="prod-cat">{{ prod.category }} • {{ prod.unitsSold }} units sold</span>
+      <div class="channel-bars-list">
+        <!-- 1. Walk-in Counter -->
+        <div class="channel-item">
+          <div class="channel-meta">
+            <span class="channel-name">🏪 Walk-in Counter (POS)</span>
+            <strong class="channel-pct">{{ walkinShare() }}%</strong>
+          </div>
+          <div class="channel-track">
+            <div class="channel-fill orange" [style.width.%]="walkinShare()"></div>
+          </div>
+        </div>
+
+        <!-- 2. Online App -->
+        <div class="channel-item">
+          <div class="channel-meta">
+            <span class="channel-name">📱 Online NukkadNow Marketplace</span>
+            <strong class="channel-pct">{{ onlineShare() }}%</strong>
+          </div>
+          <div class="channel-track">
+            <div class="channel-fill purple" [style.width.%]="onlineShare()"></div>
+          </div>
+        </div>
+
+        <!-- 3. Table QR / Pickup -->
+        <div class="channel-item">
+          <div class="channel-meta">
+            <span class="channel-name">🍽️ Table QR & Scheduled Pre-orders</span>
+            <strong class="channel-pct">{{ tableQrShare() }}%</strong>
+          </div>
+          <div class="channel-track">
+            <div class="channel-fill emerald" [style.width.%]="tableQrShare()"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Top Products Leaderboard Table -->
+  <section class="leaderboard-card">
+    <div class="leaderboard-header">
+      <h2 class="chart-title">Top Selling Products</h2>
+      <span class="chart-subtitle">Ranked by volume and sales revenue</span>
+    </div>
+
+    <div class="leaderboard-table-wrap">
+      <div class="leader-table-header">
+        <span class="th th-rank">#</span>
+        <span class="th th-name">Product Name</span>
+        <span class="th th-cat">Category</span>
+        <span class="th th-sold">Units Sold</span>
+        <span class="th th-rev">Total Revenue</span>
+        <span class="th th-growth">Growth</span>
+      </div>
+
+      <div class="leader-table-rows">
+        @for (prod of topProducts(); track prod.rank) {
+          <div class="leader-table-row">
+            <div class="td td-rank">
+              <span class="rank-badge" [class.gold]="prod.rank === 1" [class.silver]="prod.rank === 2" [class.bronze]="prod.rank === 3">
+                {{ prod.rank }}
+              </span>
             </div>
-            <div class="prod-numbers">
-              <span class="prod-rev">{{ formatPrice(prod.revenuePaise) }}</span>
-              @if (prod.stockoutDurationMinutes > 0) {
-                <span class="stockout-warning">⚠️ Out of stock {{ prod.stockoutDurationMinutes }}m</span>
-              } @else {
-                <span class="stockout-ok">✓ 100% In Stock</span>
-              }
+
+            <div class="td td-name">
+              <strong class="prod-title">{{ prod.name }}</strong>
+            </div>
+
+            <div class="td td-cat">
+              <span class="cat-pill-sm">{{ prod.category }}</span>
+            </div>
+
+            <div class="td td-sold">
+              <strong>{{ prod.unitsSold }} units</strong>
+            </div>
+
+            <div class="td td-rev">
+              <strong>₹{{ prod.revenue | number }}</strong>
+            </div>
+
+            <div class="td td-growth">
+              <span class="growth-badge">{{ prod.growth }}</span>
             </div>
           </div>
         }
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </div>

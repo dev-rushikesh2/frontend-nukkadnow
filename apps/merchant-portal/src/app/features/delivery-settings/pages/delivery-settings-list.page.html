@@ -1,242 +1,235 @@
-<div class="delivery-page">
+<div class="delivery-viewport">
+  <!-- Toast -->
+  @if (toast()) {
+    <aside class="del-toast" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ toast() }}</span>
+    </aside>
+  }
+
   <!-- Header -->
   <header class="page-header">
-    <div class="header-content">
-      <div class="badge-row">
-        <span class="badge badge-accent">Local Fulfillment</span>
-        @if (store.saveSuccess()) {
-          <span class="badge badge-success">✓ Delivery Rules Active</span>
-        }
-      </div>
-      <h1>Merchant-Managed Self-Delivery</h1>
-      <p class="subtitle">
-        Define your own delivery zones, pricing rules, and minimum order values fulfilled by your in-house staff.
-      </p>
+    <div class="header-titles">
+      <h1 class="page-title">Delivery & Fleet Management</h1>
+      <p class="page-subtitle">Configure in-house store delivery zones, minimum order criteria, and fleet dispatch.</p>
     </div>
+
     <div class="header-actions">
-      <nukkad-button 
-        variant="primary" 
-        [loading]="store.isSaving()" 
-        [disabled]="!store.dirty()"
-        (buttonClick)="store.saveSettings()">
-        Save Delivery Settings
-      </nukkad-button>
+      <button 
+        type="button" 
+        class="btn-delivery-toggle" 
+        [class.active]="isDeliveryEnabled()"
+        (click)="toggleDelivery()">
+        <span class="dot-live"></span>
+        <span>{{ isDeliveryEnabled() ? 'Delivery Live (Active)' : 'Delivery Paused' }}</span>
+      </button>
+
+      <button type="button" class="btn-save-settings" (click)="saveSettings()">
+        Save Changes
+      </button>
     </div>
   </header>
 
-  <!-- Honest Communication Alert Banner -->
-  <div class="honest-delivery-banner">
-    <div class="banner-icon">🛵</div>
-    <div class="banner-content">
-      <span class="banner-title">Store-Operated Direct Delivery</span>
-      <p class="banner-desc">
-        Orders marked for delivery will be dispatched using your own store staff or personal vehicle.
-        NukkadNow does not operate or assign third-party delivery riders. Customers are notified that your store delivers directly.
-      </p>
-    </div>
-    <button 
-      type="button" 
-      class="btn-toggle-service" 
-      [class.active]="store.config().enabled"
-      (click)="store.toggleDelivery()">
-      {{ store.config().enabled ? 'Delivery ENABLED' : 'Delivery DISABLED' }}
-    </button>
-  </div>
-
-  <div class="grid-2col">
-    <!-- Left Column: Zone & Geofencing -->
-    <section class="card">
-      <h2 class="card-title">Delivery Geofence & Service Area</h2>
-      <p class="card-desc">Control where your store offers home delivery.</p>
-
-      <div class="zone-type-selector">
-        <button 
-          type="button" 
-          class="zone-btn" 
-          [class.active]="store.config().zoneType === 'RADIUS'"
-          (click)="store.setZoneType('RADIUS')">
-          <span>📍 Distance Radius</span>
-          <small>Deliver within X kilometers</small>
-        </button>
-        <button 
-          type="button" 
-          class="zone-btn" 
-          [class.active]="store.config().zoneType === 'PINCODES'"
-          (click)="store.setZoneType('PINCODES')">
-          <span>📮 Pincode List</span>
-          <small>Deliver to specific postal codes</small>
-        </button>
-      </div>
-
-      @if (store.config().zoneType === 'RADIUS') {
-        <div class="form-group">
-          <div class="slider-header">
-            <label class="form-label" for="radiusRange">Maximum Delivery Radius</label>
-            <span class="slider-val">{{ store.config().radiusKm }} km</span>
-          </div>
-          <input 
-            id="radiusRange"
-            type="range" 
-            min="0.5" 
-            max="12" 
-            step="0.5" 
-            [value]="store.config().radiusKm" 
-            (input)="onRadiusChange($event)"
-            class="range-slider" />
-          <span class="form-hint">Customers within {{ store.config().radiusKm }} km from Dharampeth can select home delivery.</span>
-        </div>
-      } @else {
-        <div class="pincode-section">
-          <label class="form-label" for="pincodeInput">Whitelisted Pincodes</label>
-          <div class="pincode-input-row">
-            <input 
-              id="pincodeInput"
-              type="text" 
-              maxlength="6" 
-              class="form-input" 
-              [(ngModel)]="newPincodeInput" 
-              placeholder="e.g. 440010" />
-            <button type="button" class="btn-secondary" (click)="addPincode()">+ Add Pin</button>
-          </div>
-          <div class="pincode-chips">
-            @for (pin of store.config().whitelistedPincodes; track pin) {
-              <span class="pin-chip">
-                {{ pin }}
-                <button type="button" class="btn-remove-pin" (click)="store.removePincode(pin)">×</button>
-              </span>
-            }
-          </div>
-        </div>
-      }
-
-      <hr class="card-divider" />
-
-      <!-- Estimated Delivery Time -->
-      <div class="form-group">
-        <div class="slider-header">
-          <label class="form-label" for="deliveryTimeRange">Average Delivery Time</label>
-          <span class="slider-val">{{ store.config().estimatedDeliveryMinutes }} mins</span>
-        </div>
-        <input 
-          id="deliveryTimeRange"
-          type="range" 
-          min="15" 
-          max="90" 
-          step="5" 
-          [value]="store.config().estimatedDeliveryMinutes" 
-          (input)="onDeliveryMinsChange($event)"
-          class="range-slider" />
-        <span class="form-hint">Shown to customer on checkout: "Delivered in approx {{ store.config().estimatedDeliveryMinutes }} mins".</span>
-      </div>
-    </section>
-
-    <!-- Right Column: Pricing & Fees -->
-    <section class="card">
-      <h2 class="card-title">Pricing & Minimum Order Value</h2>
-      <p class="card-desc">Set delivery charges and free delivery incentives.</p>
-
-      <!-- Minimum order -->
-      <div class="form-group">
-        <div class="slider-header">
-          <label class="form-label" for="minOrderRange">Minimum Order for Delivery</label>
-          <span class="slider-val">{{ formatPrice(store.config().minOrderAmountPaise) }}</span>
-        </div>
-        <input 
-          id="minOrderRange"
-          type="range" 
-          min="50" 
-          max="1000" 
-          step="50" 
-          [value]="store.config().minOrderAmountPaise / 100" 
-          (input)="onMinOrderChange($event)"
-          class="range-slider" />
-        <span class="form-hint">Orders below this amount must be picked up in-store.</span>
-      </div>
-
-      <!-- Base delivery fee -->
-      <div class="form-group">
-        <div class="slider-header">
-          <label class="form-label" for="baseFeeRange">Delivery Fee</label>
-          <span class="slider-val">{{ formatPrice(store.config().baseDeliveryFeePaise) }}</span>
-        </div>
-        <input 
-          id="baseFeeRange"
-          type="range" 
-          min="0" 
-          max="100" 
-          step="5" 
-          [value]="store.config().baseDeliveryFeePaise / 100" 
-          (input)="onBaseFeeChange($event)"
-          class="range-slider" />
-        <span class="form-hint">Flat delivery fee collected from customer to cover petrol/rider costs.</span>
-      </div>
-
-      <!-- Free delivery threshold -->
-      <div class="form-group">
-        <div class="slider-header">
-          <label class="form-label" for="freeThresholdRange">Free Delivery Above</label>
-          <span class="slider-val">{{ formatPrice(store.config().freeDeliveryThresholdPaise) }}</span>
-        </div>
-        <input 
-          id="freeThresholdRange"
-          type="range" 
-          min="100" 
-          max="2000" 
-          step="50" 
-          [value]="store.config().freeDeliveryThresholdPaise / 100" 
-          (input)="onFreeThresholdChange($event)"
-          class="range-slider" />
-        <span class="form-hint">Delivery fee is waived if the customer's order exceeds {{ formatPrice(store.config().freeDeliveryThresholdPaise) }}.</span>
-      </div>
-    </section>
-  </div>
-
-  <!-- Active Dispatches Section -->
-  <section class="card">
-    <div class="dispatch-header">
-      <div>
-        <h2 class="card-title">Live Dispatches ({{ store.activeDeliveries().length }} Active)</h2>
-        <p class="card-desc">Orders currently out with your delivery partner.</p>
-      </div>
+  <!-- 4 Overview Metric Cards -->
+  <section class="metrics-row" aria-label="Delivery rules summary">
+    <div class="metric-card purple-tint">
+      <span class="metric-label">Service Radius</span>
+      <strong class="metric-val">{{ deliveryRadiusKm() }} km</strong>
+      <span class="metric-sub">From your store location</span>
     </div>
 
-    <div class="dispatch-list">
-      @for (order of store.activeDeliveries(); track order.orderId) {
-        <div class="dispatch-item" [class.delivered]="order.status === 'DELIVERED'">
-          <div class="dispatch-token-col">
-            <span class="token-badge">{{ order.tokenNumber }}</span>
-            <span class="order-id">{{ order.orderId }}</span>
-            <span class="time-hint">{{ order.dispatchedAt }}</span>
-          </div>
+    <div class="metric-card emerald-tint">
+      <span class="metric-label">Min. Order Value</span>
+      <strong class="metric-val emerald">₹{{ minOrderAmount() }}</strong>
+      <span class="metric-sub">For delivery eligibility</span>
+    </div>
 
-          <div class="dispatch-cust-col">
-            <span class="cust-name">{{ order.customerName }}</span>
-            <span class="cust-addr">📍 {{ order.customerAddress }}</span>
-            <span class="cust-phone">📞 {{ order.customerPhoneMasked }}</span>
-          </div>
+    <div class="metric-card orange-tint">
+      <span class="metric-label">Base Delivery Fee</span>
+      <strong class="metric-val orange">₹{{ baseDeliveryFee() }}</strong>
+      <span class="metric-sub">Free above ₹{{ freeDeliveryAbove() }}</span>
+    </div>
 
-          <div class="dispatch-driver-col">
-            <span class="driver-title">Rider / Partner</span>
-            <span class="driver-name">{{ order.assignedDriverName }}</span>
-            <span class="order-total">{{ formatPrice(order.totalPaise) }} (Paid Online)</span>
-          </div>
-
-          <div class="dispatch-actions">
-            @if (order.status === 'OUT_FOR_DELIVERY') {
-              <button 
-                type="button" 
-                class="btn-deliver" 
-                (click)="store.markDelivered(order.orderId)">
-                ✓ Mark Delivered
-              </button>
-            } @else {
-              <span class="badge-delivered">✓ Delivered</span>
-            }
-          </div>
-        </div>
-      } @empty {
-        <div class="empty-dispatch">No active deliveries on the road right now.</div>
-      }
+    <div class="metric-card royal-tint">
+      <span class="metric-label">Avg Delivery Time</span>
+      <strong class="metric-val purple">{{ estDeliveryMinutes() }} mins</strong>
+      <span class="metric-sub">Promise to customer</span>
     </div>
   </section>
+
+  <!-- Honest Direct Delivery Banner -->
+  <aside class="direct-delivery-banner" role="region" aria-label="Store delivery disclosure">
+    <div class="banner-lead-icon">🛵</div>
+    <div class="banner-body">
+      <strong class="banner-title">Store-Operated Direct Self-Delivery</strong>
+      <p class="banner-text">
+        All deliveries are dispatched directly by your own in-store riders or personal staff. 
+        NukkadNow does not operate third-party gig delivery fleets. Customers are informed that your store delivers directly with care.
+      </p>
+    </div>
+  </aside>
+
+  <!-- 2-Column Responsive Setup Grid -->
+  <div class="delivery-grid">
+    <!-- LEFT: Coverage Area & Pincodes -->
+    <main class="grid-main-col">
+      <!-- Geofence Card -->
+      <section class="config-card">
+        <h2 class="card-title">Delivery Radius & Geofence</h2>
+        <p class="card-subtitle">Set your maximum delivery radius around your store coordinates.</p>
+
+        <div class="radius-slider-group">
+          <div class="slider-header">
+            <span class="slider-label">Coverage Radius:</span>
+            <strong class="radius-value">{{ deliveryRadiusKm() }} km</strong>
+          </div>
+          <input 
+            type="range" 
+            min="1" 
+            max="15" 
+            step="0.5" 
+            class="range-slider" 
+            [ngModel]="deliveryRadiusKm()"
+            (ngModelChange)="deliveryRadiusKm.set(+$event)" />
+          <div class="slider-ticks">
+            <span>1 km</span>
+            <span>5 km</span>
+            <span>10 km</span>
+            <span>15 km</span>
+          </div>
+        </div>
+
+        <!-- Vector Map Preview -->
+        <div class="vector-map-box">
+          <svg viewBox="0 0 400 180" class="map-svg" aria-label="Geofence radius preview">
+            <rect width="400" height="180" fill="#F1F5F9" rx="12"/>
+            <path d="M0 60 Q100 80 200 40 T400 70" stroke="#CBD5E1" stroke-width="6" fill="none"/>
+            <path d="M120 0 Q140 90 100 180" stroke="#E2E8F0" stroke-width="12" fill="none"/>
+            <path d="M260 0 Q280 100 320 180" stroke="#E2E8F0" stroke-width="8" fill="none"/>
+            <!-- Purple radius circle -->
+            <circle cx="200" cy="90" r="65" fill="rgba(109, 40, 217, 0.12)" stroke="#6D28D9" stroke-width="2" stroke-dasharray="4 4"/>
+            <!-- Store Pin -->
+            <circle cx="200" cy="90" r="10" fill="#FF5A1F"/>
+            <circle cx="200" cy="90" r="4" fill="#FFFFFF"/>
+          </svg>
+          <div class="map-badge">📍 Store Location (Coverage: {{ deliveryRadiusKm() }} km)</div>
+        </div>
+      </section>
+
+      <!-- Whitelisted Pincodes -->
+      <section class="config-card">
+        <h2 class="card-title">Supported Delivery Pincodes</h2>
+        <p class="card-subtitle">Orders outside these pincodes will only be allowed for counter pickup.</p>
+
+        <div class="pincode-add-row">
+          <input 
+            type="text" 
+            maxlength="6" 
+            class="pincode-input" 
+            placeholder="Enter 6-digit Pincode (e.g. 440025)"
+            [ngModel]="newPincode()"
+            (ngModelChange)="newPincode.set($event)"
+            (keyup.enter)="addPincode()" />
+          <button type="button" class="btn-add-pin" (click)="addPincode()">
+            + Add Pincode
+          </button>
+        </div>
+
+        <div class="pincodes-chips-list">
+          @for (pin of pincodes(); track pin) {
+            <span class="pincode-chip">
+              <span>{{ pin }}</span>
+              <button type="button" class="btn-del-pin" (click)="removePincode(pin)" title="Remove">×</button>
+            </span>
+          }
+        </div>
+      </section>
+    </main>
+
+    <!-- RIGHT: Pricing Rules & In-house Fleet -->
+    <aside class="grid-side-col">
+      <!-- Pricing Rules Card -->
+      <section class="config-card">
+        <h2 class="card-title">Delivery Fees & Basket Rules</h2>
+
+        <div class="fields-stack">
+          <div class="form-group">
+            <label class="field-label">Minimum Order for Delivery</label>
+            <div class="input-prefix-box">
+              <span class="currency-tag">₹</span>
+              <input 
+                type="number" 
+                class="field-input" 
+                [ngModel]="minOrderAmount()"
+                (ngModelChange)="minOrderAmount.set(+$event)" />
+            </div>
+            <span class="field-hint">Customers cannot place orders below this value for delivery.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Base Delivery Charge</label>
+            <div class="input-prefix-box">
+              <span class="currency-tag">₹</span>
+              <input 
+                type="number" 
+                class="field-input" 
+                [ngModel]="baseDeliveryFee()"
+                (ngModelChange)="baseDeliveryFee.set(+$event)" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Free Delivery Threshold</label>
+            <div class="input-prefix-box">
+              <span class="currency-tag">₹</span>
+              <input 
+                type="number" 
+                class="field-input" 
+                [ngModel]="freeDeliveryAbove()"
+                (ngModelChange)="freeDeliveryAbove.set(+$event)" />
+            </div>
+            <span class="field-hint">Free delivery incentive helps increase average cart size.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Store Riders Roster -->
+      <section class="config-card">
+        <div class="card-header-row">
+          <h2 class="card-title">In-Store Delivery Riders</h2>
+          <span class="riders-count-pill">{{ riders().length }} Staff</span>
+        </div>
+
+        <div class="riders-list">
+          @for (r of riders(); track r.id) {
+            <div class="rider-card">
+              <div class="rider-top">
+                <div class="rider-avatar">{{ r.name.charAt(0) }}</div>
+                <div class="rider-info">
+                  <strong class="rider-name">{{ r.name }}</strong>
+                  <span class="rider-phone">{{ r.phone }}</span>
+                  <span class="rider-vehicle">{{ r.vehicle }}</span>
+                </div>
+              </div>
+
+              <div class="rider-bottom">
+                <span class="rider-status-pill" [class]="r.status.toLowerCase().replace(' ', '-')">
+                  {{ r.status }}
+                  @if (r.activeOrdersCount > 0) {
+                    <span>({{ r.activeOrdersCount }} active)</span>
+                  }
+                </span>
+
+                <button type="button" class="btn-toggle-shift" (click)="toggleRiderStatus(r.id)">
+                  {{ r.status === 'Available' ? 'Go Off-Shift' : 'Set Available' }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    </aside>
+  </div>
 </div>

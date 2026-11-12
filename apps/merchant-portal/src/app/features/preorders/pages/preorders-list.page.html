@@ -1,132 +1,213 @@
-<div class="preorders-page">
+<div class="preorders-viewport">
+  <!-- Toast -->
+  @if (toastMessage()) {
+    <aside class="pre-toast" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ toastMessage() }}</span>
+    </aside>
+  }
+
   <!-- Header -->
   <header class="page-header">
-    <div class="header-content">
-      <div class="badge-row">
-        <span class="badge badge-accent">Scheduled Operations</span>
-        <span class="badge badge-success">Guaranteed Advance Orders</span>
-      </div>
-      <h1>Pre-orders & Scheduled Pickups</h1>
-      <p class="subtitle">
-        Review customer orders scheduled for upcoming pickup slots or specific production batches.
-      </p>
+    <div class="header-titles">
+      <h1 class="page-title">Pre-orders & Scheduled Pickups</h1>
+      <p class="page-subtitle">Guaranteed advance customer bookings scheduled for specific pickup slots or production batches.</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/capacity-settings" class="btn-capacity-link">
+        <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>Manage Slot Limits</span>
+      </a>
     </div>
   </header>
 
-  <!-- Metric Banner -->
-  <div class="metric-banner">
-    <div class="metric-card">
-      <span class="card-label">Total Pre-orders</span>
-      <span class="card-val">{{ store.filteredPreorders().length }}</span>
-      <span class="card-sub">Active scheduled bookings</span>
+  <!-- 3 Summary Metrics Cards -->
+  <section class="metrics-row" aria-label="Pre-order summary">
+    <div class="metric-card purple-tint">
+      <span class="metric-label">Active Pre-orders</span>
+      <strong class="metric-val">{{ preorders().length }} Bookings</strong>
+      <span class="metric-sub">Across all upcoming dates</span>
     </div>
-    <div class="metric-card">
-      <span class="card-label">Scheduled Value</span>
-      <span class="card-val text-green">{{ formatPrice(store.totalPreorderValuePaise()) }}</span>
-      <span class="card-sub">100% advance collected via UPI</span>
+
+    <div class="metric-card emerald-tint">
+      <span class="metric-label">Guaranteed Revenue</span>
+      <strong class="metric-val emerald">₹{{ (totalValuePaise() / 100) | number }}</strong>
+      <span class="metric-sub">100% advance collected via UPI</span>
     </div>
-    <div class="metric-card">
-      <span class="card-label">On-time Preparation</span>
-      <span class="card-val text-blue">98.4%</span>
-      <span class="card-sub">Average pickup ready time</span>
+
+    <div class="metric-card royal-tint">
+      <span class="metric-label">On-time Ready Rate</span>
+      <strong class="metric-val purple">98.4%</strong>
+      <span class="metric-sub">Packaged prior to slot</span>
+    </div>
+  </section>
+
+  <!-- Filters Row: Date & Status -->
+  <div class="filters-container">
+    <div class="filters-top-row">
+      <!-- Search Input -->
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" class="search-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search by customer name, phone, or #PRE ID..." 
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)" />
+      </div>
+
+      <!-- Date Pills -->
+      <div class="date-pills-scroll">
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filterDate() === 'ALL'"
+          (click)="setDateFilter('ALL')">
+          All Dates
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filterDate() === 'TODAY'"
+          (click)="setDateFilter('TODAY')">
+          Today
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filterDate() === 'TOMORROW'"
+          (click)="setDateFilter('TOMORROW')">
+          Tomorrow
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filterDate() === 'WEEKEND'"
+          (click)="setDateFilter('WEEKEND')">
+          This Weekend
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Pills -->
+    <div class="status-pills-row">
+      <button 
+        type="button" 
+        class="status-pill-btn" 
+        [class.active]="filterStatus() === 'ALL'"
+        (click)="setStatusFilter('ALL')">
+        All Statuses
+      </button>
+      <button 
+        type="button" 
+        class="status-pill-btn" 
+        [class.active]="filterStatus() === 'CONFIRMED'"
+        (click)="setStatusFilter('CONFIRMED')">
+        Confirmed (Upcoming)
+      </button>
+      <button 
+        type="button" 
+        class="status-pill-btn" 
+        [class.active]="filterStatus() === 'IN_PREPARATION'"
+        (click)="setStatusFilter('IN_PREPARATION')">
+        In Preparation
+      </button>
+      <button 
+        type="button" 
+        class="status-pill-btn" 
+        [class.active]="filterStatus() === 'READY_FOR_PICKUP'"
+        (click)="setStatusFilter('READY_FOR_PICKUP')">
+        Ready for Pickup
+      </button>
+      <button 
+        type="button" 
+        class="status-pill-btn" 
+        [class.active]="filterStatus() === 'COLLECTED'"
+        (click)="setStatusFilter('COLLECTED')">
+        Collected
+      </button>
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="filter-bar">
-    <div class="filter-group">
-      <span class="filter-label">Date:</span>
-      <button 
-        type="button" 
-        class="filter-pill" 
-        [class.active]="store.filterDate() === 'ALL'"
-        (click)="store.setDateFilter('ALL')">
-        All Dates
-      </button>
-      <button 
-        type="button" 
-        class="filter-pill" 
-        [class.active]="store.filterDate() === 'TODAY'"
-        (click)="store.setDateFilter('TODAY')">
-        Today (11 Nov)
-      </button>
-      <button 
-        type="button" 
-        class="filter-pill" 
-        [class.active]="store.filterDate() === 'TOMORROW'"
-        (click)="store.setDateFilter('TOMORROW')">
-        Tomorrow (12 Nov)
-      </button>
-    </div>
-  </div>
-
-  <!-- Pre-orders Table / List -->
-  <div class="preorders-list">
-    @for (po of store.filteredPreorders(); track po.orderId) {
-      <div class="order-card">
-        <div class="order-top">
-          <div class="order-id-group">
-            <span class="token-pill">{{ po.tokenNumber }}</span>
-            <span class="order-id">{{ po.orderId }}</span>
-            <span class="badge-paid">✓ PAID</span>
+  <!-- Pre-orders List / Grid -->
+  <div class="preorders-grid">
+    @for (order of filteredPreorders(); track order.id) {
+      <article class="preorder-card">
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="token-id-group">
+            <span class="token-badge">{{ order.token }}</span>
+            <div class="id-meta">
+              <strong class="order-id">{{ order.orderNumber }}</strong>
+              <span class="cust-info">{{ order.customerName }} • {{ order.customerPhone }}</span>
+            </div>
           </div>
-          <span class="status-pill" [ngClass]="getStatusClass(po.status)">
-            {{ po.status.replace('_', ' ') }}
-          </span>
-        </div>
 
-        <div class="customer-row">
-          <span class="customer-name">{{ po.customerName }}</span>
-          <span class="customer-phone">{{ po.customerPhoneMasked }}</span>
-        </div>
-
-        <div class="slot-callout">
-          <span class="callout-icon">⏰</span>
-          <span class="callout-text">
-            Pickup Date: <strong>{{ po.scheduledFulfillmentDate }}</strong> | Slot: <strong>{{ po.scheduledTimeSlot }}</strong>
-          </span>
-        </div>
-
-        @if (po.batchName) {
-          <div class="batch-callout">
-            <span class="batch-icon">🏷️</span>
-            <span class="batch-text">Batch: {{ po.batchName }}</span>
+          <div class="slot-callout-pill">
+            <svg viewBox="0 0 24 24" class="cal-svg" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div class="slot-text">
+              <strong class="slot-date">{{ order.scheduledDate }}</strong>
+              <span class="slot-time">{{ order.scheduledTimeRange }}</span>
+            </div>
           </div>
-        }
+        </div>
 
-        <!-- Items list -->
-        <div class="items-list">
-          @for (item of po.items; track item.name) {
-            <div class="item-row">
-              <span class="item-name">{{ item.quantity }}x {{ item.name }}</span>
-              <span class="item-price">{{ formatPrice(item.unitPricePaise * item.quantity) }}</span>
+        <!-- Items Summary List -->
+        <div class="items-list-box">
+          @for (item of order.items; track item.title) {
+            <div class="item-line">
+              <span class="item-name">{{ item.quantity }}x {{ item.title }}</span>
+              <strong class="item-price">₹{{ item.pricePaise / 100 }}</strong>
             </div>
           }
         </div>
 
-        @if (po.specialInstructions) {
-          <div class="instructions-box">
-            <strong>Note:</strong> {{ po.specialInstructions }}
-          </div>
-        }
-
-        <div class="order-footer">
-          <div class="total-group">
-            <span class="total-label">Total Amount:</span>
-            <span class="total-val">{{ formatPrice(po.totalAmountPaise) }}</span>
+        <!-- Card Footer -->
+        <div class="card-footer">
+          <div class="payment-total-col">
+            <span class="advance-tag">✓ {{ order.paymentMode }}</span>
+            <strong class="grand-total">₹{{ order.totalPaise / 100 }}</strong>
           </div>
 
-          <button 
-            type="button" 
-            class="btn-action" 
-            [disabled]="po.status === 'COLLECTED'"
-            (click)="store.advancePreorderStatus(po.orderId)">
-            {{ getActionLabel(po.status) }} →
-          </button>
+          <div class="action-btn-col">
+            @if (order.status === 'CONFIRMED') {
+              <button type="button" class="btn-prep" (click)="advanceOrderStatus(order.id)">
+                Start Prep
+              </button>
+            } @else if (order.status === 'IN_PREPARATION') {
+              <button type="button" class="btn-ready" (click)="advanceOrderStatus(order.id)">
+                Mark Ready
+              </button>
+            } @else if (order.status === 'READY_FOR_PICKUP') {
+              <button type="button" class="btn-handover" (click)="advanceOrderStatus(order.id)">
+                Handover / Done ✓
+              </button>
+            } @else {
+              <span class="collected-badge">Completed ✓</span>
+            }
+          </div>
         </div>
-      </div>
+      </article>
     } @empty {
-      <div class="empty-state">No pre-orders found for the selected criteria.</div>
+      <div class="empty-preorders-card">
+        <span class="empty-calendar">📅</span>
+        <h3>No pre-orders found</h3>
+        <p>No bookings match the selected date or status filter.</p>
+      </div>
     }
   </div>
 </div>

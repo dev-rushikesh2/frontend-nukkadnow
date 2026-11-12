@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -8,76 +8,209 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   template: `
     <aside class="sidebar">
       <div class="brand">
-        <h2>NukkadNow</h2>
-        <span class="badge">Merchant</span>
+        <div class="brand-logo-mark">
+          <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+            <path d="M14 16V12C14 8.686 16.686 6 20 6C23.314 6 26 8.686 26 12V16" stroke="#FF5A1F" stroke-width="3" stroke-linecap="round"/>
+            <path d="M8 16H32L34 23H6L8 16Z" fill="#FF5A1F"/>
+            <rect x="7" y="22" width="26" height="15" rx="5" fill="#2E1065"/>
+            <path d="M20 25C18.343 25 17 26.343 17 28C17 30.5 20 33 20 33C20 33 23 30.5 23 28C23 26.343 21.657 25 20 25Z" fill="#FF5A1F"/>
+            <circle cx="20" cy="28" r="1.5" fill="#FFFFFF"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">NukkadNow</span>
+          <span class="badge">Merchant</span>
+        </div>
+        <button type="button" class="close-drawer-btn" (click)="close.emit()" aria-label="Close menu">✕</button>
       </div>
+
       <nav class="nav-menu">
         <div class="nav-section">Operations</div>
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">📊 Dashboard</a>
-        <a routerLink="/order-inbox" routerLinkActive="active" class="nav-link">🔔 Order Inbox</a>
-        <a routerLink="/walkin-orders" routerLinkActive="active" class="nav-link">🧾 Counter Billing</a>
-        <a routerLink="/queue-board" routerLinkActive="active" class="nav-link">📋 Kitchen Display</a>
+        <a routerLink="/dashboard" (click)="close.emit()" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+          <span class="link-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a routerLink="/order-inbox" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">🔔</span>
+          <span>Order Inbox</span>
+        </a>
+        <a routerLink="/walkin-orders" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">🧾</span>
+          <span>Walk-in Order POS</span>
+        </a>
+        <a routerLink="/queue-board" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">📋</span>
+          <span>Queue Management</span>
+        </a>
         
         <div class="nav-section">Catalogue & Stock</div>
-        <a routerLink="/catalogue" routerLinkActive="active" class="nav-link">📦 Products</a>
-        <a routerLink="/inventory" routerLinkActive="active" class="nav-link">📉 Inventory</a>
-        <a routerLink="/preorders" routerLinkActive="active" class="nav-link">📅 Pre-orders</a>
-        <a routerLink="/batches" routerLinkActive="active" class="nav-link">🥖 Fresh Batches</a>
+        <a routerLink="/catalogue" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">📦</span>
+          <span>Products</span>
+        </a>
+        <a routerLink="/inventory" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">📉</span>
+          <span>Inventory Overview</span>
+        </a>
+        <a routerLink="/preorders" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">📅</span>
+          <span>Pre-orders</span>
+        </a>
 
-        <div class="nav-section">Fulfillment & Growth</div>
-        <a routerLink="/capacity-settings" routerLinkActive="active" class="nav-link">⚙️ Capacity Rules</a>
-        <a routerLink="/pickup-slots" routerLinkActive="active" class="nav-link">⏱️ Pickup Slots</a>
-        <a routerLink="/qr-ordering" routerLinkActive="active" class="nav-link">📱 Store Standee QR</a>
-        <a routerLink="/delivery-settings" routerLinkActive="active" class="nav-link">🛵 Self-Delivery</a>
+        <div class="nav-section">Fulfillment & Rules</div>
+        <a routerLink="/capacity-settings" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">⚙️</span>
+          <span>Capacity & Slots</span>
+        </a>
+        <a routerLink="/delivery-settings" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">🛵</span>
+          <span>Delivery Management</span>
+        </a>
+        <a routerLink="/staff-access" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">👥</span>
+          <span>Staff Management</span>
+        </a>
 
         <div class="nav-section">Store Management</div>
-        <a routerLink="/staff-access" routerLinkActive="active" class="nav-link">👥 Staff & PINs</a>
-        <a routerLink="/analytics" routerLinkActive="active" class="nav-link">📈 Analytics</a>
-        <a routerLink="/subscriptions" routerLinkActive="active" class="nav-link">⭐ Plans & Quotas</a>
-        <a routerLink="/billing" routerLinkActive="active" class="nav-link">💳 Invoices & Payouts</a>
-        <a routerLink="/notifications" routerLinkActive="active" class="nav-link">🔔 Notifications & UAT</a>
+        <a routerLink="/business-profile" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">🏪</span>
+          <span>Shop Profile</span>
+        </a>
+        <a routerLink="/analytics" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">📈</span>
+          <span>Business Analytics</span>
+        </a>
+        <a routerLink="/subscriptions" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">⭐</span>
+          <span>Subscriptions</span>
+        </a>
+        <a routerLink="/settings" (click)="close.emit()" routerLinkActive="active" class="nav-link">
+          <span class="link-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
       </nav>
     </aside>
   `,
   styles: [`
     .sidebar {
       height: 100vh;
-      width: 240px;
-      background: #0f172a;
-      color: #e2e8f0;
+      width: var(--sidebar-width, 260px);
+      background: var(--nn-purple-950, #1E1B4B);
+      color: #E2E8F0;
       display: flex;
       flex-direction: column;
       position: sticky;
       top: 0;
       overflow-y: auto;
       flex-shrink: 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
+
     .brand {
-      padding: 20px;
+      padding: 18px 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid #1e293b;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      background: var(--nn-purple-950, #1E1B4B);
+      z-index: 10;
     }
-    .brand h2 { margin: 0; font-size: 18px; color: #ffffff; font-weight: 800; }
-    .badge { background: #f97316; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #ffffff; }
-    .nav-menu { padding: 12px 8px 32px 8px; display: flex; flex-direction: column; gap: 2px; }
-    .nav-section { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700; padding: 14px 12px 4px; letter-spacing: 0.5px; }
+
+    .brand-logo-mark {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-text {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+
+      .brand-name {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        letter-spacing: -0.01em;
+      }
+
+      .badge {
+        background: var(--nn-purple-600, #6D28D9);
+        color: #FFFFFF;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 9999px;
+      }
+    }
+
+    .close-drawer-btn {
+      display: none;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #FFFFFF;
+      font-size: 0.9rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+
+      @media (max-width: 767px) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .nav-menu {
+      padding: 12px 10px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-section {
+      font-size: 0.675rem;
+      text-transform: uppercase;
+      color: #94A3B8;
+      font-weight: 700;
+      padding: 14px 10px 4px;
+      letter-spacing: 0.05em;
+    }
+
     .nav-link {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-      border-radius: 6px;
-      color: #cbd5e1;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 0.5rem;
+      color: #CBD5E1;
       text-decoration: none;
-      font-size: 13px;
+      font-size: 0.85rem;
       font-weight: 500;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
+
+      .link-icon {
+        font-size: 1rem;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: #FFFFFF;
+      }
+
+      &.active {
+        background: var(--nn-purple-600, #6D28D9);
+        color: #FFFFFF;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
+      }
     }
-    .nav-link:hover { background: #1e293b; color: #ffffff; }
-    .nav-link.active { background: #f97316; color: #ffffff; font-weight: 700; }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SidebarComponent {}
+export class SidebarComponent {
+  close = output<void>();
+}

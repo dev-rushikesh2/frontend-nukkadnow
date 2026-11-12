@@ -1,89 +1,293 @@
-﻿<div class="catalogue-page">
-  <div class="top-header">
-    <div class="title-meta">
-      <h2>Products & Catalogue</h2>
-      <p class="subtitle">Manage items, live stock availability, and made-to-order prep times.</p>
+﻿<div class="catalogue-viewport">
+  <!-- Toast -->
+  @if (toast()) {
+    <aside class="catalog-toast" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ toast() }}</span>
+    </aside>
+  }
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-titles">
+      <h1 class="page-title">Products & Catalog</h1>
+      <p class="page-subtitle">Manage items, live pricing, stock availability, and categories.</p>
     </div>
-    <ui-button variant="primary" (clicked)="createProduct()">+ Add Product</ui-button>
-  </div>
 
-  <!-- Search & Stock Overview Stats -->
-  <div class="controls-bar">
-    <div class="search-box">
-      <ui-input
-        placeholder="Search product name or ingredients..."
-        (valueChanged)="onSearch($event)">
-      </ui-input>
+    <div class="header-actions">
+      @if (activeSubTab() === 'categories') {
+        <button type="button" class="btn-primary-add" (click)="showAddCategoryModal.set(true)">
+          <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Add Category</span>
+        </button>
+      } @else {
+        <button type="button" class="btn-primary-add" (click)="createProduct()">
+          <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Add Product</span>
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- 4 Overview Metric Cards -->
+  <section class="metrics-row" aria-label="Catalog summary metrics">
+    <div class="metric-card purple-tint">
+      <span class="metric-label">Total Products</span>
+      <strong class="metric-val">{{ store.products().length }}</strong>
+      <span class="metric-sub">Across all categories</span>
     </div>
 
-    <div class="stock-stats">
-      <span class="stat-pill">Total: <strong>{{ store.products().length }}</strong></span>
-      <span class="stat-pill stat-pill--instock">In Stock: <strong>{{ store.inStockCount() }}</strong></span>
-      <span class="stat-pill stat-pill--out">Out of Stock: <strong>{{ store.outOfStockCount() }}</strong></span>
+    <div class="metric-card emerald-tint">
+      <span class="metric-label">In Stock (Live)</span>
+      <strong class="metric-val emerald">{{ store.inStockCount() }}</strong>
+      <span class="metric-sub">Available on marketplace</span>
     </div>
-  </div>
 
-  <!-- Category Pills -->
-  <div class="category-pills">
-    @for (cat of store.categories(); track cat) {
-      <button
-        type="button"
-        class="cat-pill"
-        [class.cat-pill--active]="store.selectedCategory() === cat"
-        (click)="store.setCategory(cat)">
-        {{ cat }}
-      </button>
-    }
-  </div>
+    <div class="metric-card orange-tint">
+      <span class="metric-label">Low / Out of Stock</span>
+      <strong class="metric-val orange">{{ lowStockProducts().length }}</strong>
+      <span class="metric-sub">Action required</span>
+    </div>
 
-  <!-- Products Grid -->
-  <div class="products-grid">
-    @for (product of store.filteredProducts(); track product.id) {
-      <div class="product-card" [class.product-card--out]="!product.inStock">
-        <div class="card-thumb-wrapper">
-          <div class="dietary-marker">
-            <ui-dietary-tag [isVeg]="product.isVeg"></ui-dietary-tag>
-          </div>
-          @if (product.imageUrl) {
-            <img [src]="product.imageUrl" [alt]="product.title" class="product-img" />
-          } @else {
-            <div class="placeholder-img">ðŸ“¦</div>
-          }
+    <div class="metric-card royal-tint">
+      <span class="metric-label">Active Categories</span>
+      <strong class="metric-val purple">{{ categoriesList().length }}</strong>
+      <span class="metric-sub">Catalog taxonomies</span>
+    </div>
+  </section>
+
+  <!-- Sub-tab Switcher Nav -->
+  <nav class="subtab-nav" aria-label="Catalog views">
+    <button 
+      type="button" 
+      class="subtab-item" 
+      [class.active]="activeSubTab() === 'products'"
+      (click)="setSubTab('products')">
+      All Products ({{ store.products().length }})
+    </button>
+    <button 
+      type="button" 
+      class="subtab-item" 
+      [class.active]="activeSubTab() === 'categories'"
+      (click)="setSubTab('categories')">
+      Categories ({{ categoriesList().length }})
+    </button>
+    <button 
+      type="button" 
+      class="subtab-item" 
+      [class.active]="activeSubTab() === 'low-stock'"
+      (click)="setSubTab('low-stock')">
+      ⚠️ Low Stock ({{ lowStockProducts().length }})
+    </button>
+  </nav>
+
+  <!-- ============================================== -->
+  <!-- VIEW 1 & 3: PRODUCTS & LOW STOCK (Screen 17)   -->
+  <!-- ============================================== -->
+  @if (activeSubTab() === 'products' || activeSubTab() === 'low-stock') {
+    <div class="catalog-content-section">
+      <!-- Toolbar: Search & Category Pills -->
+      <div class="catalog-toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" class="search-svg" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search product by title, SKU, or category..." 
+            [ngModel]="searchInput()"
+            (ngModelChange)="searchInput.set($event)" />
         </div>
 
-        <div class="card-content">
-          <div class="card-title-row">
-            <h4>{{ product.title }}</h4>
-            <ui-price-display [amountPaise]="product.pricePaise"></ui-price-display>
-          </div>
-
-          <p class="product-desc">{{ product.description }}</p>
-
-          @if (product.isMadeToOrder) {
-            <div class="lead-time-tag">
-              â³ Made to order ({{ product.leadTimeMinutes }}m lead time)
-            </div>
+        <div class="category-filters-scroll">
+          @for (cat of store.categories(); track cat) {
+            <button 
+              type="button" 
+              class="cat-filter-btn" 
+              [class.active]="store.selectedCategory() === cat"
+              (click)="selectCategory(cat)">
+              {{ cat }}
+            </button>
           }
+        </div>
+      </div>
 
-          <div class="card-footer">
-            <div class="stock-status">
-              <ui-toggle
-                [checked]="product.inStock"
-                (toggled)="store.toggleAvailability(product.id)">
-              </ui-toggle>
-              <span class="stock-label">
-                {{ product.inStock ? product.stockCount + ' in stock' : 'Out of Stock' }}
+      <!-- Products Grid / Table Cards -->
+      <div class="products-grid-container">
+        @for (prod of displayedProducts(); track prod.id) {
+          <article class="product-item-card" [class.out-of-stock]="!prod.inStock">
+            <!-- Card Thumbnail & Dietary Badge -->
+            <div class="card-thumb-area">
+              <div class="dietary-badge" [class.veg]="prod.isVeg" [class.non-veg]="!prod.isVeg" [title]="prod.isVeg ? 'Vegetarian' : 'Non-Vegetarian'">
+                <span class="dietary-dot"></span>
+              </div>
+
+              @if (prod.imageUrl) {
+                <img [src]="prod.imageUrl" [alt]="prod.title" class="product-image" />
+              } @else {
+                <div class="placeholder-emoji-wrap">
+                  {{ prod.isVeg ? '🥗' : '🍗' }}
+                </div>
+              }
+
+              @if (!prod.inStock) {
+                <div class="out-overlay">Out of Stock</div>
+              }
+            </div>
+
+            <!-- Card Info -->
+            <div class="card-body">
+              <div class="body-top">
+                <span class="category-tag">{{ prod.category }}</span>
+                <div class="stock-pill" [class.good]="prod.stockCount > 10" [class.low]="prod.stockCount <= 10 && prod.stockCount > 0" [class.zero]="prod.stockCount === 0">
+                  {{ prod.stockCount > 0 ? (prod.stockCount + ' in stock') : '0 in stock' }}
+                </div>
+              </div>
+
+              <h2 class="product-title">{{ prod.title }}</h2>
+              <p class="product-desc">{{ prod.description }}</p>
+
+              <!-- Price & Discount -->
+              <div class="price-row">
+                <span class="selling-price">₹{{ prod.pricePaise / 100 }}</span>
+                @if (prod.compareAtPricePaise && prod.compareAtPricePaise > prod.pricePaise) {
+                  <span class="mrp-strikethrough">₹{{ prod.compareAtPricePaise / 100 }}</span>
+                  <span class="discount-badge">
+                    {{ Math.round(((prod.compareAtPricePaise - prod.pricePaise) / prod.compareAtPricePaise) * 100) }}% OFF
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Card Actions & Stock Toggle -->
+            <div class="card-footer-bar">
+              <label class="stock-switch-label" title="Toggle marketplace availability">
+                <input 
+                  type="checkbox" 
+                  class="switch-input" 
+                  [checked]="prod.inStock" 
+                  (change)="toggleStock(prod.id)" />
+                <span class="switch-slider"></span>
+                <span class="switch-text">{{ prod.inStock ? 'Available' : 'Unavailable' }}</span>
+              </label>
+
+              <div class="card-action-btns">
+                <button type="button" class="btn-icon edit" (click)="editProduct(prod)" title="Edit Product">
+                  <svg viewBox="0 0 24 24" class="icon-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </button>
+                <button type="button" class="btn-icon duplicate" (click)="duplicateProduct(prod)" title="Duplicate">
+                  <svg viewBox="0 0 24 24" class="icon-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+                <button type="button" class="btn-icon delete" (click)="deleteProduct(prod.id, prod.title)" title="Delete">
+                  <svg viewBox="0 0 24 24" class="icon-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </article>
+        } @empty {
+          <div class="catalog-empty-card">
+            <div class="empty-icon-wrap">📦</div>
+            <h3>No products found</h3>
+            <p>Try searching with another keyword or create a new product.</p>
+            <button type="button" class="btn-primary-add" (click)="createProduct()">+ Add Product</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ============================================== -->
+  <!-- VIEW 2: PRODUCT CATEGORIES (Screen 20)         -->
+  <!-- ============================================== -->
+  @if (activeSubTab() === 'categories') {
+    <div class="categories-section">
+      <div class="categories-grid">
+        @for (cat of categoriesList(); track cat.id) {
+          <div class="category-card" [class.inactive]="!cat.isActive">
+            <div class="cat-card-header">
+              <span class="cat-emoji">{{ cat.emoji }}</span>
+              <label class="switch-wrap">
+                <input 
+                  type="checkbox" 
+                  [checked]="cat.isActive" 
+                  (change)="toggleCategory(cat.id)" />
+                <span class="switch-slider sm"></span>
+              </label>
+            </div>
+
+            <div class="cat-card-body">
+              <strong class="cat-name">{{ cat.name }}</strong>
+              <span class="cat-count">{{ cat.itemCount }} products listed</span>
+            </div>
+
+            <div class="cat-card-footer">
+              <span class="cat-status-tag" [class.active]="cat.isActive">
+                {{ cat.isActive ? 'Active on store' : 'Hidden from store' }}
               </span>
             </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
 
-            <ui-button variant="outline" size="sm" (clicked)="editProduct(product)">Edit</ui-button>
+  <!-- ADD CATEGORY MODAL -->
+  @if (showAddCategoryModal()) {
+    <div class="modal-backdrop" (click)="showAddCategoryModal.set(false)">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h3>Create New Category</h3>
+          <button type="button" class="btn-close-modal" (click)="showAddCategoryModal.set(false)">×</button>
+        </header>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Category Name</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="e.g. Organic Dairy & Ghee" 
+              [ngModel]="newCategoryName()"
+              (ngModelChange)="newCategoryName.set($event)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category Emoji / Icon</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="e.g. 🥛 or 🍞" 
+              [ngModel]="newCategoryEmoji()"
+              (ngModelChange)="newCategoryEmoji.set($event)" />
           </div>
         </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-modal-cancel" (click)="showAddCategoryModal.set(false)">Cancel</button>
+          <button type="button" class="btn-modal-submit" [disabled]="!newCategoryName().trim()" (click)="addCategory()">
+            Create Category
+          </button>
+        </footer>
       </div>
-    } @empty {
-      <div class="empty-state">
-        <p>No products found matching your search.</p>
-      </div>
-    }
-  </div>
+    </div>
+  }
 </div>

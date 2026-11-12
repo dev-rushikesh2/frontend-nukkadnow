@@ -1,28 +1,64 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { DashboardStore } from '../state/dashboard.store';
-import { AudioAlertService } from '../../../core/realtime/audio-alert.service';
-import { ButtonComponent } from '@nukkadnow/ui';
+import { Router, RouterLink } from '@angular/router';
+import { MerchantShellComponent } from '../../../layout/merchant-shell/merchant-shell.component';
+
+export interface DashboardMetric {
+  label: string;
+  value: string;
+  icon: string;
+  subtext: string;
+}
+
+export interface RecentOrderSummary {
+  id: string;
+  time: string;
+  amount: number;
+  status: 'New' | 'Preparing' | 'Ready' | 'Completed';
+  color: 'green' | 'blue' | 'purple';
+}
 
 @Component({
   selector: 'merchant-dashboard-list-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent],
+  imports: [CommonModule, RouterLink, MerchantShellComponent],
   templateUrl: './dashboard-list.page.html',
   styleUrls: ['./dashboard-list.page.scss'],
-  providers: [DashboardStore],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardListPageComponent {
-  readonly store = inject(DashboardStore);
-  private audio = inject(AudioAlertService);
+  private router = inject(Router);
 
-  formatPrice(paise: number): string {
-    return '₹' + (paise / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  // Shop Info
+  readonly shopName = signal<string>('Shree Fresh Mart');
+  readonly greeting = signal<string>('Good Morning');
+  readonly selectedTimeframe = signal<string>('Today');
+
+  // Performance Metrics
+  readonly performance = signal({
+    sales: 12840,
+    orders: 48,
+    customers: 126,
+    growthPercent: 18
+  });
+
+  // Recent Orders
+  readonly recentOrders = signal<RecentOrderSummary[]>([
+    { id: '#ORD78291', time: '10:24 AM', amount: 540, status: 'New', color: 'green' },
+    { id: '#ORD78290', time: '10:02 AM', amount: 1240, status: 'Preparing', color: 'blue' },
+    { id: '#ORD78289', time: '09:48 AM', amount: 325, status: 'Ready', color: 'purple' }
+  ]);
+
+  // Quick Insights
+  readonly topProduct = signal<string>('Tomato (5 kg)');
+  readonly activeArea = signal<string>('Within 15 km');
+  readonly rating = signal<{ score: number; count: number }>({ score: 4.7, count: 328 });
+
+  openOrderDetails(orderId: string) {
+    this.router.navigate(['/order-inbox'], { queryParams: { orderId } });
   }
 
-  playAlertSound(): void {
-    this.audio.playNewOrderAlert();
+  setTimeframe(tf: string) {
+    this.selectedTimeframe.set(tf);
   }
 }

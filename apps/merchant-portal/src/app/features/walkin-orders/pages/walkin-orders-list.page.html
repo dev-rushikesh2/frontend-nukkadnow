@@ -1,14 +1,360 @@
-﻿<div class="merchant-walkin-orders-container">
-  <div class="header-row">
-    <h2>WalkinOrders Management</h2>
+﻿<div class="pos-viewport">
+  <!-- Toast Notification -->
+  @if (posToast()) {
+    <aside class="pos-toast" role="alert">
+      <span>{{ posToast() }}</span>
+    </aside>
+  }
+
+  <!-- Header -->
+  <header class="pos-header">
+    <div class="header-titles">
+      <div class="title-meta-row">
+        <h1 class="page-title">Walk-in Order & Counter POS</h1>
+        <span class="register-pill">Counter 1 • Active</span>
+      </div>
+      <p class="page-subtitle">Fast touch billing with instant token creation and kitchen dispatch.</p>
+    </div>
+
+    <div class="header-links">
+      <a routerLink="/queue-board" class="btn-view-kds">
+        <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <span>Open KDS Display</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- POS Split View: 2 Columns on Desktop, Stacked on Mobile -->
+  <div class="pos-layout-grid">
+    <!-- LEFT PANEL: Product Catalog & Search -->
+    <section class="products-catalog-panel">
+      <!-- Search & Barcode Scan Row -->
+      <div class="search-scan-bar">
+        <div class="pos-search-wrap">
+          <svg viewBox="0 0 24 24" class="search-svg" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input 
+            type="text" 
+            class="pos-search-input" 
+            placeholder="Search items or type SKU..." 
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)" />
+        </div>
+
+        <button type="button" class="btn-scan-barcode" (click)="simulateBarcodeScan()" title="Simulate Barcode Scan">
+          <svg viewBox="0 0 24 24" class="scan-svg" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v14"/>
+          </svg>
+          <span>Scan</span>
+        </button>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-pills-row">
+        <button 
+          type="button" 
+          class="cat-pill" 
+          [class.active]="activeCategory() === 'All'"
+          (click)="activeCategory.set('All')">
+          All
+        </button>
+        <button 
+          type="button" 
+          class="cat-pill" 
+          [class.active]="activeCategory() === 'Beverages'"
+          (click)="activeCategory.set('Beverages')">
+          ☕ Beverages
+        </button>
+        <button 
+          type="button" 
+          class="cat-pill" 
+          [class.active]="activeCategory() === 'Snacks'"
+          (click)="activeCategory.set('Snacks')">
+          🥟 Snacks
+        </button>
+        <button 
+          type="button" 
+          class="cat-pill" 
+          [class.active]="activeCategory() === 'Dairy'"
+          (click)="activeCategory.set('Dairy')">
+          🥛 Dairy
+        </button>
+        <button 
+          type="button" 
+          class="cat-pill" 
+          [class.active]="activeCategory() === 'Bakery'"
+          (click)="activeCategory.set('Bakery')">
+          🍞 Bakery
+        </button>
+        <button 
+          type="button" 
+          class="cat-pill" 
+          [class.active]="activeCategory() === 'Groceries'"
+          (click)="activeCategory.set('Groceries')">
+          🍃 Groceries
+        </button>
+      </div>
+
+      <!-- Product Tiles Grid -->
+      <div class="product-tiles-grid">
+        @for (prod of filteredProducts(); track prod.id) {
+          <button type="button" class="product-tile-card" (click)="addToCart(prod)">
+            <div class="tile-emoji-box">{{ prod.emoji }}</div>
+            <div class="tile-details">
+              <strong class="tile-name">{{ prod.name }}</strong>
+              <span class="tile-price">₹{{ prod.price }}</span>
+            </div>
+            <div class="tile-add-icon">
+              <svg viewBox="0 0 24 24" class="add-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </div>
+          </button>
+        } @empty {
+          <div class="no-items-state">
+            <p>No products match "{{ searchQuery() }}"</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Current Ticket / Cart -->
+    <aside class="ticket-panel">
+      <!-- Customer Selector -->
+      <div class="customer-toggle-card">
+        <div class="customer-type-tabs">
+          <button 
+            type="button" 
+            class="cust-tab-btn" 
+            [class.active]="isGuest()"
+            (click)="isGuest.set(true)">
+            Walk-in Guest
+          </button>
+          <button 
+            type="button" 
+            class="cust-tab-btn" 
+            [class.active]="!isGuest()"
+            (click)="isGuest.set(false)">
+            Registered Customer
+          </button>
+        </div>
+
+        @if (!isGuest()) {
+          <div class="customer-inputs-row">
+            <input 
+              type="text" 
+              class="cust-input" 
+              placeholder="Customer Name" 
+              [ngModel]="custName()"
+              (ngModelChange)="custName.set($event)" />
+            <input 
+              type="tel" 
+              class="cust-input" 
+              placeholder="Mobile Number" 
+              [ngModel]="custPhone()"
+              (ngModelChange)="custPhone.set($event)" />
+          </div>
+        }
+      </div>
+
+      <!-- Ticket Items List -->
+      <div class="ticket-items-container">
+        <div class="ticket-header-row">
+          <h2 class="ticket-title">Current Ticket ({{ cart().length }})</h2>
+          @if (cart().length > 0) {
+            <button type="button" class="btn-clear-cart" (click)="clearCart()">Clear</button>
+          }
+        </div>
+
+        <div class="ticket-lines-list">
+          @for (item of cart(); track item.product.id) {
+            <div class="ticket-line-item">
+              <div class="line-lead">
+                <span class="line-emoji">{{ item.product.emoji }}</span>
+                <div class="line-names">
+                  <strong class="line-name">{{ item.product.name }}</strong>
+                  <span class="line-unit-price">₹{{ item.product.price }} each</span>
+                </div>
+              </div>
+
+              <div class="line-controls">
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" (click)="decreaseQty(item.product.id)">−</button>
+                  <span class="step-num">{{ item.quantity }}</span>
+                  <button type="button" class="step-btn" (click)="increaseQty(item.product.id)">+</button>
+                </div>
+                <strong class="line-subtotal">₹{{ item.product.price * item.quantity }}</strong>
+                <button type="button" class="btn-delete-line" (click)="removeFromCart(item.product.id)" title="Remove item">
+                  ×
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-ticket-prompt">
+              <div class="empty-basket-icon">🛒</div>
+              <p>Ticket is empty.<br>Tap products from the left to begin billing.</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Bill Breakdown & Discounts -->
+      <div class="bill-calculation-card">
+        <!-- Quick Discount Pills -->
+        <div class="discount-pills-row">
+          <span class="discount-label">Discount:</span>
+          <button 
+            type="button" 
+            class="disc-pill" 
+            [class.active]="discountPercent() === 0"
+            (click)="setDiscount(0)">
+            0%
+          </button>
+          <button 
+            type="button" 
+            class="disc-pill" 
+            [class.active]="discountPercent() === 5"
+            (click)="setDiscount(5)">
+            5%
+          </button>
+          <button 
+            type="button" 
+            class="disc-pill" 
+            [class.active]="discountPercent() === 10"
+            (click)="setDiscount(10)">
+            10%
+          </button>
+          <button 
+            type="button" 
+            class="disc-pill" 
+            [class.active]="discountPercent() === 15"
+            (click)="setDiscount(15)">
+            15%
+          </button>
+        </div>
+
+        <div class="calc-lines">
+          <div class="calc-row">
+            <span>Subtotal</span>
+            <span>₹{{ subtotal() }}</span>
+          </div>
+          @if (discountAmount() > 0) {
+            <div class="calc-row green">
+              <span>Discount ({{ discountPercent() }}%)</span>
+              <span>-₹{{ discountAmount() }}</span>
+            </div>
+          }
+          <div class="calc-row">
+            <span>GST (5%)</span>
+            <span>₹{{ taxAmount() }}</span>
+          </div>
+          <div class="calc-row total-highlight">
+            <strong>Total Payable</strong>
+            <strong>₹{{ grandTotal() }}</strong>
+          </div>
+        </div>
+
+        <!-- Payment Mode Selector -->
+        <div class="payment-modes-section">
+          <span class="pay-label">Payment Mode:</span>
+          <div class="pay-modes-grid">
+            <button 
+              type="button" 
+              class="pay-mode-btn" 
+              [class.active]="paymentMode() === 'UPI'"
+              (click)="paymentMode.set('UPI')">
+              📱 UPI / QR
+            </button>
+            <button 
+              type="button" 
+              class="pay-mode-btn" 
+              [class.active]="paymentMode() === 'Cash'"
+              (click)="paymentMode.set('Cash')">
+              💵 Cash
+            </button>
+            <button 
+              type="button" 
+              class="pay-mode-btn" 
+              [class.active]="paymentMode() === 'Card'"
+              (click)="paymentMode.set('Card')">
+              💳 Card
+            </button>
+            <button 
+              type="button" 
+              class="pay-mode-btn" 
+              [class.active]="paymentMode() === 'Udhaar'"
+              (click)="paymentMode.set('Udhaar')">
+              🤝 Due / Udhaar
+            </button>
+          </div>
+        </div>
+
+        <!-- Primary CTA Button -->
+        <button 
+          type="button" 
+          class="btn-checkout-ticket" 
+          [disabled]="cart().length === 0"
+          (click)="completeWalkinOrder()">
+          <span class="btn-main-label">Pay ₹{{ grandTotal() }} & Print Token</span>
+          <svg viewBox="0 0 24 24" class="btn-arrow" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
   </div>
-  @if (store.loading()) {
-    <p>Loading records...</p>
-  } @else {
-    <div class="cards-grid">
-      @for (item of store.items(); track item.id) {
-        <merchant-walkin-orders-card [item]="item"></merchant-walkin-orders-card>
-      }
+
+  <!-- COMPLETED ORDER RECEIPT MODAL -->
+  @if (receiptModal(); as rec) {
+    <div class="receipt-backdrop" (click)="closeReceipt()">
+      <div class="receipt-dialog" (click)="$event.stopPropagation()">
+        <header class="receipt-header">
+          <div class="token-circle-badge">{{ rec.token }}</div>
+          <h2 class="receipt-title">Order Placed Successfully!</h2>
+          <span class="receipt-order-id">{{ rec.orderId }} • {{ rec.timestamp }}</span>
+        </header>
+
+        <div class="receipt-body">
+          <div class="receipt-customer-meta">
+            <span>Customer: <strong>{{ rec.customerName }}</strong></span>
+            <span>Paid via: <strong>{{ rec.paymentMode }}</strong></span>
+          </div>
+
+          <div class="receipt-items-summary">
+            @for (line of rec.items; track line.product.id) {
+              <div class="receipt-item-row">
+                <span>{{ line.quantity }}x {{ line.product.name }}</span>
+                <strong>₹{{ line.product.price * line.quantity }}</strong>
+              </div>
+            }
+          </div>
+
+          <div class="receipt-totals-box">
+            <div class="rec-line"><span>Subtotal:</span><span>₹{{ rec.subtotal }}</span></div>
+            @if (rec.discount > 0) {
+              <div class="rec-line"><span>Discount:</span><span>-₹{{ rec.discount }}</span></div>
+            }
+            <div class="rec-line"><span>GST:</span><span>₹{{ rec.tax }}</span></div>
+            <div class="rec-line total"><strong>Total Paid:</strong><strong>₹{{ rec.grandTotal }}</strong></div>
+          </div>
+        </div>
+
+        <footer class="receipt-footer">
+          <button type="button" class="btn-print-receipt" (click)="printReceipt()">
+            🖨️ Print Receipt
+          </button>
+          <button type="button" class="btn-new-order" (click)="closeReceipt()">
+            Start New Order
+          </button>
+        </footer>
+      </div>
     </div>
   }
 </div>

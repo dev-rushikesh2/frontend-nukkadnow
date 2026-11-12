@@ -1,183 +1,384 @@
-﻿<div class="inbox-page">
-  <div class="top-bar">
+﻿<div class="orders-page-container">
+  <!-- Toast Notification -->
+  @if (toastMessage()) {
+    <aside class="toast-banner" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-icon" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <span>{{ toastMessage() }}</span>
+    </aside>
+  }
+
+  <!-- Page Header -->
+  <header class="page-header">
     <div class="header-titles">
-      <h2>Live Order Inbox</h2>
-      <p class="subtitle">Unified marketplace, walk-in counter, and table QR order management.</p>
+      <h1 class="page-title">Order Management</h1>
+      <p class="page-subtitle">Track incoming live orders, preparation stages, and order history.</p>
     </div>
 
-    <div class="header-actions">
-      <button
-        type="button"
-        class="sound-toggle-btn"
-        [class.muted]="!store.isSoundEnabled()"
-        (click)="store.toggleSound()"
-        title="Toggle audio alert chime">
-        {{ store.isSoundEnabled() ? 'ðŸ”” Sound: ON' : 'ðŸ”• Sound: MUTED' }}
+    <!-- Sub-tab pill switcher -->
+    <nav class="subtab-switcher" aria-label="Order views">
+      <button 
+        type="button" 
+        class="subtab-btn" 
+        [class.active]="subTab() === 'inbox'"
+        (click)="setSubTab('inbox')">
+        <svg viewBox="0 0 24 24" class="subtab-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Live Orders</span>
+        <span class="subtab-count">{{ orders().length }}</span>
       </button>
 
-      <ui-button variant="outline" size="sm" (clicked)="store.simulateNewOrder()">
-        + Simulate New Order
-      </ui-button>
-    </div>
-  </div>
+      <button 
+        type="button" 
+        class="subtab-btn" 
+        [class.active]="subTab() === 'history'"
+        (click)="setSubTab('history')">
+        <svg viewBox="0 0 24 24" class="subtab-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 8v4l3 3"/>
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64L21 8"/>
+          <path d="M21 3v5h-5"/>
+        </svg>
+        <span>Order History</span>
+      </button>
+    </nav>
+  </header>
 
-  <!-- Status Tabs -->
-  <div class="inbox-tabs">
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="store.activeTab() === 'NEW'"
-      (click)="store.setTab('NEW')">
-      <span>ðŸ”” New Orders</span>
-      @if (store.newOrdersCount() > 0) {
-        <span class="count-badge count-badge--pulse">{{ store.newOrdersCount() }}</span>
-      }
-    </button>
-
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="store.activeTab() === 'PREPARING'"
-      (click)="store.setTab('PREPARING')">
-      <span>â³ Preparing</span>
-      <span class="count-badge">{{ store.preparingCount() }}</span>
-    </button>
-
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="store.activeTab() === 'READY'"
-      (click)="store.setTab('READY')">
-      <span>âœ… Ready for Pickup</span>
-      <span class="count-badge">{{ store.readyCount() }}</span>
-    </button>
-
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="store.activeTab() === 'COMPLETED'"
-      (click)="store.setTab('COMPLETED')">
-      <span>ðŸ“œ Completed</span>
-    </button>
-  </div>
-
-  <!-- Order Cards List -->
-  <div class="orders-list">
-    @for (order of store.visibleOrders(); track order.id) {
-      <div class="order-card" [class.order-card--new]="order.status === 'PLACED'">
-        <div class="card-header">
-          <div class="order-meta">
-            <span class="order-id">{{ order.orderNumber }}</span>
-            <span class="source-tag source-tag--{{ order.source.toLowerCase() }}">{{ order.source }}</span>
-            <span class="received-time">{{ order.receivedAgo }}</span>
-          </div>
-
-          <ui-price-display [amountPaise]="order.totalPaise"></ui-price-display>
+  <!-- ============================================== -->
+  <!-- TAB 1: LIVE INBOX (Screen 12)                  -->
+  <!-- ============================================== -->
+  @if (subTab() === 'inbox') {
+    <section class="inbox-section">
+      <!-- Search & Filters Toolbar -->
+      <div class="toolbar-row">
+        <!-- Search Input -->
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" class="search-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search by Order ID or customer..." 
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)" />
         </div>
 
-        <div class="customer-info-row">
-          <div class="customer-name">
-            <strong>{{ order.customerName }}</strong>
-            <span class="customer-phone">{{ order.customerPhoneMasked }}</span>
-          </div>
+        <!-- Filter Pills -->
+        <div class="filter-pills-scroll">
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="activeFilter() === 'All'"
+            (click)="setFilter('All')">
+            All ({{ orders().length }})
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="activeFilter() === 'New'"
+            (click)="setFilter('New')">
+            <span class="dot-indicator dot-orange"></span>
+            New
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="activeFilter() === 'Preparing'"
+            (click)="setFilter('Preparing')">
+            <span class="dot-indicator dot-purple"></span>
+            Preparing
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="activeFilter() === 'Ready'"
+            (click)="setFilter('Ready')">
+            <span class="dot-indicator dot-emerald"></span>
+            Ready
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="activeFilter() === 'Completed'"
+            (click)="setFilter('Completed')">
+            Completed
+          </button>
+        </div>
+      </div>
 
-          @if (order.pickupSlotTime) {
-            <div class="pickup-time-pill">
-              ðŸ•’ {{ order.pickupSlotTime }}
+      <!-- Live Order Cards Grid / List -->
+      <div class="orders-cards-list">
+        @for (order of filteredOrders(); track order.id) {
+          <article class="merchant-order-card" (click)="openOrderDetails(order.id)">
+            <!-- Card Header -->
+            <div class="order-card-header">
+              <div class="id-time-group">
+                <div class="bag-avatar">
+                  <svg viewBox="0 0 24 24" class="bag-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                  </svg>
+                </div>
+                <div class="id-meta">
+                  <span class="order-id-label">{{ order.id }}</span>
+                  <span class="order-time-label">• {{ order.time }}</span>
+                </div>
+              </div>
+
+              <div class="price-items-group">
+                <span class="order-amount">₹{{ order.amount }}</span>
+                <span class="items-count-badge">{{ order.itemsCount }} items</span>
+              </div>
             </div>
-          }
-        </div>
 
-        <!-- Items Summary List -->
-        <div class="items-summary-box">
-          @for (item of order.items; track item.title) {
-            <div class="item-line">
-              <span class="qty">{{ item.quantity }}x</span>
-              <span class="name">{{ item.title }}</span>
-              @if (item.notes) {
-                <span class="item-notes">({{ item.notes }})</span>
+            <!-- Customer & Delivery Row -->
+            <div class="order-card-customer">
+              <div class="customer-info">
+                <div class="customer-avatar">{{ order.customerName.charAt(0) }}</div>
+                <div class="customer-text">
+                  <strong class="cust-name">{{ order.customerName }}</strong>
+                  <span class="cust-phone">{{ order.customerPhone || 'Verified Customer' }}</span>
+                </div>
+              </div>
+
+              <div class="fulfilment-pill" [class.pickup]="order.fulfilmentType === 'Self Pickup'">
+                @if (order.fulfilmentType === 'Home Delivery') {
+                  <svg viewBox="0 0 24 24" class="fulfil-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h1"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                  </svg>
+                  <span>Home Delivery • {{ order.distance || '3.0 km' }}</span>
+                } @else {
+                  <svg viewBox="0 0 24 24" class="fulfil-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  <span>Store Pickup</span>
+                }
+              </div>
+            </div>
+
+            <!-- Stepper Timeline -->
+            <div class="stepper-progress">
+              <div class="step-item" [class.done]="(order.stepIndex ?? 0) >= 0">
+                <div class="step-dot">
+                  <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <span class="step-label">Accepted</span>
+              </div>
+              <div class="step-connector" [class.done]="(order.stepIndex ?? 0) >= 1"></div>
+
+              <div class="step-item" [class.done]="(order.stepIndex ?? 0) >= 1" [class.active]="order.stepIndex === 1">
+                <div class="step-dot">
+                  @if ((order.stepIndex ?? 0) > 1) {
+                    <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  }
+                </div>
+                <span class="step-label">Preparing</span>
+              </div>
+              <div class="step-connector" [class.done]="(order.stepIndex ?? 0) >= 2"></div>
+
+              <div class="step-item" [class.done]="(order.stepIndex ?? 0) >= 2" [class.active]="order.stepIndex === 2">
+                <div class="step-dot">
+                  @if ((order.stepIndex ?? 0) > 2) {
+                    <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  }
+                </div>
+                <span class="step-label">Ready</span>
+              </div>
+              <div class="step-connector" [class.done]="(order.stepIndex ?? 0) >= 3"></div>
+
+              <div class="step-item" [class.done]="(order.stepIndex ?? 0) >= 3">
+                <div class="step-dot"></div>
+                <span class="step-label">Delivered</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons Footer -->
+            <div class="order-card-actions" (click)="$event.stopPropagation()">
+              @if (order.status === 'New') {
+                <button type="button" class="btn-reject" (click)="rejectOrder(order.id, $event)">
+                  Reject
+                </button>
+                <button type="button" class="btn-accept" (click)="acceptOrder(order.id, $event)">
+                  <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Accept Order
+                </button>
+              } @else if (order.status === 'Preparing') {
+                <button type="button" class="btn-secondary" (click)="openOrderDetails(order.id)">
+                  View Details
+                </button>
+                <button type="button" class="btn-ready" (click)="markCompleted(order.id, $event)">
+                  Mark as Ready
+                </button>
+              } @else if (order.status === 'Ready') {
+                <button type="button" class="btn-secondary" (click)="openOrderDetails(order.id)">
+                  View Details
+                </button>
+                <button type="button" class="btn-ready" (click)="markCompleted(order.id, $event)">
+                  Handover / Complete
+                </button>
+              } @else {
+                <span class="badge-completed">✓ Completed</span>
+                <button type="button" class="btn-secondary" (click)="openOrderDetails(order.id)">
+                  View Details
+                </button>
               }
             </div>
-          }
-        </div>
-
-        <!-- Action Row Based on Lifecycle State -->
-        <div class="card-actions-row">
-          @if (order.status === 'PLACED') {
-            <div class="new-order-actions">
-              <ui-button variant="danger" size="md" (clicked)="openRejectDialog(order)">Reject</ui-button>
-              <ui-button variant="primary" size="md" (clicked)="openAcceptDialog(order)">Accept Order</ui-button>
+          </article>
+        } @empty {
+          <div class="empty-state-card">
+            <div class="empty-icon-wrap">
+              <svg viewBox="0 0 24 24" class="empty-svg" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
             </div>
-          } @else if (order.status === 'PREPARING') {
-            <div class="prep-actions">
-              <span class="prep-timer">â±ï¸ <strong>{{ order.countdownMinutes }} mins</strong> remaining</span>
-              <ui-button variant="primary" size="md" (clicked)="store.markReady(order.id)">Mark Ready for Pickup</ui-button>
+            <h3>No orders found</h3>
+            <p>There are no live orders matching your current search or filter selection.</p>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ============================================== -->
+  <!-- TAB 2: ORDER HISTORY (Screen 14)               -->
+  <!-- ============================================== -->
+  @if (subTab() === 'history') {
+    <section class="history-section">
+      <!-- 4 KPI Summary Cards -->
+      <div class="history-kpis-grid">
+        <div class="kpi-card purple-tint">
+          <span class="kpi-label">Total Orders</span>
+          <strong class="kpi-number">48</strong>
+          <span class="kpi-sub">All channels</span>
+        </div>
+
+        <div class="kpi-card emerald-tint">
+          <span class="kpi-label">Completed</span>
+          <strong class="kpi-number emerald">42</strong>
+          <span class="kpi-sub">87.5% success rate</span>
+        </div>
+
+        <div class="kpi-card rose-tint">
+          <span class="kpi-label">Cancelled</span>
+          <strong class="kpi-number rose">6</strong>
+          <span class="kpi-sub">Rejected / abandoned</span>
+        </div>
+
+        <div class="kpi-card royal-tint">
+          <span class="kpi-label">Total Sales</span>
+          <strong class="kpi-number purple">₹24,860</strong>
+          <span class="kpi-sub">+18% vs last month</span>
+        </div>
+      </div>
+
+      <!-- History Toolbar -->
+      <div class="history-toolbar">
+        <!-- Filter Tabs -->
+        <div class="filter-pills-scroll">
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="historyFilter() === 'All'"
+            (click)="setHistoryFilter('All')">
+            All
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="historyFilter() === 'Completed'"
+            (click)="setHistoryFilter('Completed')">
+            Completed
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="historyFilter() === 'Cancelled'"
+            (click)="setHistoryFilter('Cancelled')">
+            Cancelled
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="historyFilter() === 'Returned'"
+            (click)="setHistoryFilter('Returned')">
+            Returned
+          </button>
+        </div>
+
+        <!-- Date Range & Export -->
+        <div class="history-actions-group">
+          <div class="date-dropdown-pill">
+            <svg viewBox="0 0 24 24" class="pill-svg" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>{{ dateRange() }}</span>
+            <svg viewBox="0 0 24 24" class="caret-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+
+          <button type="button" class="btn-export" (click)="exportReport()">
+            <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Past Orders Table / Card List -->
+      <div class="past-orders-list">
+        @for (item of filteredHistory(); track item.id) {
+          <div class="past-order-row">
+            <div class="past-lead">
+              <div class="past-id-col">
+                <strong class="past-id">{{ item.id }}</strong>
+                <span class="past-datetime">{{ item.date }} • {{ item.time }}</span>
+              </div>
+              <span class="past-items-badge">{{ item.itemsCount }} items</span>
             </div>
-          } @else if (order.status === 'READY') {
-            <div class="ready-actions">
-              <span class="ready-token-msg">Customer has token for pickup</span>
-              <ui-button variant="secondary" size="md" (clicked)="store.completeOrder(order.id)">Verify Token & Handover</ui-button>
+
+            <div class="past-trail">
+              <span class="past-status-badge" [class.cancelled]="item.status === 'Cancelled'">
+                {{ item.status }}
+              </span>
+              <strong class="past-amount">₹{{ item.amount }}</strong>
+              <button type="button" class="btn-icon-receipt" title="Print Bill" (click)="exportReport()">
+                <svg viewBox="0 0 24 24" class="receipt-svg" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+              </button>
             </div>
-          } @else {
-            <span class="completed-label">âœ“ Order Completed</span>
-          }
-        </div>
+          </div>
+        }
       </div>
-    } @empty {
-      <div class="empty-inbox">
-        <span class="empty-icon">â˜•</span>
-        <h3>No active orders in this queue</h3>
-        <p>New customer marketplace or counter QR orders will appear here automatically with sound alert.</p>
-      </div>
-    }
-  </div>
-
-  <!-- Accept Order Dialog -->
-  <ui-dialog
-    [isOpen]="isAcceptModalOpen()"
-    title="Accept Customer Order"
-    (close)="isAcceptModalOpen.set(false)">
-    @if (selectedOrder(); as ord) {
-      <div class="modal-dialog-body">
-        <p>Accepting order <strong>{{ ord.orderNumber }}</strong> for {{ ord.customerName }}.</p>
-        <span class="prep-select-label">Select Kitchen Preparation Time:</span>
-
-        <div class="prep-presets">
-          <button type="button" [class.selected]="selectedPrepMinutes() === 15" (click)="selectedPrepMinutes.set(15)">15 Mins</button>
-          <button type="button" [class.selected]="selectedPrepMinutes() === 25" (click)="selectedPrepMinutes.set(25)">25 Mins</button>
-          <button type="button" [class.selected]="selectedPrepMinutes() === 40" (click)="selectedPrepMinutes.set(40)">40 Mins</button>
-          <button type="button" [class.selected]="selectedPrepMinutes() === 60" (click)="selectedPrepMinutes.set(60)">1 Hour</button>
-        </div>
-
-        <div class="dialog-footer-actions">
-          <ui-button variant="outline" (clicked)="isAcceptModalOpen.set(false)">Cancel</ui-button>
-          <ui-button variant="primary" (clicked)="confirmAccept()">Confirm & Start Preparation</ui-button>
-        </div>
-      </div>
-    }
-  </ui-dialog>
-
-  <!-- Reject Order Dialog -->
-  <ui-dialog
-    [isOpen]="isRejectModalOpen()"
-    title="Reject Customer Order"
-    (close)="isRejectModalOpen.set(false)">
-    @if (selectedOrder(); as ord) {
-      <div class="modal-dialog-body">
-        <p>Reason for rejecting <strong>{{ ord.orderNumber }}</strong>:</p>
-
-        <select class="custom-select" [value]="rejectReason()" (change)="rejectReason.set($any($event.target).value)">
-          <option value="OUT_OF_STOCK">Item Out of Stock</option>
-          <option value="KITCHEN_BUSY">Kitchen Rush / Over Capacity</option>
-          <option value="STORE_CLOSING">Store Closing Soon</option>
-          <option value="OTHER">Other Reason</option>
-        </select>
-
-        <div class="dialog-footer-actions">
-          <ui-button variant="outline" (clicked)="isRejectModalOpen.set(false)">Cancel</ui-button>
-          <ui-button variant="danger" (clicked)="confirmReject()">Confirm Rejection</ui-button>
-        </div>
-      </div>
-    }
-  </ui-dialog>
+    </section>
+  }
 </div>

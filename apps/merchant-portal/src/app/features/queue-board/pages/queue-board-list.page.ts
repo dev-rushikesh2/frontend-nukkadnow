@@ -1,125 +1,175 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OrderInboxStore } from '../../order-inbox/state/order-inbox.store';
-import { ButtonComponent } from '@nukkadnow/ui';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+
+export interface QueueOrder {
+  id: string;
+  token: string;
+  customerName: string;
+  type: 'Walk-in' | 'Online' | 'Table QR';
+  itemsSummary: string;
+  itemsCount: number;
+  amount: number;
+  status: 'Preparing' | 'Ready' | 'Called';
+  timeRemainingMins: number;
+  placedTime: string;
+}
 
 @Component({
   selector: 'merchant-queue-board-page',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
-  template: `
-    <div class="kds-container">
-      <header class="kds-header">
-        <div class="kds-titles">
-          <h2>Kitchen Display & Queue Board</h2>
-          <span class="live-pulse">â— Live Order Queue</span>
-        </div>
-        <div class="kds-actions">
-          <ui-button variant="outline" size="sm" (clicked)="toggleFullscreen()">
-            {{ isFullscreen() ? 'Exit Fullscreen' : 'â›¶ Fullscreen KDS' }}
-          </ui-button>
-        </div>
-      </header>
-
-      <div class="kds-board">
-        <!-- Column 1: Now Preparing -->
-        <div class="kds-column kds-column--preparing">
-          <div class="column-header">
-            <h3>â³ NOW PREPARING ({{ store.preparingCount() }})</h3>
-          </div>
-
-          <div class="token-cards-list">
-            @for (ord of store.orders(); track ord.id) {
-              @if (ord.status === 'PREPARING') {
-                <div class="kds-card kds-card--prep">
-                  <div class="kds-card-top">
-                    <span class="kds-token-num">{{ ord.orderNumber }}</span>
-                    <span class="kds-timer">â±ï¸ {{ ord.countdownMinutes }}m remaining</span>
-                  </div>
-                  <div class="kds-items">
-                    <p>{{ ord.itemsSummary }}</p>
-                  </div>
-                  <button type="button" class="kds-ready-btn" (click)="store.markReady(ord.id)">
-                    Mark Ready âœ“
-                  </button>
-                </div>
-              }
-            } @empty {
-              <div class="kds-empty">No orders currently preparing.</div>
-            }
-          </div>
-        </div>
-
-        <!-- Column 2: Ready for Pickup -->
-        <div class="kds-column kds-column--ready">
-          <div class="column-header">
-            <h3>âœ… READY FOR PICKUP ({{ store.readyCount() }})</h3>
-          </div>
-
-          <div class="token-cards-list">
-            @for (ord of store.orders(); track ord.id) {
-              @if (ord.status === 'READY') {
-                <div class="kds-card kds-card--ready">
-                  <div class="kds-card-top">
-                    <div class="ready-token-circle">{{ ord.orderNumber }}</div>
-                    <span class="customer-tag">{{ ord.customerName }}</span>
-                  </div>
-                  <div class="kds-items">
-                    <p>{{ ord.itemsSummary }}</p>
-                  </div>
-                  <button type="button" class="kds-handover-btn" (click)="store.completeOrder(ord.id)">
-                    Handover & Clear
-                  </button>
-                </div>
-              }
-            } @empty {
-              <div class="kds-empty">No orders waiting for pickup.</div>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .kds-container { display: flex; flex-direction: column; gap: 20px; }
-    .kds-header { display: flex; justify-content: space-between; align-items: center; }
-    .kds-titles { display: flex; align-items: center; gap: 12px; }
-    h2 { font-size: 24px; color: #0f172a; margin: 0; }
-    .live-pulse { color: #16a34a; font-size: 13px; font-weight: 700; animation: pulse 1.5s infinite; }
-    .kds-board { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 600px; }
-    @media (max-width: 800px) { .kds-board { grid-template-columns: 1fr; } }
-    .kds-column { border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-    .kds-column--preparing { background: #fffdfb; border: 2px solid #fed7aa; }
-    .kds-column--ready { background: #f0fdf4; border: 2px solid #bbf7d0; }
-    .column-header h3 { font-size: 16px; font-weight: 700; margin: 0; }
-    .token-cards-list { display: flex; flex-direction: column; gap: 12px; }
-    .kds-card { background: #ffffff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px; }
-    .kds-card-top { display: flex; justify-content: space-between; align-items: center; }
-    .kds-token-num { font-size: 22px; font-weight: 800; color: #0f172a; }
-    .kds-timer { background: #fff7ed; color: #ea580c; font-weight: 700; font-size: 13px; padding: 4px 8px; border-radius: 6px; }
-    .kds-items p { margin: 0; font-size: 14px; color: #334155; font-weight: 500; }
-    .kds-ready-btn { width: 100%; padding: 10px; background: #16a34a; color: #ffffff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; }
-    .kds-ready-btn:hover { background: #15803d; }
-    .ready-token-circle { font-size: 22px; font-weight: 800; color: #16a34a; }
-    .customer-tag { font-size: 13px; font-weight: 600; color: #475569; }
-    .kds-handover-btn { width: 100%; padding: 10px; background: #0f172a; color: #ffffff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; }
-    .kds-empty { text-align: center; color: #94a3b8; padding: 48px 16px; font-size: 14px; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  `],
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './queue-board-list.page.html',
+  styleUrls: ['./queue-board-list.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class QueueBoardPageComponent {
-  store = inject(OrderInboxStore);
-  isFullscreen = signal<boolean>(false);
+  // View mode: 'kanban' | 'list'
+  readonly viewLayout = signal<'kanban' | 'list'>('kanban');
+
+  // Filter: 'All' | 'Walk-in' | 'Online' | 'Table QR'
+  readonly activeTypeFilter = signal<'All' | 'Walk-in' | 'Online' | 'Table QR'>('All');
+
+  // Fullscreen state
+  readonly isFullscreen = signal<boolean>(false);
+
+  // Toast announcement
+  readonly announcementToast = signal<string | null>(null);
+
+  // Queue Orders
+  readonly queueList = signal<QueueOrder[]>([
+    {
+      id: 'ord-201',
+      token: 'Q-14',
+      customerName: 'Sanjay Verma',
+      type: 'Walk-in',
+      itemsSummary: '2x Masala Tea, 1x Bun Maska, 1x Samosa',
+      itemsCount: 4,
+      amount: 140,
+      status: 'Preparing',
+      timeRemainingMins: 4,
+      placedTime: '10:32 AM'
+    },
+    {
+      id: 'ord-202',
+      token: 'Q-15',
+      customerName: 'Pooja Hegde',
+      type: 'Online',
+      itemsSummary: '1x Cold Coffee, 2x Veg Sandwich',
+      itemsCount: 3,
+      amount: 220,
+      status: 'Preparing',
+      timeRemainingMins: 7,
+      placedTime: '10:35 AM'
+    },
+    {
+      id: 'ord-203',
+      token: 'Q-12',
+      customerName: 'Kunal Roy',
+      type: 'Table QR',
+      itemsSummary: '1x Paneer Roll, 1x Thums Up 250ml',
+      itemsCount: 2,
+      amount: 160,
+      status: 'Ready',
+      timeRemainingMins: 0,
+      placedTime: '10:20 AM'
+    },
+    {
+      id: 'ord-204',
+      token: 'Q-11',
+      customerName: 'Meera Rao',
+      type: 'Walk-in',
+      itemsSummary: '1x Filter Coffee, 1x Butter Croissant',
+      itemsCount: 2,
+      amount: 150,
+      status: 'Called',
+      timeRemainingMins: 0,
+      placedTime: '10:18 AM'
+    },
+    {
+      id: 'ord-205',
+      token: 'Q-16',
+      customerName: 'Akash Sharma',
+      type: 'Online',
+      itemsSummary: '2x Aloo Paratha, 1x Sweet Lassi',
+      itemsCount: 3,
+      amount: 210,
+      status: 'Preparing',
+      timeRemainingMins: 11,
+      placedTime: '10:38 AM'
+    }
+  ]);
+
+  // Metrics
+  readonly inQueueCount = computed(() => this.queueList().length);
+  readonly preparingCount = computed(() => this.queueList().filter(q => q.status === 'Preparing').length);
+  readonly readyCount = computed(() => this.queueList().filter(q => q.status === 'Ready' || q.status === 'Called').length);
+  readonly completedToday = signal<number>(38);
+
+  // Filtered List
+  readonly filteredQueue = computed(() => {
+    const f = this.activeTypeFilter();
+    if (f === 'All') return this.queueList();
+    return this.queueList().filter(q => q.type === f);
+  });
+
+  readonly preparingOrders = computed(() =>
+    this.filteredQueue().filter(q => q.status === 'Preparing')
+  );
+
+  readonly readyOrders = computed(() =>
+    this.filteredQueue().filter(q => q.status === 'Ready' || q.status === 'Called')
+  );
+
+  callNextToken() {
+    const nextReady = this.queueList().find(q => q.status === 'Ready');
+    if (nextReady) {
+      this.callToken(nextReady.token);
+    } else {
+      const nextPrep = this.queueList().find(q => q.status === 'Preparing');
+      if (nextPrep) {
+        this.markReady(nextPrep.id);
+        this.callToken(nextPrep.token);
+      } else {
+        this.showToast('No orders waiting to be called!');
+      }
+    }
+  }
+
+  callToken(token: string) {
+    this.queueList.update(list =>
+      list.map(q => q.token === token ? { ...q, status: 'Called' } : q)
+    );
+    this.showToast(`📢 Calling Token ${token}! Please collect your order at counter.`);
+  }
+
+  markReady(id: string) {
+    this.queueList.update(list =>
+      list.map(q => q.id === id ? { ...q, status: 'Ready', timeRemainingMins: 0 } : q)
+    );
+    this.showToast(`Order marked Ready for Pickup!`);
+  }
+
+  completeOrder(id: string) {
+    this.queueList.update(list => list.filter(q => q.id !== id));
+    this.completedToday.update(c => c + 1);
+    this.showToast(`Order handed over & completed!`);
+  }
 
   toggleFullscreen() {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
+      document.documentElement.requestFullscreen().catch(() => {});
       this.isFullscreen.set(true);
     } else {
-      document.exitFullscreen();
+      document.exitFullscreen().catch(() => {});
       this.isFullscreen.set(false);
     }
+  }
+
+  private showToast(msg: string) {
+    this.announcementToast.set(msg);
+    setTimeout(() => this.announcementToast.set(null), 3200);
   }
 }
 

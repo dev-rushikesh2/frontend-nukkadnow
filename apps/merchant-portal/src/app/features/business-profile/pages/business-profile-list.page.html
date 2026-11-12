@@ -1,14 +1,323 @@
-﻿<div class="merchant-business-profile-container">
-  <div class="header-row">
-    <h2>BusinessProfile Management</h2>
-  </div>
-  @if (store.loading()) {
-    <p>Loading records...</p>
-  } @else {
-    <div class="cards-grid">
-      @for (item of store.items(); track item.id) {
-        <merchant-business-profile-card [item]="item"></merchant-business-profile-card>
+﻿<div class="profile-viewport">
+  <!-- Toast -->
+  @if (toast()) {
+    <aside class="prof-toast" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ toast() }}</span>
+    </aside>
+  }
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-titles">
+      <h1 class="page-title">Store Profile & Operating Hours</h1>
+      <p class="page-subtitle">Manage customer-facing branding, verified merchant badges, weekly opening schedules, and holidays.</p>
+    </div>
+
+    <div class="header-actions">
+      @if (activeSubTab() === 'PROFILE') {
+        <button type="button" class="btn-primary-save" (click)="saveProfile()">
+          Save Store Profile
+        </button>
+      } @else {
+        <button type="button" class="btn-primary-save" (click)="saveHours()">
+          Save Operating Hours
+        </button>
       }
+    </div>
+  </header>
+
+  <!-- Sub-tab Switcher -->
+  <nav class="subtab-nav" aria-label="Profile tabs">
+    <button 
+      type="button" 
+      class="subtab-item" 
+      [class.active]="activeSubTab() === 'PROFILE'"
+      (click)="activeSubTab.set('PROFILE')">
+      🏪 Store Profile & Branding
+    </button>
+    <button 
+      type="button" 
+      class="subtab-item" 
+      [class.active]="activeSubTab() === 'HOURS'"
+      (click)="activeSubTab.set('HOURS')">
+      🕒 Shop Availability & Hours
+    </button>
+  </nav>
+
+  <!-- ============================================== -->
+  <!-- TAB 1: STORE PROFILE (Screen 29)               -->
+  <!-- ============================================== -->
+  @if (activeSubTab() === 'PROFILE') {
+    <div class="profile-content-stack">
+      <!-- Storefront Cover & Avatar Branding Card -->
+      <section class="branding-card">
+        <div class="cover-wrapper">
+          <img [src]="coverUrl()" alt="Storefront cover" class="cover-image" />
+          <button type="button" class="btn-change-cover" title="Upload new cover">
+            📷 Change Cover Photo
+          </button>
+        </div>
+
+        <div class="avatar-meta-bar">
+          <div class="avatar-box">
+            <img [src]="logoUrl()" alt="Store Logo" class="store-avatar" />
+            <span class="verified-badge-icon" title="Verified Merchant Partner">✓</span>
+          </div>
+
+          <div class="store-identity">
+            <div class="name-badge-row">
+              <h2 class="store-name-title">{{ shopName() }}</h2>
+              <span class="verified-pill">✓ Verified Merchant</span>
+            </div>
+            <span class="cat-locality-text">{{ businessCategory() }} • Laxmi Nagar, {{ city() }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2-Column Details Grid -->
+      <div class="profile-details-grid">
+        <!-- Basic Information -->
+        <section class="section-card">
+          <h2 class="card-title">Business Information</h2>
+
+          <div class="fields-stack">
+            <div class="form-group">
+              <label class="field-label">Store Display Name</label>
+              <input type="text" class="field-input" [ngModel]="shopName()" (ngModelChange)="shopName.set($event)" />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label">Category</label>
+                <select class="field-select" [ngModel]="businessCategory()" (ngModelChange)="businessCategory.set($event)">
+                  <option value="Kirana & Supermarket">Kirana & Supermarket</option>
+                  <option value="Fruits & Vegetables">Fruits & Vegetables</option>
+                  <option value="Sweets & Dairy">Sweets & Dairy</option>
+                  <option value="Bakery & Cakes">Bakery & Cakes</option>
+                  <option value="Medical & Pharmacy">Medical & Pharmacy</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Owner Name</label>
+                <input type="text" class="field-input" [ngModel]="ownerName()" (ngModelChange)="ownerName.set($event)" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label">Primary Mobile</label>
+                <input type="tel" class="field-input" [ngModel]="phone()" (ngModelChange)="phone.set($event)" />
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Customer Support Email</label>
+                <input type="email" class="field-input" [ngModel]="email()" (ngModelChange)="email.set($event)" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Shop Bio / Tagline</label>
+              <textarea class="field-textarea" rows="2" [ngModel]="tagline()" (ngModelChange)="tagline.set($event)"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- Address & Compliance Section -->
+        <section class="section-card">
+          <h2 class="card-title">Address & Tax Compliance</h2>
+
+          <div class="fields-stack">
+            <div class="form-group">
+              <label class="field-label">Street Address & Landmark</label>
+              <textarea class="field-textarea" rows="2" [ngModel]="addressStreet()" (ngModelChange)="addressStreet.set($event)"></textarea>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label">City</label>
+                <input type="text" class="field-input" [ngModel]="city()" (ngModelChange)="city.set($event)" />
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Pincode</label>
+                <input type="text" class="field-input" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)" />
+              </div>
+            </div>
+
+            <!-- GST & FSSAI -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label">GSTIN (Goods & Services Tax)</label>
+                <div class="verified-input-box">
+                  <input type="text" class="field-input" [ngModel]="gstin()" (ngModelChange)="gstin.set($event)" />
+                  <span class="verified-check">✓</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">FSSAI License No.</label>
+                <div class="verified-input-box">
+                  <input type="text" class="field-input" [ngModel]="fssai()" (ngModelChange)="fssai.set($event)" />
+                  <span class="verified-check">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Storefront Photo Gallery -->
+      <section class="section-card">
+        <div class="card-header-row">
+          <div>
+            <h2 class="card-title">Storefront & Interior Photo Gallery</h2>
+            <p class="card-subtitle">Showcase your shelves, aisles, and hygiene standards to attract buyers.</p>
+          </div>
+          <button type="button" class="btn-add-photo" (click)="addStorePhoto()">
+            + Upload Photo
+          </button>
+        </div>
+
+        <div class="gallery-row">
+          @for (photo of storePhotos(); track photo; let idx = $index) {
+            <div class="gallery-item">
+              <img [src]="photo" alt="Store photo" class="store-img" />
+              <button type="button" class="btn-remove-photo" (click)="removePhoto(idx)">×</button>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- ============================================== -->
+  <!-- TAB 2: SHOP AVAILABILITY & HOURS (Screen 30)   -->
+  <!-- ============================================== -->
+  @if (activeSubTab() === 'HOURS') {
+    <div class="hours-content-stack">
+      <!-- Live Status Hero Banner -->
+      <aside class="live-status-hero" [class.closed]="!isShopLiveOpen()">
+        <div class="hero-text-col">
+          <div class="status-indicator-badge">
+            <span class="pulse-circle"></span>
+            <strong>{{ isShopLiveOpen() ? 'Shop is Currently LIVE & OPEN' : 'Shop is Temporarily CLOSED' }}</strong>
+          </div>
+          <p class="hero-desc">
+            {{ isShopLiveOpen() ? 'Customers can discover your store and place online delivery/pickup orders.' : 'Orders are paused. Walk-in counter POS remains operational.' }}
+          </p>
+        </div>
+
+        <button type="button" class="btn-hero-toggle" (click)="toggleShopLive()">
+          {{ isShopLiveOpen() ? '🔴 Pause Online Orders' : '🟢 Open Shop Now' }}
+        </button>
+      </aside>
+
+      <!-- Weekly Day-by-Day Hours Schedule -->
+      <section class="section-card">
+        <div class="card-header-row">
+          <div>
+            <h2 class="card-title">Weekly Store Operating Hours</h2>
+            <p class="card-subtitle">Set morning opening and night closing times for each day of the week.</p>
+          </div>
+
+          <button type="button" class="btn-copy-all" (click)="applyTimeToAll(weeklySchedule()[0])">
+            Apply Monday Times to All Days
+          </button>
+        </div>
+
+        <div class="schedule-days-list">
+          @for (day of weeklySchedule(); track day.day; let idx = $index) {
+            <div class="day-schedule-row" [class.closed-day]="!day.isOpen">
+              <div class="day-lead">
+                <label class="switch-wrap">
+                  <input type="checkbox" [checked]="day.isOpen" (change)="toggleDayOpen(idx)" />
+                  <span class="switch-slider"></span>
+                </label>
+                <strong class="day-name">{{ day.day }}</strong>
+              </div>
+
+              <div class="day-times-wrap">
+                @if (day.isOpen) {
+                  <div class="time-picker-pair">
+                    <div class="time-input-box">
+                      <span class="time-label">Opens at:</span>
+                      <input type="time" class="time-input" [(ngModel)]="day.openTime" />
+                    </div>
+                    <span class="time-separator">to</span>
+                    <div class="time-input-box">
+                      <span class="time-label">Closes at:</span>
+                      <input type="time" class="time-input" [(ngModel)]="day.closeTime" />
+                    </div>
+                  </div>
+                } @else {
+                  <span class="closed-label">Closed for the day</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Special Holiday & Scheduled Closures -->
+      <section class="section-card">
+        <div class="card-header-row">
+          <div>
+            <h2 class="card-title">Scheduled Festival & Holiday Closures</h2>
+            <p class="card-subtitle">Pre-schedule shop closures for public holidays or festivals so buyers are notified ahead.</p>
+          </div>
+          <button type="button" class="btn-add-photo" (click)="showAddHolidayModal.set(true)">
+            + Add Holiday Closure
+          </button>
+        </div>
+
+        <div class="holidays-list">
+          @for (h of holidays(); track h.id) {
+            <div class="holiday-pill-item">
+              <span class="cal-emoji">🎉</span>
+              <div class="holiday-meta">
+                <strong class="holiday-title">{{ h.title }}</strong>
+                <span class="holiday-date">{{ h.date }}</span>
+              </div>
+              <button type="button" class="btn-del-holiday" (click)="removeHoliday(h.id)" title="Remove">×</button>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- ADD HOLIDAY MODAL -->
+  @if (showAddHolidayModal()) {
+    <div class="modal-backdrop" (click)="showAddHolidayModal.set(false)">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h3>Schedule Holiday Closure</h3>
+          <button type="button" class="btn-close" (click)="showAddHolidayModal.set(false)">×</button>
+        </header>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="field-label">Holiday / Festival Name</label>
+            <input type="text" class="field-input" placeholder="e.g. Holi / Independence Day" [ngModel]="newHolidayName()" (ngModelChange)="newHolidayName.set($event)" />
+          </div>
+
+          <div class="form-group">
+            <label class="field-label">Date of Closure</label>
+            <input type="text" class="field-input" placeholder="e.g. 15 Aug 2026" [ngModel]="newHolidayDate()" (ngModelChange)="newHolidayDate.set($event)" />
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-modal-cancel" (click)="showAddHolidayModal.set(false)">Cancel</button>
+          <button type="button" class="btn-modal-submit" [disabled]="!newHolidayName().trim() || !newHolidayDate().trim()" (click)="addHoliday()">
+            Save Closure
+          </button>
+        </footer>
+      </div>
     </div>
   }
 </div>

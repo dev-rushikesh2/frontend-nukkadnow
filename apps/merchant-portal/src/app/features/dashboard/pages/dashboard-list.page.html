@@ -1,140 +1,207 @@
-<div class="dashboard-page">
-  <!-- Header -->
-  <header class="dash-header">
-    <div class="header-left">
-      <div class="badge-row">
-        <span class="badge badge-accent">Operational Pulse</span>
-        <span class="badge badge-live">● Live Storefront</span>
+<div class="dashboard-viewport">
+    
+    <!-- Greeting & Status Row -->
+    <header class="greeting-row">
+      <div class="greeting-text-col">
+        <h1 class="greeting-title">
+          {{ greeting() }},<br>
+          <span class="shop-name-highlight">{{ shopName() }} 👋</span>
+        </h1>
+        <p class="greeting-sub">Here's your business overview for today</p>
       </div>
-      <h1>Today's Merchant Operations</h1>
-      <p class="subtitle">Dharampeth Main Store • Real-time overview of orders, kitchen capacity, and billing.</p>
-    </div>
-    <div class="header-right">
-      <button type="button" class="btn-sound-check" (click)="playAlertSound()">
-        🔊 Test Kitchen Chime
-      </button>
-      <a routerLink="/walkin-orders" class="btn-pos">
-        ⚡ Rapid Walk-in POS
-      </a>
-    </div>
-  </header>
 
-  <!-- Urgent Action Callout (if pending orders exist) -->
-  @if (store.kpis().pendingActionOrders > 0) {
-    <div class="action-callout">
-      <div class="callout-content">
-        <span class="callout-icon">🚨</span>
-        <div>
-          <strong class="callout-title">{{ store.kpis().pendingActionOrders }} New Orders Awaiting Acceptance!</strong>
-          <p class="callout-desc">Accept orders immediately to start the preparation timer and keep customer pickup slots on schedule.</p>
+      <div class="live-status-pill-badge">
+        <span class="status-live-dot"></span>
+        <span class="live-label">Shop Live</span>
+        <svg viewBox="0 0 24 24" class="caret-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </header>
+
+    <!-- 4 Quick Actions Grid -->
+    <section class="quick-actions-grid" aria-label="Quick merchant actions">
+      <!-- 1: Add Product -->
+      <a routerLink="/catalogue" class="action-card">
+        <div class="action-icon-box">
+          <svg viewBox="0 0 24 24" class="action-svg purple" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+        </div>
+        <span class="action-label">Add Product</span>
+      </a>
+
+      <!-- 2: Manage Inventory -->
+      <a routerLink="/inventory" class="action-card">
+        <div class="action-icon-box">
+          <svg viewBox="0 0 24 24" class="action-svg purple" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <span class="action-label">Manage Inventory</span>
+      </a>
+
+      <!-- 3: View Orders -->
+      <a routerLink="/order-inbox" class="action-card">
+        <div class="action-icon-box">
+          <svg viewBox="0 0 24 24" class="action-svg purple" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <line x1="10" y1="9" x2="8" y2="9"/>
+          </svg>
+        </div>
+        <span class="action-label">View Orders</span>
+      </a>
+
+      <!-- 4: Shop Settings -->
+      <a routerLink="/settings" class="action-card">
+        <div class="action-icon-box">
+          <svg viewBox="0 0 24 24" class="action-svg purple" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <span class="action-label">Shop Settings</span>
+      </a>
+    </section>
+
+    <!-- Today's Performance Card (Deep Royal Purple) -->
+    <section class="performance-hero-card">
+      <div class="card-header-row">
+        <h2 class="card-title">Today's Performance</h2>
+        <div class="timeframe-select-pill">
+          <span>Today</span>
+          <svg viewBox="0 0 24 24" class="caret-svg" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
-      <a routerLink="/order-inbox" class="btn-action-inbox">
-        Open Order Inbox ({{ store.kpis().pendingActionOrders }}) →
-      </a>
-    </div>
-  }
 
-  <!-- KPI Grid -->
-  <div class="kpi-grid">
-    <div class="kpi-card highlight-green">
-      <span class="kpi-label">Today's Reconciled Sales</span>
-      <span class="kpi-val text-green">{{ formatPrice(store.kpis().todaysNetPayoutPaise) }}</span>
-      <span class="kpi-sub">Gross: {{ formatPrice(store.kpis().todaysGrossSalesPaise) }} ({{ store.kpis().ordersToday }} orders)</span>
-    </div>
-
-    <div class="kpi-card">
-      <span class="kpi-label">Kitchen Status</span>
-      <span class="kpi-val">
-        <span class="badge-prep">{{ store.kpis().inPrepOrders }} Preparing</span>
-        <span class="badge-ready">{{ store.kpis().readyOrders }} Ready</span>
-      </span>
-      <span class="kpi-sub">
-        <a routerLink="/queue-board" class="link-kds">View Kitchen Board →</a>
-      </span>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-label-row">
-        <span class="kpi-label">Next Slot Capacity</span>
-        <span class="slot-time-badge">{{ store.kpis().nextSlotTime }}</span>
-      </div>
-      <span class="kpi-val">{{ store.kpis().nextSlotBookedCount }} / {{ store.kpis().nextSlotCapacity }}</span>
-      <div class="mini-bar">
-        <div class="mini-bar-fill" [style.width.%]="(store.kpis().nextSlotBookedCount / store.kpis().nextSlotCapacity) * 100"></div>
-      </div>
-    </div>
-
-    <div class="kpi-card" [class.warn-card]="store.kpis().lowStockCount > 0">
-      <span class="kpi-label">Low Stock Alerts</span>
-      <span class="kpi-val text-orange">{{ store.kpis().lowStockCount }} Items</span>
-      <span class="kpi-sub">
-        <a routerLink="/inventory" class="link-inv">Update stock in 1 tap →</a>
-      </span>
-    </div>
-  </div>
-
-  <!-- Operational Shortcuts & Live Activity -->
-  <div class="split-section">
-    <!-- Quick Operation Shortcuts -->
-    <div class="card shortcuts-card">
-      <h2 class="card-title">Quick Operational Actions</h2>
-      <div class="shortcuts-grid">
-        <a routerLink="/walkin-orders" class="shortcut-btn">
-          <span class="sc-icon">🧾</span>
-          <span class="sc-label">Counter Billing</span>
-          <span class="sc-hint">&lt; 5s Walk-in POS</span>
-        </a>
-
-        <a routerLink="/order-inbox" class="shortcut-btn">
-          <span class="sc-icon">🔔</span>
-          <span class="sc-label">Order Inbox</span>
-          <span class="sc-hint">Accept, Prep, Ready</span>
-        </a>
-
-        <a routerLink="/queue-board" class="shortcut-btn">
-          <span class="sc-icon">📋</span>
-          <span class="sc-label">Kitchen Display</span>
-          <span class="sc-hint">Full-screen KDS</span>
-        </a>
-
-        <a routerLink="/pickup-slots" class="shortcut-btn">
-          <span class="sc-icon">⏱️</span>
-          <span class="sc-label">Pickup Slots</span>
-          <span class="sc-hint">Pause / Unblock Slots</span>
-        </a>
-
-        <a routerLink="/qr-ordering" class="shortcut-btn">
-          <span class="sc-icon">📱</span>
-          <span class="sc-label">Standee QR</span>
-          <span class="sc-hint">Print Table Tent Cards</span>
-        </a>
-
-        <a routerLink="/batches" class="shortcut-btn">
-          <span class="sc-icon">🥖</span>
-          <span class="sc-label">Fresh Batches</span>
-          <span class="sc-hint">Scheduled Pre-orders</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- Live Activity Feed -->
-    <div class="card activity-card">
-      <div class="card-head">
-        <h2 class="card-title">Live Store Activity</h2>
-        <span class="pulse-indicator">● Updated live</span>
-      </div>
-      <div class="activity-list">
-        @for (act of store.activities(); track act.id) {
-          <div class="activity-item">
-            <span class="act-dot" [ngClass]="act.type.toLowerCase()"></span>
-            <div class="act-details">
-              <span class="act-title">{{ act.title }}</span>
-              <span class="act-time">{{ act.time }}</span>
-            </div>
+      <div class="metrics-quad-row">
+        <!-- Sales -->
+        <div class="metric-quad-item">
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DDD6FE" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           </div>
+          <strong class="metric-val">₹{{ performance().sales.toLocaleString('en-IN') }}</strong>
+          <span class="metric-lbl">Sales</span>
+        </div>
+
+        <!-- Orders -->
+        <div class="metric-quad-item">
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DDD6FE" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <strong class="metric-val">{{ performance().orders }}</strong>
+          <span class="metric-lbl">Orders</span>
+        </div>
+
+        <!-- Customers -->
+        <div class="metric-quad-item">
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DDD6FE" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <strong class="metric-val">{{ performance().customers }}</strong>
+          <span class="metric-lbl">Customers</span>
+        </div>
+
+        <!-- Growth -->
+        <div class="metric-quad-item">
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          <strong class="metric-val growth">+{{ performance().growthPercent }}%</strong>
+          <span class="metric-lbl">vs Yesterday</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Orders Section -->
+    <section class="recent-orders-card">
+      <div class="section-heading-row">
+        <h2 class="section-title">Recent Orders</h2>
+        <a routerLink="/order-inbox" class="view-all-link">
+          <span>View All</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+
+      <div class="recent-orders-list">
+        @for (order of recentOrders(); track order.id) {
+          <article class="order-row-item" (click)="openOrderDetails(order.id)">
+            <!-- Bag Icon -->
+            <div class="order-bag-icon" [class]="order.color">
+              <svg viewBox="0 0 24 24" class="bag-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+
+            <!-- Order Id & Time -->
+            <div class="order-info-col">
+              <span class="order-id">{{ order.id }}</span>
+              <span class="order-time">{{ order.time }}</span>
+            </div>
+
+            <!-- Amount -->
+            <span class="order-amount">₹{{ order.amount }}</span>
+
+            <!-- Status Badge -->
+            <span class="status-pill-chip" [class]="order.status.toLowerCase()">
+              {{ order.status }}
+            </span>
+
+            <!-- Chevron -->
+            <svg viewBox="0 0 24 24" class="chevron-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </article>
         }
       </div>
-    </div>
+    </section>
+
+    <!-- Quick Insights Section -->
+    <section class="insights-section">
+      <h2 class="section-title">Quick Insights</h2>
+      <div class="insights-grid">
+        <!-- 1: Top Product -->
+        <div class="insight-card green-tint">
+          <div class="insight-lead-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div class="insight-text-col">
+            <span class="insight-sub">Top Product</span>
+            <strong class="insight-val">{{ topProduct() }}</strong>
+          </div>
+        </div>
+
+        <!-- 2: Active Area -->
+        <div class="insight-card blue-tint">
+          <div class="insight-lead-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          </div>
+          <div class="insight-text-col">
+            <span class="insight-sub">Active Area</span>
+            <strong class="insight-val">{{ activeArea() }}</strong>
+          </div>
+        </div>
+
+        <!-- 3: Rating -->
+        <div class="insight-card orange-tint">
+          <div class="insight-lead-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="insight-text-col">
+            <span class="insight-sub">Rating</span>
+            <strong class="insight-val">{{ rating().score }} <span class="rating-count">({{ rating().count }})</span></strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
-</div>

@@ -1,200 +1,204 @@
-﻿import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent, PriceDisplayComponent, DialogComponent } from '@nukkadnow/ui';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
-interface QuickProduct {
+export interface PosProduct {
   id: string;
-  title: string;
-  pricePaise: number;
+  name: string;
+  emoji: string;
+  category: 'Beverages' | 'Snacks' | 'Dairy' | 'Bakery' | 'Groceries';
+  price: number;
+  inStock: boolean;
 }
 
-interface CartItem {
-  product: QuickProduct;
+export interface CartLine {
+  product: PosProduct;
   quantity: number;
+}
+
+export interface CompletedWalkinReceipt {
+  token: string;
+  orderId: string;
+  customerName: string;
+  customerPhone?: string;
+  items: CartLine[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  grandTotal: number;
+  paymentMode: string;
+  timestamp: string;
 }
 
 @Component({
   selector: 'merchant-walkin-orders-page',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, PriceDisplayComponent, DialogComponent],
-  template: `
-    <div class="pos-container">
-      <div class="pos-header">
-        <h2>Counter Billing & Walk-In POS</h2>
-        <span class="pos-locality">Nagpur Central Register</span>
-      </div>
-
-      <div class="pos-grid">
-        <!-- Left: Quick-Tap Products -->
-        <div class="products-panel">
-          <h3>Quick-Tap Items</h3>
-          <div class="tiles-grid">
-            @for (p of quickProducts; track p.id) {
-              <button type="button" class="product-tile" (click)="addToCart(p)">
-                <span class="tile-title">{{ p.title }}</span>
-                <span class="tile-price">â‚¹{{ (p.pricePaise / 100) }}</span>
-              </button>
-            }
-          </div>
-        </div>
-
-        <!-- Right: Fast Cart -->
-        <div class="cart-panel">
-          <h3>Current Ticket</h3>
-
-          <div class="cart-items-list">
-            @for (item of cart(); track item.product.id) {
-              <div class="cart-item-row">
-                <div class="cart-item-info">
-                  <strong>{{ item.product.title }}</strong>
-                  <span>â‚¹{{ (item.product.pricePaise / 100) }} each</span>
-                </div>
-
-                <div class="qty-control">
-                  <button type="button" (click)="decreaseQty(item.product.id)">-</button>
-                  <span>{{ item.quantity }}</span>
-                  <button type="button" (click)="increaseQty(item.product.id)">+</button>
-                </div>
-              </div>
-            } @empty {
-              <div class="empty-cart-msg">Tap products on the left to add to order.</div>
-            }
-          </div>
-
-          <!-- Total & Actions -->
-          <div class="cart-footer">
-            <div class="total-row">
-              <span>Total Payable:</span>
-              <ui-price-display [amountPaise]="totalPaise()"></ui-price-display>
-            </div>
-
-            <div class="payment-method-selector">
-              <label class="pay-opt">
-                <input type="radio" name="pay" [checked]="paymentMode() === 'CASH'" (change)="paymentMode.set('CASH')" />
-                <span>ðŸ’µ Cash</span>
-              </label>
-              <label class="pay-opt">
-                <input type="radio" name="pay" [checked]="paymentMode() === 'UPI'" (change)="paymentMode.set('UPI')" />
-                <span>ðŸ“± Counter UPI QR</span>
-              </label>
-            </div>
-
-            <ui-button
-              variant="primary"
-              size="lg"
-              [fullWidth]="true"
-              [disabled]="cart().length === 0"
-              (clicked)="generateBillAndToken()">
-              Bill & Generate Token
-            </ui-button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Generated Token Success Modal -->
-      <ui-dialog
-        [isOpen]="isTokenSuccessOpen()"
-        title="Walk-In Token Generated"
-        (close)="isTokenSuccessOpen.set(false)">
-        <div class="receipt-preview">
-          <span class="ticket-header">NUKKADNOW COUNTER RECEIPT</span>
-          <div class="huge-token">{{ lastIssuedToken() }}</div>
-          <p>Please announce or display token for customer.</p>
-
-          <div class="dialog-receipt-actions">
-            <ui-button variant="outline" (clicked)="printReceipt()">ðŸ–¨ï¸ Print Receipt</ui-button>
-            <ui-button variant="primary" (clicked)="isTokenSuccessOpen.set(false)">Next Customer</ui-button>
-          </div>
-        </div>
-      </ui-dialog>
-    </div>
-  `,
-  styles: [`
-    .pos-container { display: flex; flex-direction: column; gap: 16px; }
-    .pos-header { display: flex; justify-content: space-between; align-items: center; }
-    h2 { font-size: 24px; color: #0f172a; margin: 0; }
-    .pos-locality { font-size: 13px; color: #64748b; font-weight: 500; }
-    .pos-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
-    @media (max-width: 900px) { .pos-grid { grid-template-columns: 1fr; } }
-    .products-panel { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; }
-    .products-panel h3, .cart-panel h3 { font-size: 16px; color: #0f172a; margin: 0 0 16px; }
-    .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-    .product-tile { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; cursor: pointer; transition: all 150ms ease; }
-    .product-tile:hover { border-color: #f97316; background: #fffaf5; transform: translateY(-2px); }
-    .tile-title { font-size: 14px; font-weight: 700; color: #0f172a; }
-    .tile-price { font-size: 13px; font-weight: 600; color: #f97316; }
-    .cart-panel { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
-    .cart-items-list { flex: 1; min-height: 250px; display: flex; flex-direction: column; gap: 10px; }
-    .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; }
-    .cart-item-info strong { display: block; font-size: 13px; color: #0f172a; }
-    .cart-item-info span { font-size: 12px; color: #64748b; }
-    .qty-control { display: flex; align-items: center; gap: 8px; }
-    .qty-control button { width: 28px; height: 28px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; font-weight: 700; cursor: pointer; }
-    .qty-control span { font-size: 14px; font-weight: 700; width: 20px; text-align: center; }
-    .empty-cart-msg { text-align: center; color: #94a3b8; padding: 48px 16px; font-size: 13px; }
-    .cart-footer { border-top: 1.5px solid #f1f5f9; padding-top: 16px; display: flex; flex-direction: column; gap: 14px; }
-    .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 700; color: #0f172a; }
-    .payment-method-selector { display: flex; gap: 16px; }
-    .pay-opt { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
-    .receipt-preview { text-align: center; padding: 20px; }
-    .ticket-header { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #64748b; }
-    .huge-token { font-size: 54px; font-weight: 900; color: #f97316; margin: 12px 0; }
-    .dialog-receipt-actions { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
-  `],
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './walkin-orders-list.page.html',
+  styleUrls: ['./walkin-orders-list.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WalkinOrdersPageComponent {
-  quickProducts: QuickProduct[] = [
-    { id: 'qp-1', title: 'Nagpur Samosa', pricePaise: 2500 },
-    { id: 'qp-2', title: 'Tarri Poha', pricePaise: 4000 },
-    { id: 'qp-3', title: 'Orange Barfi (250g)', pricePaise: 16000 },
-    { id: 'qp-4', title: 'Masala Chai', pricePaise: 1500 },
-    { id: 'qp-5', title: 'Kachori Plate', pricePaise: 3000 },
-    { id: 'qp-6', title: 'Cold Coffee', pricePaise: 5000 }
-  ];
+  // Search & Category
+  readonly searchQuery = signal<string>('');
+  readonly activeCategory = signal<string>('All');
 
-  cart = signal<CartItem[]>([]);
-  paymentMode = signal<'CASH' | 'UPI'>('CASH');
-  lastIssuedToken = signal<string>('#NK-501');
-  isTokenSuccessOpen = signal<boolean>(false);
+  // Customer selection
+  readonly isGuest = signal<boolean>(true);
+  readonly custName = signal<string>('');
+  readonly custPhone = signal<string>('');
 
-  totalPaise = computed(() => {
-    return this.cart().reduce((sum, item) => sum + item.product.pricePaise * item.quantity, 0);
+  // Payment Mode
+  readonly paymentMode = signal<'Cash' | 'UPI' | 'Card' | 'Udhaar'>('UPI');
+
+  // Discount %
+  readonly discountPercent = signal<number>(0);
+
+  // Products Catalog
+  readonly products = signal<PosProduct[]>([
+    { id: 'p1', name: 'Special Masala Chai', emoji: '☕', category: 'Beverages', price: 20, inStock: true },
+    { id: 'p2', name: 'Filter Coffee', emoji: '☕', category: 'Beverages', price: 30, inStock: true },
+    { id: 'p3', name: 'Crispy Punjabi Samosa', emoji: '🥟', category: 'Snacks', price: 25, inStock: true },
+    { id: 'p4', name: 'Bun Maska', emoji: '🍞', category: 'Bakery', price: 35, inStock: true },
+    { id: 'p5', name: 'Amul Taaza Milk 500ml', emoji: '🥛', category: 'Dairy', price: 27, inStock: true },
+    { id: 'p6', name: 'Amul Butter 100g', emoji: '🧈', category: 'Dairy', price: 58, inStock: true },
+    { id: 'p7', name: 'Whole Wheat Bread 400g', emoji: '🍞', category: 'Bakery', price: 45, inStock: true },
+    { id: 'p8', name: 'Thums Up Cold Drink 250ml', emoji: '🥤', category: 'Beverages', price: 20, inStock: true },
+    { id: 'p9', name: 'Aloo Tikki Burger', emoji: '🍔', category: 'Snacks', price: 70, inStock: true },
+    { id: 'p10', name: 'Paneer Roll', emoji: '🌯', category: 'Snacks', price: 90, inStock: true },
+    { id: 'p11', name: 'Tata Tea Gold 250g', emoji: '🍃', category: 'Groceries', price: 140, inStock: true },
+    { id: 'p12', name: 'Fortune Sunflower Oil 1L', emoji: '🌻', category: 'Groceries', price: 135, inStock: true }
+  ]);
+
+  // Cart Lines
+  readonly cart = signal<CartLine[]>([
+    {
+      product: { id: 'p1', name: 'Special Masala Chai', emoji: '☕', category: 'Beverages', price: 20, inStock: true },
+      quantity: 2
+    },
+    {
+      product: { id: 'p4', name: 'Bun Maska', emoji: '🍞', category: 'Bakery', price: 35, inStock: true },
+      quantity: 1
+    }
+  ]);
+
+  // Modal receipt
+  readonly receiptModal = signal<CompletedWalkinReceipt | null>(null);
+
+  // Toast
+  readonly posToast = signal<string | null>(null);
+
+  // Filtered Products
+  readonly filteredProducts = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const cat = this.activeCategory();
+    let list = this.products();
+
+    if (cat !== 'All') {
+      list = list.filter(p => p.category === cat);
+    }
+    if (q) {
+      list = list.filter(p => p.name.toLowerCase().includes(q));
+    }
+    return list;
   });
 
-  addToCart(product: QuickProduct) {
-    this.cart.update((list) => {
-      const idx = list.findIndex((i) => i.product.id === product.id);
-      if (idx > -1) {
-        list[idx].quantity += 1;
-        return [...list];
+  // Totals calculations
+  readonly subtotal = computed(() =>
+    this.cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  );
+
+  readonly discountAmount = computed(() =>
+    Math.round((this.subtotal() * this.discountPercent()) / 100)
+  );
+
+  readonly taxAmount = computed(() =>
+    Math.round(((this.subtotal() - this.discountAmount()) * 5) / 100) // 5% GST
+  );
+
+  readonly grandTotal = computed(() =>
+    this.subtotal() - this.discountAmount() + this.taxAmount()
+  );
+
+  addToCart(prod: PosProduct) {
+    this.cart.update(lines => {
+      const idx = lines.findIndex(l => l.product.id === prod.id);
+      if (idx >= 0) {
+        return lines.map((l, i) => i === idx ? { ...l, quantity: l.quantity + 1 } : l);
       }
-      return [...list, { product, quantity: 1 }];
+      return [...lines, { product: prod, quantity: 1 }];
     });
   }
 
-  increaseQty(productId: string) {
-    this.cart.update((list) =>
-      list.map((i) => (i.product.id === productId ? { ...i, quantity: i.quantity + 1 } : i))
+  increaseQty(prodId: string) {
+    this.cart.update(lines =>
+      lines.map(l => l.product.id === prodId ? { ...l, quantity: l.quantity + 1 } : l)
     );
   }
 
-  decreaseQty(productId: string) {
-    this.cart.update((list) => {
-      return list
-        .map((i) => (i.product.id === productId ? { ...i, quantity: i.quantity - 1 } : i))
-        .filter((i) => i.quantity > 0);
-    });
+  decreaseQty(prodId: string) {
+    this.cart.update(lines =>
+      lines
+        .map(l => l.product.id === prodId ? { ...l, quantity: l.quantity - 1 } : l)
+        .filter(l => l.quantity > 0)
+    );
   }
 
-  generateBillAndToken() {
-    const nextTokenNum = Math.floor(100 + Math.random() * 900);
-    this.lastIssuedToken.set('#NK-' + nextTokenNum);
-    this.isTokenSuccessOpen.set(true);
+  removeFromCart(prodId: string) {
+    this.cart.update(lines => lines.filter(l => l.product.id !== prodId));
+  }
+
+  clearCart() {
     this.cart.set([]);
+  }
+
+  simulateBarcodeScan() {
+    // Pick random product
+    const randomProd = this.products()[Math.floor(Math.random() * this.products().length)];
+    this.addToCart(randomProd);
+    this.showToast(`🔍 Barcode scanned: Added "${randomProd.name}"`);
+  }
+
+  setDiscount(pct: number) {
+    this.discountPercent.set(pct);
+  }
+
+  completeWalkinOrder() {
+    if (this.cart().length === 0) {
+      this.showToast('Please add items to ticket first!');
+      return;
+    }
+
+    const nextTokenNum = Math.floor(Math.random() * 50) + 20;
+    const receipt: CompletedWalkinReceipt = {
+      token: `Q-${nextTokenNum}`,
+      orderId: `#WALK-${Date.now().toString().slice(-4)}`,
+      customerName: this.isGuest() ? 'Walk-in Guest' : (this.custName() || 'Walk-in Customer'),
+      customerPhone: this.isGuest() ? undefined : this.custPhone(),
+      items: [...this.cart()],
+      subtotal: this.subtotal(),
+      discount: this.discountAmount(),
+      tax: this.taxAmount(),
+      grandTotal: this.grandTotal(),
+      paymentMode: this.paymentMode(),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    this.receiptModal.set(receipt);
+    this.clearCart();
+  }
+
+  closeReceipt() {
+    this.receiptModal.set(null);
   }
 
   printReceipt() {
     window.print();
+  }
+
+  private showToast(msg: string) {
+    this.posToast.set(msg);
+    setTimeout(() => this.posToast.set(null), 2500);
   }
 }

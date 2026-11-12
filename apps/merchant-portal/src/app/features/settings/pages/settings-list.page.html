@@ -1,14 +1,251 @@
-﻿<div class="merchant-settings-container">
-  <div class="header-row">
-    <h2>Settings Management</h2>
-  </div>
-  @if (store.loading()) {
-    <p>Loading records...</p>
-  } @else {
-    <div class="cards-grid">
-      @for (item of store.items(); track item.id) {
-        <merchant-settings-card [item]="item"></merchant-settings-card>
-      }
+﻿<div class="settings-viewport">
+  <!-- Toast -->
+  @if (toast()) {
+    <aside class="set-toast" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ toast() }}</span>
+    </aside>
+  }
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-titles">
+      <h1 class="page-title">Store Settings & SaaS Plan</h1>
+      <p class="page-subtitle">Configure audio alerts, automated customer messaging, store operations, and SaaS subscription.</p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn-save-settings" (click)="saveAll()">
+        Save Settings
+      </button>
+    </div>
+  </header>
+
+  <!-- Sub-tab Switcher -->
+  <nav class="subtab-nav" aria-label="Settings categories">
+    <button 
+      type="button" 
+      class="subtab-item" 
+      [class.active]="activeSubTab() === 'GENERAL'"
+      (click)="activeSubTab.set('GENERAL')">
+      ⚙️ General Settings & Notifications
+    </button>
+    <button 
+      type="button" 
+      class="subtab-item" 
+      [class.active]="activeSubTab() === 'SUBSCRIPTION'"
+      (click)="activeSubTab.set('SUBSCRIPTION')">
+      💳 SaaS Subscription & Billing
+    </button>
+  </nav>
+
+  <!-- ============================================== -->
+  <!-- TAB 1: GENERAL SETTINGS                        -->
+  <!-- ============================================== -->
+  @if (activeSubTab() === 'GENERAL') {
+    <div class="settings-content-stack">
+      <!-- 1. Notification Preferences Card -->
+      <section class="settings-card">
+        <h2 class="card-title">Order Alerts & Notifications</h2>
+        <p class="card-subtitle">Stay alerted immediately when new orders, cancellations, or delivery riders arrive.</p>
+
+        <div class="toggles-list">
+          <!-- Toggle 1: Order Sound Chime -->
+          <div class="setting-toggle-row">
+            <div class="setting-text">
+              <strong class="setting-title">New Order Sound Chime 🔔</strong>
+              <p class="setting-desc">Plays an audible alert on this device whenever a customer places a live order.</p>
+            </div>
+            <label class="switch-wrap">
+              <input 
+                type="checkbox" 
+                [checked]="orderChimeSound()" 
+                (change)="toggleSetting(orderChimeSound, 'Audio Chime')" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <!-- Toggle 2: WhatsApp Alerts -->
+          <div class="setting-toggle-row">
+            <div class="setting-text">
+              <strong class="setting-title">WhatsApp Dispatch Alerts 💬</strong>
+              <p class="setting-desc">Automatically sends WhatsApp pickup tokens and tracking links to the customer.</p>
+            </div>
+            <label class="switch-wrap">
+              <input 
+                type="checkbox" 
+                [checked]="whatsappAlerts()" 
+                (change)="toggleSetting(whatsappAlerts, 'WhatsApp Alerts')" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <!-- Toggle 3: Daily Summary SMS -->
+          <div class="setting-toggle-row">
+            <div class="setting-text">
+              <strong class="setting-title">Daily Evening Closing SMS 📊</strong>
+              <p class="setting-desc">Sends a daily summary of total sales, cash collected, and payouts to owner mobile at 10:30 PM.</p>
+            </div>
+            <label class="switch-wrap">
+              <input 
+                type="checkbox" 
+                [checked]="dailySummarySms()" 
+                (change)="toggleSetting(dailySummarySms, 'Daily SMS Summary')" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Store Operations & Audio Voice -->
+      <section class="settings-card">
+        <h2 class="card-title">Kitchen & Store Automation</h2>
+
+        <div class="toggles-list">
+          <div class="setting-toggle-row">
+            <div class="setting-text">
+              <strong class="setting-title">Auto-Accept Marketplace Orders ⚡</strong>
+              <p class="setting-desc">Automatically accepts incoming customer orders and sends them straight to the kitchen display.</p>
+            </div>
+            <label class="switch-wrap">
+              <input 
+                type="checkbox" 
+                [checked]="autoAcceptOrders()" 
+                (change)="toggleSetting(autoAcceptOrders, 'Auto-Accept Orders')" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-select-row">
+            <div class="setting-text">
+              <strong class="setting-title">Queue Token Announcement Voice 📢</strong>
+              <p class="setting-desc">Language used by the TV/speaker to call out customer token numbers.</p>
+            </div>
+            <select 
+              class="setting-select" 
+              [ngModel]="voiceAnnouncementLanguage()" 
+              (ngModelChange)="voiceAnnouncementLanguage.set($event)">
+              <option value="hi-IN">Hindi + English (Bilingual)</option>
+              <option value="mr-IN">Marathi + English</option>
+              <option value="en-IN">Indian English Accent</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Quick Shortcuts Navigation 2x3 Grid -->
+      <section class="settings-card">
+        <h2 class="card-title">Quick Settings Hub</h2>
+        <div class="shortcuts-grid">
+          <a routerLink="/business-profile" class="shortcut-tile">
+            <span class="tile-icon">🏪</span>
+            <div class="tile-text">
+              <strong>Business Profile</strong>
+              <small>Name, GSTIN, photos</small>
+            </div>
+          </a>
+
+          <a routerLink="/delivery-settings" class="shortcut-tile">
+            <span class="tile-icon">🛵</span>
+            <div class="tile-text">
+              <strong>Delivery Zones</strong>
+              <small>Radius, fees, riders</small>
+            </div>
+          </a>
+
+          <a routerLink="/staff-access" class="shortcut-tile">
+            <span class="tile-icon">👥</span>
+            <div class="tile-text">
+              <strong>Staff & PINs</strong>
+              <small>Cashiers, roles, keys</small>
+            </div>
+          </a>
+
+          <a routerLink="/capacity-settings" class="shortcut-tile">
+            <span class="tile-icon">⏱️</span>
+            <div class="tile-text">
+              <strong>Capacity & Slots</strong>
+              <small>Pacing, interval limits</small>
+            </div>
+          </a>
+
+          <a routerLink="/catalogue" class="shortcut-tile">
+            <span class="tile-icon">🏷️</span>
+            <div class="tile-text">
+              <strong>Catalog & Pricing</strong>
+              <small>Items, MRP, stock</small>
+            </div>
+          </a>
+
+          <a routerLink="/analytics" class="shortcut-tile">
+            <span class="tile-icon">📊</span>
+            <div class="tile-text">
+              <strong>Bank Reports</strong>
+              <small>Reconciliation & GMV</small>
+            </div>
+          </a>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- ============================================== -->
+  <!-- TAB 2: SAAS SUBSCRIPTION & PLAN                -->
+  <!-- ============================================== -->
+  @if (activeSubTab() === 'SUBSCRIPTION') {
+    <div class="subscription-section">
+      <!-- Active Plan Highlight Card -->
+      <article class="plan-card active-plan">
+        <div class="plan-header">
+          <div class="plan-title-col">
+            <span class="plan-badge">CURRENT ACTIVE PLAN</span>
+            <h2 class="plan-name">{{ currentPlanName() }}</h2>
+            <p class="plan-renew">Next automated billing on <strong>{{ renewalDate() }}</strong> via UPI AutoPay</p>
+          </div>
+          <div class="plan-price-col">
+            <span class="price-val">₹{{ planPrice() }}</span>
+            <span class="price-period">/ month</span>
+          </div>
+        </div>
+
+        <div class="plan-features-list">
+          <div class="feature-item">
+            <span class="check-mark">✓</span>
+            <span><strong>0% Commission</strong> on all NukkadNow marketplace orders</span>
+          </div>
+          <div class="feature-item">
+            <span class="check-mark">✓</span>
+            <span><strong>Unlimited</strong> counter walk-in POS billing tickets</span>
+          </div>
+          <div class="feature-item">
+            <span class="check-mark">✓</span>
+            <span><strong>Up to 10 staff accounts</strong> with fast 4-digit PIN lock</span>
+          </div>
+          <div class="feature-item">
+            <span class="check-mark">✓</span>
+            <span><strong>Live Kitchen Display Board (KDS)</strong> with TV fullscreen mode</span>
+          </div>
+          <div class="feature-item">
+            <span class="check-mark">✓</span>
+            <span><strong>Automated WhatsApp alerts</strong> for customer order tracking</span>
+          </div>
+          <div class="feature-item">
+            <span class="check-mark">✓</span>
+            <span><strong>24/7 dedicated merchant priority support</strong> on phone & chat</span>
+          </div>
+        </div>
+
+        <div class="plan-actions-footer">
+          <button type="button" class="btn-upgrade-annual" (click)="upgradePlan()">
+            Upgrade to Annual Plan (Save ₹2,400 / 20% OFF)
+          </button>
+          <button type="button" class="btn-invoices" (click)="downloadInvoices()">
+            📄 Download Invoices
+          </button>
+        </div>
+      </article>
     </div>
   }
 </div>

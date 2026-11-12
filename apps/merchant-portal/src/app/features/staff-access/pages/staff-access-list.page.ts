@@ -1,94 +1,192 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { StaffAccessStore } from '../state/staff-access.store';
-import { MerchantStaffRole, MerchantPermissionDirective } from '@nukkadnow/auth-client';
-import { ButtonComponent, DialogComponent } from '@nukkadnow/ui';
+import { RouterLink } from '@angular/router';
+
+export type StaffRole = 'OWNER' | 'MANAGER' | 'CASHIER' | 'CHEF';
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  phone: string;
+  role: StaffRole;
+  pin: string;
+  outlet: string;
+  isActive: boolean;
+  lastActive: string;
+}
 
 @Component({
   selector: 'merchant-staff-access-list-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent, DialogComponent, MerchantPermissionDirective],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './staff-access-list.page.html',
   styleUrls: ['./staff-access-list.page.scss'],
-  providers: [StaffAccessStore],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StaffAccessListPageComponent {
-  readonly store = inject(StaffAccessStore);
+  // Current active staff on this device
+  readonly activeStaff = signal<StaffMember>({
+    id: 'staff-1',
+    name: 'Rushikesh Khawane',
+    phone: '+91 98765 43210',
+    role: 'OWNER',
+    pin: '1234',
+    outlet: 'Main Dharampeth Outlet',
+    isActive: true,
+    lastActive: 'Now'
+  });
 
-  showPinModal = false;
-  showInviteModal = false;
-  revealedPins: Record<string, boolean> = {};
+  // Staff Roster
+  readonly staffList = signal<StaffMember[]>([
+    {
+      id: 'staff-1',
+      name: 'Rushikesh Khawane',
+      phone: '+91 98765 43210',
+      role: 'OWNER',
+      pin: '1234',
+      outlet: 'Main Dharampeth Outlet',
+      isActive: true,
+      lastActive: 'Active Now'
+    },
+    {
+      id: 'staff-2',
+      name: 'Deepak Deshmukh',
+      phone: '+91 98220 99887',
+      role: 'MANAGER',
+      pin: '4567',
+      outlet: 'Main Dharampeth Outlet',
+      isActive: true,
+      lastActive: 'Today, 10:15 AM'
+    },
+    {
+      id: 'staff-3',
+      name: 'Pooja Sharma',
+      phone: '+91 98221 44556',
+      role: 'CASHIER',
+      pin: '8910',
+      outlet: 'Main Dharampeth Outlet',
+      isActive: true,
+      lastActive: 'Today, 09:30 AM'
+    },
+    {
+      id: 'staff-4',
+      name: 'Chef Anil Verma',
+      phone: '+91 97654 33221',
+      role: 'CHEF',
+      pin: '2345',
+      outlet: 'Main Dharampeth Outlet',
+      isActive: true,
+      lastActive: 'Yesterday'
+    }
+  ]);
 
-  enteredPin = '';
+  // Masked PINs toggle state
+  readonly revealedPins = signal<Record<string, boolean>>({});
 
-  newStaffName = '';
-  newStaffPhone = '';
-  newStaffRole: MerchantStaffRole = 'CASHIER';
-  selectedOutlets = ['Dharampeth Main Store'];
+  // Modals
+  readonly showPinSwitchModal = signal<boolean>(false);
+  readonly showInviteModal = signal<boolean>(false);
 
-  openPinModal(): void {
-    this.enteredPin = '';
-    this.store.pinError.set(null);
-    this.showPinModal = true;
+  // Keypad PIN input
+  readonly enteredPin = signal<string>('');
+  readonly pinError = signal<string | null>(null);
+
+  // Invite Form
+  readonly newName = signal<string>('');
+  readonly newPhone = signal<string>('');
+  readonly newRole = signal<StaffRole>('CASHIER');
+  readonly newPin = signal<string>('');
+
+  // Toast
+  readonly toast = signal<string | null>(null);
+
+  togglePinReveal(id: string) {
+    this.revealedPins.update(map => ({
+      ...map,
+      [id]: !map[id]
+    }));
   }
 
-  submitPin(): void {
-    if (this.enteredPin.length === 4) {
-      const ok = this.store.verifyAndSwitchPin(this.enteredPin);
-      if (ok) {
-        this.showPinModal = false;
-        this.enteredPin = '';
+  toggleStaffActive(id: string) {
+    this.staffList.update(list =>
+      list.map(s => s.id === id ? { ...s, isActive: !s.isActive } : s)
+    );
+    this.showToast('Staff status updated.');
+  }
+
+  openPinModal() {
+    this.enteredPin.set('');
+    this.pinError.set(null);
+    this.showPinSwitchModal.set(true);
+  }
+
+  appendPinDigit(digit: string) {
+    if (this.enteredPin().length < 4) {
+      const next = this.enteredPin() + digit;
+      this.enteredPin.set(next);
+      if (next.length === 4) {
+        this.verifyAndSwitch();
       }
     }
   }
 
-  appendPinDigit(digit: string): void {
-    if (this.enteredPin.length < 4) {
-      this.enteredPin += digit;
-      if (this.enteredPin.length === 4) {
-        this.submitPin();
-      }
+  clearPin() {
+    this.enteredPin.set('');
+    this.pinError.set(null);
+  }
+
+  verifyAndSwitch() {
+    const pin = this.enteredPin();
+    const matched = this.staffList().find(s => s.pin === pin && s.isActive);
+    if (matched) {
+      this.activeStaff.set(matched);
+      this.showPinSwitchModal.set(false);
+      this.showToast(`Device switched to ${matched.name} (${matched.role})!`);
+    } else {
+      this.pinError.set('Invalid PIN. Please try again.');
+      setTimeout(() => this.enteredPin.set(''), 800);
     }
   }
 
-  clearPin(): void {
-    this.enteredPin = '';
-    this.store.pinError.set(null);
-  }
+  inviteStaffMember() {
+    const name = this.newName().trim();
+    const phone = this.newPhone().trim();
+    const pin = this.newPin().trim() || Math.floor(1000 + Math.random() * 9000).toString();
 
-  openInviteModal(): void {
-    this.newStaffName = '';
-    this.newStaffPhone = '';
-    this.newStaffRole = 'CASHIER';
-    this.showInviteModal = true;
-  }
-
-  sendInvite(): void {
-    if (!this.newStaffName.trim() || this.newStaffPhone.length !== 10) return;
-
-    this.store.inviteStaff({
-      name: this.newStaffName.trim(),
-      phoneRaw: this.newStaffPhone.trim(),
-      role: this.newStaffRole,
-      assignedOutlets: this.selectedOutlets
-    });
-
-    this.showInviteModal = false;
-  }
-
-  toggleRevealPin(staffId: string): void {
-    this.revealedPins[staffId] = !this.revealedPins[staffId];
-  }
-
-  getRoleBadgeClass(role: MerchantStaffRole): string {
-    switch (role) {
-      case 'OWNER': return 'role-owner';
-      case 'OUTLET_MANAGER': return 'role-manager';
-      case 'CHEF': return 'role-chef';
-      case 'CASHIER': return 'role-cashier';
-      default: return '';
+    if (!name || !phone) {
+      this.showToast('Please enter name and phone number.');
+      return;
     }
+
+    const newStaff: StaffMember = {
+      id: `staff-${Date.now()}`,
+      name,
+      phone,
+      role: this.newRole(),
+      pin,
+      outlet: 'Main Dharampeth Outlet',
+      isActive: true,
+      lastActive: 'Just invited'
+    };
+
+    this.staffList.update(list => [...list, newStaff]);
+    this.showInviteModal.set(false);
+    this.newName.set('');
+    this.newPhone.set('');
+    this.newPin.set('');
+    this.showToast(`Team member "${name}" invited successfully! PIN: ${pin}`);
+  }
+
+  removeStaff(id: string, name: string) {
+    if (confirm(`Remove staff access for ${name}?`)) {
+      this.staffList.update(list => list.filter(s => s.id !== id));
+      this.showToast(`${name} removed from store roster.`);
+    }
+  }
+
+  private showToast(msg: string) {
+    this.toast.set(msg);
+    setTimeout(() => this.toast.set(null), 2800);
   }
 }

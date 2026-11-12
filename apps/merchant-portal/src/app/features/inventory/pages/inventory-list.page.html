@@ -1,177 +1,362 @@
-﻿<div class="inventory-page">
-  <div class="header-row">
-    <div>
-      <h2>Inventory & Stock Control</h2>
-      <p class="subtitle">Real-time stock counters, low-stock threshold alerts, and movement audit history.</p>
+﻿<div class="inventory-viewport">
+  <!-- Toast Notification -->
+  @if (toastMessage()) {
+    <aside class="inv-toast" role="alert">
+      <svg viewBox="0 0 24 24" class="toast-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ toastMessage() }}</span>
+    </aside>
+  }
+
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-titles">
+      <h1 class="page-title">Inventory & Stock Control</h1>
+      <p class="page-subtitle">Real-time stock balances, threshold alert triggers, and adjustment audit log.</p>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="tab-pill-group">
-      <button
-        type="button"
-        class="tab-pill"
+    <!-- Sub-tab switcher -->
+    <nav class="subtab-group" aria-label="Inventory sections">
+      <button 
+        type="button" 
+        class="subtab-btn" 
         [class.active]="activeTab() === 'STOCK'"
         (click)="activeTab.set('STOCK')">
-        ðŸ“¦ Stock Balances
+        📦 Stock Balances
       </button>
-      <button
-        type="button"
-        class="tab-pill"
+      <button 
+        type="button" 
+        class="subtab-btn" 
         [class.active]="activeTab() === 'MOVEMENTS'"
         (click)="activeTab.set('MOVEMENTS')">
-        ðŸ“‹ Movement Audit Trail
+        📋 Movement Audit Trail
       </button>
-    </div>
-  </div>
+    </nav>
+  </header>
 
+  <!-- ============================================== -->
+  <!-- TAB 1: STOCK BALANCES (Screen 21)              -->
+  <!-- ============================================== -->
   @if (activeTab() === 'STOCK') {
-    <!-- Stock Stats Overview -->
-    <div class="stats-cards">
-      <div class="stat-card" [class.selected]="store.filterMode() === 'ALL'" (click)="store.setFilter('ALL')">
-        <span class="label">Total Products</span>
-        <strong>{{ store.totalItemsCount() }}</strong>
+    <section class="stock-balances-section">
+      <!-- 4 Health Metric Cards -->
+      <div class="metrics-grid">
+        <div 
+          class="metric-card purple-tint" 
+          [class.selected]="stockFilter() === 'ALL'"
+          (click)="setFilterMode('ALL')">
+          <span class="metric-label">Total Products</span>
+          <strong class="metric-val">{{ store.totalItemsCount() }}</strong>
+          <span class="metric-sub">Catalog tracked items</span>
+        </div>
+
+        <div 
+          class="metric-card emerald-tint"
+          [class.selected]="stockFilter() === 'ALL'"
+          (click)="setFilterMode('ALL')">
+          <span class="metric-label">Healthy Stock</span>
+          <strong class="metric-val emerald">{{ store.totalItemsCount() - store.lowStockCount() - store.outOfStockCount() }}</strong>
+          <span class="metric-sub">Above safety threshold</span>
+        </div>
+
+        <div 
+          class="metric-card orange-tint"
+          [class.selected]="stockFilter() === 'LOW_STOCK'"
+          (click)="setFilterMode('LOW_STOCK')">
+          <span class="metric-label">⚠️ Low Stock Alerts</span>
+          <strong class="metric-val orange">{{ store.lowStockCount() }}</strong>
+          <span class="metric-sub">Reorder recommended</span>
+        </div>
+
+        <div 
+          class="metric-card rose-tint"
+          [class.selected]="stockFilter() === 'OUT_OF_STOCK'"
+          (click)="setFilterMode('OUT_OF_STOCK')">
+          <span class="metric-label">❌ Out of Stock</span>
+          <strong class="metric-val rose">{{ store.outOfStockCount() }}</strong>
+          <span class="metric-sub">Hidden from buyers</span>
+        </div>
       </div>
-      <div class="stat-card stat-card--warning" [class.selected]="store.filterMode() === 'LOW_STOCK'" (click)="store.setFilter('LOW_STOCK')">
-        <span class="label">âš ï¸ Low Stock Alerts</span>
-        <strong>{{ store.lowStockCount() }}</strong>
-      </div>
-      <div class="stat-card stat-card--danger" [class.selected]="store.filterMode() === 'OUT_OF_STOCK'" (click)="store.setFilter('OUT_OF_STOCK')">
-        <span class="label">âŒ Out of Stock</span>
-        <strong>{{ store.outOfStockCount() }}</strong>
-      </div>
-    </div>
 
-    <!-- Search Input -->
-    <div class="search-bar">
-      <ui-input
-        placeholder="Filter stock by product name or category..."
-        (valueChanged)="store.setSearch($event)">
-      </ui-input>
-    </div>
-
-    <!-- Stock Table -->
-    <div class="inventory-table-card">
-      <table class="inventory-table">
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Category</th>
-            <th>Current Stock</th>
-            <th>Quick Counter Adjust</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of store.filteredItems(); track item.id) {
-            <tr [class.row-low-stock]="item.isLowStock && item.inStock" [class.row-out]="!item.inStock">
-              <td class="col-product">
-                <strong>{{ item.title }}</strong>
-                @if (item.isLowStock && item.inStock) {
-                  <span class="low-stock-chip">Low Stock (â‰¤ {{ item.lowStockThreshold }})</span>
-                }
-              </td>
-              <td class="col-category">{{ item.category }}</td>
-              <td class="col-stock">
-                <span class="stock-num">{{ item.currentStock }}</span>
-                <span class="stock-unit">{{ item.unit }}</span>
-              </td>
-              <td class="col-quick-adjust">
-                <div class="stepper-btn-group">
-                  <button type="button" class="step-btn" (click)="store.quickAdjust(item.id, -1)" [disabled]="item.currentStock <= 0">-1</button>
-                  <button type="button" class="step-btn" (click)="store.quickAdjust(item.id, -5)" [disabled]="item.currentStock < 5">-5</button>
-                  <button type="button" class="step-btn step-btn--add" (click)="store.quickAdjust(item.id, +5)">+5</button>
-                  <button type="button" class="step-btn step-btn--add" (click)="store.quickAdjust(item.id, +10)">+10</button>
-                </div>
-              </td>
-              <td class="col-toggle">
-                <ui-toggle [checked]="item.inStock" (toggled)="store.toggleAvailability(item.id)"></ui-toggle>
-              </td>
-              <td class="col-actions">
-                <ui-button variant="outline" size="sm" (clicked)="openAdjustDialog(item)">
-                  Adjust with Reason
-                </ui-button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" class="empty-cell">No inventory records found.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  } @else {
-    <!-- Movement History Audit Trail -->
-    <div class="movements-card">
-      <h3>Stock Movement Audit History</h3>
-      <p class="section-desc">Immutable chronological log of inventory adjustments, replenishments, and spoilage records.</p>
-
-      <div class="movements-list">
-        @for (mov of store.movements(); track mov.id) {
-          <div class="movement-row">
-            <div class="movement-badge" [class.badge-plus]="mov.delta > 0" [class.badge-minus]="mov.delta < 0">
-              {{ mov.delta > 0 ? '+' + mov.delta : mov.delta }}
-            </div>
-
-            <div class="movement-details">
-              <strong>{{ mov.productTitle }}</strong>
-              <div class="movement-meta">
-                <span class="reason-tag">{{ mov.reason }}</span>
-                <span class="note">{{ mov.note }}</span>
-              </div>
-            </div>
-
-            <div class="movement-balance">
-              <span>Stock Balance: <strong>{{ mov.newStock }}</strong></span>
-              <small>{{ mov.actorName }} â€¢ {{ mov.timestamp }}</small>
-            </div>
+      <!-- Valuation & Reorder Suggestion Banner -->
+      <div class="valuation-banner">
+        <div class="val-info">
+          <span class="val-label">Estimated Inventory Value</span>
+          <strong class="val-amount">₹{{ totalInventoryValuation() | number }}</strong>
+        </div>
+        @if (store.lowStockCount() > 0) {
+          <div class="reorder-prompt">
+            <span class="prompt-icon">🔔</span>
+            <span><strong>{{ store.lowStockCount() }} items</strong> are below low-stock limit. Consider raising a purchase order.</span>
           </div>
         }
       </div>
-    </div>
+
+      <!-- Toolbar: Search & Stock Status Filters -->
+      <div class="inv-toolbar">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" class="search-svg" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search inventory by title or category..." 
+            [ngModel]="searchInput()"
+            (ngModelChange)="onSearch($event)" />
+        </div>
+
+        <div class="stock-filter-pills">
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="stockFilter() === 'ALL'"
+            (click)="setFilterMode('ALL')">
+            All Items ({{ store.totalItemsCount() }})
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="stockFilter() === 'LOW_STOCK'"
+            (click)="setFilterMode('LOW_STOCK')">
+            Low Stock ({{ store.lowStockCount() }})
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="stockFilter() === 'OUT_OF_STOCK'"
+            (click)="setFilterMode('OUT_OF_STOCK')">
+            Out of Stock ({{ store.outOfStockCount() }})
+          </button>
+        </div>
+      </div>
+
+      <!-- Responsive Inventory Table / Card Rows -->
+      <div class="inventory-table-container">
+        <div class="table-header-row">
+          <span class="th th-product">Product & Category</span>
+          <span class="th th-stock">Current Stock</span>
+          <span class="th th-threshold">Safety Limit</span>
+          <span class="th th-stepper">Quick Counter</span>
+          <span class="th th-action">Adjust</span>
+        </div>
+
+        <div class="table-body">
+          @for (item of displayedItems(); track item.id) {
+            <div class="inv-item-row" [class.low-row]="item.isLowStock && item.inStock" [class.out-row]="item.currentStock === 0">
+              <!-- Product info -->
+              <div class="td td-product">
+                <div class="prod-lead">
+                  <div class="item-title-col">
+                    <strong class="item-title">{{ item.title }}</strong>
+                    <span class="item-cat">{{ item.category }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Current Stock Pill -->
+              <div class="td td-stock">
+                <div class="stock-badge" [class.good]="item.currentStock > item.lowStockThreshold" [class.low]="item.isLowStock && item.currentStock > 0" [class.out]="item.currentStock === 0">
+                  @if (item.currentStock === 0) {
+                    <span>Out of Stock</span>
+                  } @else {
+                    <span>{{ item.currentStock }} Units</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Safety Limit -->
+              <div class="td td-threshold">
+                <span class="threshold-tag">Alert at ≤ {{ item.lowStockThreshold }}</span>
+              </div>
+
+              <!-- Quick Stepper (-1, +1) -->
+              <div class="td td-stepper">
+                <div class="quick-counter-wrap">
+                  <button type="button" class="btn-step minus" (click)="quickSubtract(item, $event)" [disabled]="item.currentStock === 0" title="Remove 1 unit">
+                    −
+                  </button>
+                  <span class="count-display">{{ item.currentStock }}</span>
+                  <button type="button" class="btn-step plus" (click)="quickAdd(item, $event)" title="Add 1 unit">
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <!-- Action: Adjust Stock Drawer CTA -->
+              <div class="td td-action">
+                <button type="button" class="btn-adjust" (click)="openAdjustDialog(item)">
+                  <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  <span>Adjust</span>
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-inv-state">
+              <span>No inventory items match your filter criteria.</span>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
   }
 
-  <!-- Detailed Adjustment Dialog -->
-  <ui-dialog
-    [isOpen]="isAdjustModalOpen()"
-    title="Stock Adjustment Record"
-    (close)="isAdjustModalOpen.set(false)">
-    @if (selectedItem(); as item) {
-      <div class="adjust-dialog-content">
-        <p>Adjusting stock for <strong>{{ item.title }}</strong> (Current: {{ item.currentStock }} {{ item.unit }}).</p>
+  <!-- ============================================== -->
+  <!-- TAB 2: MOVEMENT AUDIT TRAIL                    -->
+  <!-- ============================================== -->
+  @if (activeTab() === 'MOVEMENTS') {
+    <section class="movements-audit-section">
+      <div class="audit-history-list">
+        @for (record of store.movements(); track record.id) {
+          <div class="audit-card">
+            <div class="audit-lead">
+              <div class="delta-badge" [class.positive]="record.delta > 0" [class.negative]="record.delta < 0">
+                {{ record.delta > 0 ? ('+' + record.delta) : record.delta }}
+              </div>
+              <div class="audit-titles">
+                <strong class="audit-prod-title">{{ record.productTitle }}</strong>
+                <span class="audit-meta">{{ record.timestamp }} • By {{ record.actorName }}</span>
+              </div>
+            </div>
 
-        <div class="form-group">
-          <label class="form-label">Adjustment Reason Code</label>
-          <select class="custom-select" [value]="adjustReason()" (change)="adjustReason.set($any($event.target).value)">
-            <option value="RESTOCK">Fresh Batch / Restock (+)</option>
-            <option value="CORRECTION">Inventory Count Correction (+/-)</option>
-            <option value="DAMAGE">Damaged / Broken (-)</option>
-            <option value="SPOILAGE">Spoilage / Expired (-)</option>
-            <option value="RETURN">Customer Return (+)</option>
+            <div class="audit-trail-details">
+              <span class="reason-pill">{{ record.reason }}</span>
+              <span class="stock-shift">{{ record.previousStock }} → <strong>{{ record.newStock }}</strong> units</span>
+              @if (record.note) {
+                <span class="audit-note">"{{ record.note }}"</span>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-inv-state">
+            <span>No stock movements recorded yet.</span>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ============================================== -->
+  <!-- SCREEN 22: STOCK ADJUSTMENT MODAL / DRAWER     -->
+  <!-- ============================================== -->
+  @if (isAdjustModalOpen() && selectedItem(); as current) {
+    <div class="modal-backdrop" (click)="isAdjustModalOpen.set(false)">
+      <div class="modal-drawer" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <header class="drawer-header">
+          <div class="header-titles">
+            <span class="drawer-badge">Stock Adjustment</span>
+            <h2 class="drawer-title">{{ current.title }}</h2>
+          </div>
+          <button type="button" class="btn-close-drawer" (click)="isAdjustModalOpen.set(false)">×</button>
+        </header>
+
+        <!-- Current Stock Status -->
+        <div class="current-stock-box">
+          <div class="curr-col">
+            <span class="stock-sub">Current In-Stock</span>
+            <strong class="curr-val">{{ current.currentStock }} Units</strong>
+          </div>
+          <div class="arrow-col">➔</div>
+          <div class="curr-col projected">
+            <span class="stock-sub">New Projected Stock</span>
+            <strong class="projected-val">{{ projectedStock() }} Units</strong>
+          </div>
+        </div>
+
+        <!-- Mode Pills: ADD, REDUCE, SET -->
+        <div class="adjust-mode-selector">
+          <button 
+            type="button" 
+            class="mode-btn" 
+            [class.active]="adjustMode() === 'ADD'"
+            (click)="adjustMode.set('ADD')">
+            + Restock / Add
+          </button>
+          <button 
+            type="button" 
+            class="mode-btn" 
+            [class.active]="adjustMode() === 'REDUCE'"
+            (click)="adjustMode.set('REDUCE')">
+            − Reduce / Wastage
+          </button>
+          <button 
+            type="button" 
+            class="mode-btn" 
+            [class.active]="adjustMode() === 'SET'"
+            (click)="adjustMode.set('SET')">
+            = Set Exact Count
+          </button>
+        </div>
+
+        <!-- Quantity Input & Quick Preset Buttons -->
+        <div class="qty-input-group">
+          <label class="field-label">Quantity to {{ adjustMode() === 'SET' ? 'Set' : 'Adjust' }}</label>
+          <input 
+            type="number" 
+            class="adjust-number-input" 
+            [ngModel]="adjustQuantity()"
+            (ngModelChange)="adjustQuantity.set(+$event)" />
+
+          <div class="quick-qty-pills">
+            <button type="button" class="preset-pill" (click)="setQuickQty(5)">+5</button>
+            <button type="button" class="preset-pill" (click)="setQuickQty(10)">+10</button>
+            <button type="button" class="preset-pill" (click)="setQuickQty(25)">+25</button>
+            <button type="button" class="preset-pill" (click)="setQuickQty(50)">+50</button>
+            <button type="button" class="preset-pill" (click)="setQuickQty(100)">+100</button>
+          </div>
+        </div>
+
+        <!-- Adjustment Reason Dropdown -->
+        <div class="field-group">
+          <label class="field-label">Reason for Adjustment <span class="required">*</span></label>
+          <select 
+            class="field-select" 
+            [ngModel]="adjustReason()"
+            (ngModelChange)="adjustReason.set($event)">
+            <option value="RESTOCK">Supplier Restock / New Delivery</option>
+            <option value="AUDIT_CORRECTION">Physical Stock Audit Discrepancy</option>
+            <option value="DAMAGE_SPOILAGE">Damaged / Expired / Spoiled Goods</option>
+            <option value="CUSTOMER_RETURN">Customer Return / Exchange</option>
+            <option value="INTERNAL_USE">Internal Shop Use / Sample</option>
           </select>
         </div>
 
-        <ui-input
-          label="Quantity Change (Delta e.g. +20 or -5)"
-          type="number"
-          placeholder="+10"
-          [value]="adjustDelta().toString()"
-          (valueChanged)="adjustDelta.set(+$event || 0)">
-        </ui-input>
-
-        <ui-input
-          label="Staff Note (Optional)"
-          placeholder="e.g. Added 20 freshly baked batches from morning shift"
-          [value]="adjustNote()"
-          (valueChanged)="adjustNote.set($event)">
-        </ui-input>
-
-        <div class="dialog-actions">
-          <ui-button variant="outline" (clicked)="isAdjustModalOpen.set(false)">Cancel</ui-button>
-          <ui-button variant="primary" (clicked)="submitAdjustment()">Apply Adjustment</ui-button>
+        <!-- Invoice / GRN Reference (Optional) -->
+        <div class="field-group">
+          <label class="field-label">Supplier Invoice / GRN Ref (Optional)</label>
+          <input 
+            type="text" 
+            class="field-input" 
+            placeholder="e.g. INV-2026-8941" 
+            [ngModel]="invoiceRef()"
+            (ngModelChange)="invoiceRef.set($event)" />
         </div>
+
+        <!-- Internal Notes -->
+        <div class="field-group">
+          <label class="field-label">Internal Audit Notes</label>
+          <input 
+            type="text" 
+            class="field-input" 
+            placeholder="e.g. Received 2 cartons from Metro cash & carry..." 
+            [ngModel]="adjustNote()"
+            (ngModelChange)="adjustNote.set($event)" />
+        </div>
+
+        <!-- Footer CTAs -->
+        <footer class="drawer-footer">
+          <button type="button" class="btn-drawer-cancel" (click)="isAdjustModalOpen.set(false)">Cancel</button>
+          <button type="button" class="btn-drawer-confirm" (click)="submitAdjustment()">
+            Confirm & Save {{ adjustQuantity() }} Units
+          </button>
+        </footer>
       </div>
-    }
-  </ui-dialog>
+    </div>
+  }
 </div>

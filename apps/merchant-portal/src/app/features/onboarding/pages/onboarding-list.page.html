@@ -1,226 +1,702 @@
-﻿<div class="onboarding-container">
-  <div class="onboarding-card">
-    <header class="wizard-header">
-      <div class="step-indicator">
-        Step {{ store.currentStep() }} of 7
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="(store.currentStep() / 7) * 100"></div>
+﻿<div class="onboarding-viewport">
+  <div class="onboarding-container">
+
+    <!-- Top App Bar -->
+    <header class="top-bar">
+      <button type="button" class="back-icon-btn" (click)="prevStep()" aria-label="Previous step">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <div class="top-brand-lockup">
+        <div class="brand-logo-mark">
+          <svg width="26" height="26" viewBox="0 0 40 40" fill="none">
+            <path d="M14 16V12C14 8.686 16.686 6 20 6C23.314 6 26 8.686 26 12V16" stroke="#FF5A1F" stroke-width="3" stroke-linecap="round"/>
+            <path d="M8 16H32L34 23H6L8 16Z" fill="#FF5A1F"/>
+            <rect x="7" y="22" width="26" height="15" rx="5" fill="#2E1065"/>
+            <path d="M20 25C18.343 25 17 26.343 17 28C17 30.5 20 33 20 33C20 33 23 30.5 23 28C23 26.343 21.657 25 20 25Z" fill="#FF5A1F"/>
+            <circle cx="20" cy="28" r="1.5" fill="#FFFFFF"/>
+          </svg>
+        </div>
+        <div class="brand-text-col">
+          <span class="brand-title">
+            <span class="nukkad">Nukkad</span><span class="now">Now</span>
+          </span>
+          <span class="merchant-badge-pill">Merchant</span>
+        </div>
       </div>
     </header>
 
-    @if (store.submitted()) {
-      <div class="submission-success">
-        <div class="success-icon">ðŸŽ‰</div>
-        <h2>Application Submitted for Verification!</h2>
-        <p>Our Nagpur locality team will review your business details within 24 hours. You can explore your dashboard in preview mode.</p>
-        <ui-button variant="primary" (clicked)="router.navigate(['/dashboard'])">Go to Merchant Dashboard</ui-button>
+    <!-- Interactive Stepper -->
+    <nav class="stepper-nav" aria-label="Onboarding Progress">
+      <div class="stepper-track">
+        <!-- Step 1: Type -->
+        <div class="step-node" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1" (click)="goToStep(1)">
+          <div class="node-circle">
+            @if (currentStep() > 1) {
+              <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else { 1 }
+          </div>
+          <span class="node-label">Type</span>
+        </div>
+        <span class="step-connector" [class.filled]="currentStep() > 1"></span>
+
+        <!-- Step 2: Profile -->
+        <div class="step-node" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2" (click)="goToStep(2)">
+          <div class="node-circle">
+            @if (currentStep() > 2) {
+              <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else { 2 }
+          </div>
+          <span class="node-label">Profile</span>
+        </div>
+        <span class="step-connector" [class.filled]="currentStep() > 2"></span>
+
+        <!-- Step 3: Location -->
+        <div class="step-node" [class.active]="currentStep() === 3" [class.completed]="currentStep() > 3" (click)="goToStep(3)">
+          <div class="node-circle">
+            @if (currentStep() > 3) {
+              <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else { 3 }
+          </div>
+          <span class="node-label">Location</span>
+        </div>
+        <span class="step-connector" [class.filled]="currentStep() > 3"></span>
+
+        <!-- Step 4: Fulfilment -->
+        <div class="step-node" [class.active]="currentStep() === 4" [class.completed]="currentStep() > 4" (click)="goToStep(4)">
+          <div class="node-circle">
+            @if (currentStep() > 4) {
+              <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else { 4 }
+          </div>
+          <span class="node-label">Delivery</span>
+        </div>
+        <span class="step-connector" [class.filled]="currentStep() > 4"></span>
+
+        <!-- Step 5: Hours -->
+        <div class="step-node" [class.active]="currentStep() === 5" [class.completed]="currentStep() > 5" (click)="goToStep(5)">
+          <div class="node-circle">
+            @if (currentStep() > 5) {
+              <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else { 5 }
+          </div>
+          <span class="node-label">Hours</span>
+        </div>
+        <span class="step-connector" [class.filled]="currentStep() > 5"></span>
+
+        <!-- Step 6: Verification -->
+        <div class="step-node" [class.active]="currentStep() === 6" [class.completed]="currentStep() > 6" (click)="goToStep(6)">
+          <div class="node-circle">
+            @if (currentStep() > 6) {
+              <svg viewBox="0 0 24 24" class="check-svg" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else { 6 }
+          </div>
+          <span class="node-label">Docs</span>
+        </div>
+        <span class="step-connector" [class.filled]="currentStep() > 6"></span>
+
+        <!-- Step 7: Review -->
+        <div class="step-node" [class.active]="currentStep() === 7" (click)="goToStep(7)">
+          <div class="node-circle">7</div>
+          <span class="node-label">Review</span>
+        </div>
       </div>
-    } @else {
-      <!-- STEP 1: SELLER TYPE -->
-      @if (store.currentStep() === 1) {
-        <section class="wizard-step">
-          <h2>Select your seller type</h2>
-          <p class="step-desc">Choose how you operate so we tailor your store controls and privacy settings.</p>
+    </nav>
 
-          <div class="modes-grid">
-            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'RETAIL'" (click)="selectMode('RETAIL')">
-              <span class="icon">ðŸª</span>
-              <h3>Permanent Shop / Retail</h3>
-              <p>Physical store with walk-in customers and set daily hours.</p>
-            </div>
+    <!-- STEP 1: SELECT YOUR BUSINESS TYPE -->
+    @if (currentStep() === 1) {
+      <main class="wizard-step-card">
+        <div class="step-heading-block">
+          <h1 class="step-title">Select Your Business Type</h1>
+          <p class="step-subtitle">Tell us what kind of business you run</p>
+        </div>
 
-            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'HOME_MAKER'" (click)="selectMode('HOME_MAKER')">
-              <span class="icon">ðŸ¡</span>
-              <h3>Home Business</h3>
-              <p>Home bakery, tiffin, or crafts. <strong>Your private address is protected.</strong></p>
-            </div>
-
-            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'PRODUCER'" (click)="selectMode('PRODUCER')">
-              <span class="icon">ðŸŒ¾</span>
-              <h3>Maker / Small Producer</h3>
-              <p>Specialty producer with batch schedules and custom lead time.</p>
-            </div>
-
-            <div class="mode-card" [class.selected]="store.draft().sellerMode === 'SEASONAL'" (click)="selectMode('SEASONAL')">
-              <span class="icon">ðŸŽª</span>
-              <h3>Seasonal / Pop-Up Stall</h3>
-              <p>Festival specials, exhibition stalls, or seasonal fruit stalls.</p>
-            </div>
-          </div>
-        </section>
-      }
-
-      <!-- STEP 2: BRAND PROFILE -->
-      @if (store.currentStep() === 2) {
-        <section class="wizard-step">
-          <h2>Your Store Details</h2>
-          <p class="step-desc">What will local customers see on NukkadNow?</p>
-
-          <ui-input
-            label="Business Name"
-            placeholder="e.g. Ramesh Sweet Mart"
-            [required]="true"
-            [value]="store.draft().businessName"
-            (valueChanged)="store.updateDraft({ businessName: $event })">
-          </ui-input>
-
-          <div class="form-group">
-            <label class="form-label">Primary Category</label>
-            <select class="custom-select" [value]="store.draft().category" (change)="store.updateDraft({ category: $any($event.target).value })">
-              @for (cat of categories; track cat) {
-                <option [value]="cat">{{ cat }}</option>
+        <div class="business-type-grid">
+          @for (type of businessTypes; track type.id) {
+            <article 
+              class="type-option-card" 
+              [class.selected]="selectedBusinessType() === type.id"
+              (click)="selectBusinessType(type.id)">
+              @if (selectedBusinessType() === type.id) {
+                <span class="selected-check-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
               }
-            </select>
+              <div class="type-icon-wrapper">{{ type.icon }}</div>
+              <h2 class="type-name">{{ type.name }}</h2>
+              <p class="type-desc">{{ type.desc }}</p>
+            </article>
+          }
+        </div>
+
+        <button type="button" class="btn-royal-purple cta-bottom" (click)="nextStep()">
+          <span>Continue</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </main>
+    }
+
+    <!-- STEP 2: BUSINESS PROFILE -->
+    @if (currentStep() === 2) {
+      <main class="wizard-step-card">
+        <div class="step-heading-block">
+          <h1 class="step-title">Business Profile</h1>
+          <p class="step-subtitle">Tell us about your business</p>
+        </div>
+
+        <!-- Shop Logo Upload -->
+        <div class="shop-logo-upload-wrap">
+          <div class="shop-avatar-box">
+            <span class="store-emoji">🏪</span>
+            <button type="button" class="camera-upload-btn" aria-label="Upload shop photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </button>
+          </div>
+          <div class="logo-text-info">
+            <span class="upload-title">Shop Logo / Photo</span>
+            <span class="upload-sub">Upload your storefront or brand logo</span>
+          </div>
+        </div>
+
+        <!-- Form Fields -->
+        <div class="fields-stack">
+          <!-- Shop Name -->
+          <div class="field-item">
+            <label class="field-label">Shop Name <span class="required-star">*</span></label>
+            <input type="text" class="text-input" [(ngModel)]="shopName" placeholder="Enter shop name" />
           </div>
 
-          <ui-input
-            label="Short Description"
-            placeholder="e.g. Traditional Nagpur sweets, samosas, and fresh namkeen made daily."
-            [value]="store.draft().description"
-            (valueChanged)="store.updateDraft({ description: $event })">
-          </ui-input>
-        </section>
-      }
+          <!-- Business Category -->
+          <div class="field-item">
+            <label class="field-label">Business Category <span class="required-star">*</span></label>
+            <div class="select-input-wrap">
+              <svg viewBox="0 0 24 24" class="lead-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <select class="text-input select-field" [(ngModel)]="businessCategory">
+                <option value="Retail Shop (Grocery, Daily Needs)">Retail Shop (Grocery, Daily Needs)</option>
+                <option value="Fruit & Vegetable">Fruit &amp; Vegetable</option>
+                <option value="Medical / Pharmacy">Medical / Pharmacy</option>
+                <option value="Food & Beverages">Food &amp; Beverages</option>
+                <option value="Wholesale / Distributor">Wholesale / Distributor</option>
+              </select>
+              <svg viewBox="0 0 24 24" class="chevron-svg" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
 
-      <!-- STEP 3: LOCATION & PRIVACY -->
-      @if (store.currentStep() === 3) {
-        <section class="wizard-step">
-          <h2>Location & Address Privacy</h2>
-          <p class="step-desc">Help neighborhood customers discover you nearby.</p>
+          <!-- Business Mobile -->
+          <div class="field-item">
+            <label class="field-label">Business Mobile (Optional)</label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" class="lead-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <input type="tel" class="text-input" [(ngModel)]="businessMobile" placeholder="+91 98765 43210" />
+            </div>
+          </div>
 
-          @if (store.isHomeMaker()) {
-            <div class="privacy-alert">
-              <span class="shield">ðŸ›¡ï¸</span>
-              <div>
-                <strong>Home Seller Privacy Protected</strong>
-                <p>Your residential street address is strictly private. Customers only see your locality or designated pickup point.</p>
+          <!-- GSTIN -->
+          <div class="field-item">
+            <label class="field-label">GSTIN (Optional)</label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" class="lead-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <input type="text" class="text-input uppercase" [(ngModel)]="gstin" placeholder="Enter GST number (e.g. 27ABCDE1234F1Z5)" />
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="field-item">
+            <div class="label-with-counter">
+              <label class="field-label">Business Description</label>
+              <span class="char-counter">{{ businessDescription.length }} / 200</span>
+            </div>
+            <textarea class="textarea-input" rows="3" [(ngModel)]="businessDescription" maxlength="200" placeholder="Briefly describe your store..."></textarea>
+          </div>
+        </div>
+
+        <button type="button" class="btn-royal-purple cta-bottom" (click)="nextStep()">
+          <span>Save &amp; Continue</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </main>
+    }
+
+    <!-- STEP 3: BUSINESS LOCATION -->
+    @if (currentStep() === 3) {
+      <main class="wizard-step-card">
+        <div class="step-heading-block">
+          <h1 class="step-title">Business Location</h1>
+          <p class="step-subtitle">Set your shop location for nearby customers</p>
+        </div>
+
+        <!-- Interactive Vector Map Viewport -->
+        <div class="location-map-card">
+          <div class="map-illustration">
+            <svg viewBox="0 0 320 140" class="map-svg" aria-hidden="true">
+              <rect width="320" height="140" fill="#E8F5E9" rx="10"/>
+              <!-- Roads -->
+              <path d="M0 40 Q120 30 180 70 T320 80" stroke="#FFFFFF" stroke-width="12" fill="none"/>
+              <path d="M100 0 Q110 60 140 140" stroke="#FFFFFF" stroke-width="10" fill="none"/>
+              <path d="M220 0 Q210 80 250 140" stroke="#FFFFFF" stroke-width="8" fill="none"/>
+              <!-- Coverage Radius Circle -->
+              <circle cx="160" cy="70" r="42" fill="#8B5CF6" opacity="0.22"/>
+              <circle cx="160" cy="70" r="42" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>
+              <!-- Store Pin -->
+              <path d="M160 52 C154 52 150 56 150 62 C150 71 160 82 160 82 C160 82 170 71 170 62 C170 56 166 52 160 52 Z" fill="#6D28D9"/>
+              <circle cx="160" cy="62" r="3.5" fill="#FFFFFF"/>
+            </svg>
+            <!-- Callout Pin Badge -->
+            <div class="pin-callout-badge">
+              <span class="pin-red">📍</span>
+              <div class="badge-text">
+                <strong>Shop Location</strong>
+                <span>{{ locationPinStatus() }}</span>
+              </div>
+            </div>
+            <!-- Recenter GPS button -->
+            <button type="button" class="gps-recenter-btn" (click)="triggerGps()" aria-label="Recenter location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#6D28D9" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Use Current Location Button -->
+        <button type="button" class="btn-location-gps" (click)="triggerGps()">
+          <svg viewBox="0 0 24 24" class="gps-arrow" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+          </svg>
+          <span>Use My Current Location</span>
+        </button>
+
+        <!-- Location Fields -->
+        <div class="fields-stack">
+          <div class="field-item">
+            <label class="field-label">Address Line 1 <span class="required-star">*</span></label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" class="lead-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                <circle cx="12" cy="9" r="2.5"/>
+              </svg>
+              <input type="text" class="text-input" [(ngModel)]="addressLine1" placeholder="Shop / Building No., Street" />
+            </div>
+          </div>
+
+          <div class="field-item">
+            <label class="field-label">Address Line 2 (Optional)</label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" class="lead-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 21h18M6 21V7l8-4v18M14 21V11l4 2v8M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/>
+              </svg>
+              <input type="text" class="text-input" [(ngModel)]="addressLine2" placeholder="Landmark or Area" />
+            </div>
+          </div>
+
+          <div class="form-cols-row">
+            <div class="field-item">
+              <label class="field-label">City / Town <span class="required-star">*</span></label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" class="lead-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                  <circle cx="12" cy="9" r="2.5"/>
+                </svg>
+                <input type="text" class="text-input" [(ngModel)]="city" placeholder="Amravati" />
+              </div>
+            </div>
+
+            <div class="field-item">
+              <label class="field-label">PIN Code <span class="required-star">*</span></label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" class="lead-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="16" rx="2"/>
+                  <path d="M3 8l9 6 9-6"/>
+                </svg>
+                <input type="text" class="text-input" [(ngModel)]="pincode" placeholder="444601" maxlength="6" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-royal-purple cta-bottom" (click)="nextStep()">
+          <span>Save &amp; Continue</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </main>
+    }
+
+    <!-- STEP 4: FULFILMENT CONFIGURATION -->
+    @if (currentStep() === 4) {
+      <main class="wizard-step-card">
+        <div class="step-heading-block">
+          <h1 class="step-title">Fulfilment Configuration</h1>
+          <p class="step-subtitle">Choose how you want to serve your customers</p>
+        </div>
+
+        <!-- 1: Home Delivery -->
+        <article class="fulfilment-config-card" [class.enabled]="homeDelivery()">
+          <div class="config-top-row">
+            <div class="config-icon-col purple">
+              <svg viewBox="0 0 24 24" class="icon-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="5" cy="18" r="3"/>
+                <circle cx="19" cy="18" r="3"/>
+                <path d="M12 18h4m-7-5h5l2 5M9 8h4"/>
+              </svg>
+            </div>
+            <div class="config-text-col">
+              <h2 class="config-title">Home Delivery</h2>
+              <p class="config-desc">Deliver orders to customer's address</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="homeDelivery()" (change)="homeDelivery.set(!homeDelivery())" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          @if (homeDelivery()) {
+            <div class="config-sub-inputs-row">
+              <div class="sub-input-col">
+                <label class="sub-label">Delivery Radius *</label>
+                <select class="sub-select" [ngModel]="deliveryRadius()" (ngModelChange)="deliveryRadius.set($event)">
+                  <option value="5 km">5 km</option>
+                  <option value="10 km">10 km</option>
+                  <option value="15 km">15 km</option>
+                  <option value="25 km">25 km</option>
+                </select>
+              </div>
+
+              <div class="sub-input-col">
+                <label class="sub-label">Min. Order Value</label>
+                <div class="price-input-wrap">
+                  <span class="rupee-prefix">₹</span>
+                  <input type="number" class="sub-text-input" [ngModel]="minOrderValue()" (ngModelChange)="minOrderValue.set($event)" placeholder="0" />
+                </div>
               </div>
             </div>
           }
+        </article>
 
-          <ui-input
-            label="Locality / Area (Nagpur)"
-            placeholder="e.g. Dharampeth, Ramdaspeth, Sadar"
-            [required]="true"
-            [value]="store.draft().locality"
-            (valueChanged)="store.updateDraft({ locality: $event })">
-          </ui-input>
-
-          <ui-input
-            [label]="store.isHomeMaker() ? 'Designated Pickup Landmark' : 'Shop Address Line'"
-            [placeholder]="store.isHomeMaker() ? 'e.g. Near Coffee House Square' : 'e.g. Shop 4, West High Court Road'"
-            [value]="store.draft().addressLine"
-            (valueChanged)="store.updateDraft({ addressLine: $event })">
-          </ui-input>
-
-          <ui-input
-            label="PIN Code"
-            type="tel"
-            maxLength="6"
-            placeholder="440010"
-            [value]="store.draft().pincode"
-            (valueChanged)="store.updateDraft({ pincode: $event })">
-          </ui-input>
-        </section>
-      }
-
-      <!-- STEP 4: FULFILMENT MODES -->
-      @if (store.currentStep() === 4) {
-        <section class="wizard-step">
-          <h2>Fulfilment Modes</h2>
-          <p class="step-desc">How do customers receive their orders from you?</p>
-
-          <div class="toggle-card">
-            <div class="toggle-info">
-              <strong>Store Pickup</strong>
-              <p>Customers order in advance and collect at your pickup point or counter.</p>
+        <!-- 2: Store Pickup -->
+        <article class="fulfilment-config-card" [class.enabled]="storePickup()">
+          <div class="config-top-row">
+            <div class="config-icon-col purple">
+              <svg viewBox="0 0 24 24" class="icon-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
             </div>
-            <ui-toggle [checked]="store.draft().enablePickup" (toggled)="store.updateDraft({ enablePickup: $event })"></ui-toggle>
-          </div>
-
-          <div class="toggle-card">
-            <div class="toggle-info">
-              <strong>Merchant-Managed Delivery</strong>
-              <p>You or your staff deliver orders directly to customers nearby.</p>
+            <div class="config-text-col">
+              <h2 class="config-title">Store Pickup (Self Pickup)</h2>
+              <p class="config-desc">Customers can pick up from your shop</p>
             </div>
-            <ui-toggle [checked]="store.draft().enableDelivery" (toggled)="store.updateDraft({ enableDelivery: $event })"></ui-toggle>
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="storePickup()" (change)="storePickup.set(!storePickup())" />
+              <span class="slider"></span>
+            </label>
           </div>
+        </article>
 
-          @if (store.draft().enableDelivery) {
-            <div class="delivery-radius-field">
-              <label>Delivery Radius: <strong>{{ store.draft().deliveryRadiusKm }} km</strong></label>
-              <input type="range" min="1" max="10" [value]="store.draft().deliveryRadiusKm" (input)="store.updateDraft({ deliveryRadiusKm: +$any($event.target).value })" />
+        <!-- 3: Local / Express Delivery -->
+        <article class="fulfilment-config-card" [class.enabled]="expressDelivery()">
+          <div class="config-top-row">
+            <div class="config-icon-col purple">
+              <svg viewBox="0 0 24 24" class="icon-svg" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
             </div>
-          }
-        </section>
-      }
-
-      <!-- STEP 5: SCHEDULE -->
-      @if (store.currentStep() === 5) {
-        <section class="wizard-step">
-          <h2>Store Timing</h2>
-          <p class="step-desc">When are you open to accept orders?</p>
-          <div class="timing-badge">ðŸ•’ Standard Timing: 9:00 AM â€“ 9:00 PM (Configurable in Settings)</div>
-        </section>
-      }
-
-      <!-- STEP 6: COMPLIANCE -->
-      @if (store.currentStep() === 6) {
-        <section class="wizard-step">
-          <h2>Compliance & KYC</h2>
-          <p class="step-desc">Category verification (Required for food categories before public orders).</p>
-
-          <ui-input
-            label="FSSAI Registration Number (Optional for Home Bakers in Pilot)"
-            placeholder="14-digit FSSAI number"
-            [value]="store.draft().fssaiNumber || ''"
-            (valueChanged)="store.updateDraft({ fssaiNumber: $event })">
-          </ui-input>
-
-          <ui-input
-            label="GSTIN (Optional for small businesses)"
-            placeholder="15-character GSTIN"
-            [value]="store.draft().gstin || ''"
-            (valueChanged)="store.updateDraft({ gstin: $event })">
-          </ui-input>
-        </section>
-      }
-
-      <!-- STEP 7: REVIEW & SUBMIT -->
-      @if (store.currentStep() === 7) {
-        <section class="wizard-step">
-          <h2>Review & Submit</h2>
-          <p class="step-desc">Confirm your business setup before submitting for review.</p>
-
-          <div class="summary-box">
-            <div class="summary-item"><span>Business:</span> <strong>{{ store.draft().businessName }}</strong></div>
-            <div class="summary-item"><span>Type:</span> <strong>{{ store.draft().sellerMode }}</strong></div>
-            <div class="summary-item"><span>Locality:</span> <strong>{{ store.draft().locality }}, Nagpur - {{ store.draft().pincode }}</strong></div>
-            <div class="summary-item"><span>Pickup:</span> <strong>{{ store.draft().enablePickup ? 'Enabled' : 'Disabled' }}</strong></div>
-            <div class="summary-item"><span>Delivery:</span> <strong>{{ store.draft().enableDelivery ? store.draft().deliveryRadiusKm + ' km radius' : 'Disabled' }}</strong></div>
+            <div class="config-text-col">
+              <h2 class="config-title">Local / Express Delivery</h2>
+              <p class="config-desc">Quick delivery within a short distance</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="expressDelivery()" (change)="expressDelivery.set(!expressDelivery())" />
+              <span class="slider"></span>
+            </label>
           </div>
+        </article>
 
-          <label class="terms-checkbox">
-            <input type="checkbox" [checked]="store.draft().termsAccepted" (change)="store.updateDraft({ termsAccepted: $any($event.target).checked })" />
-            <span>I declare that the information provided is accurate and I agree to NukkadNow Merchant Terms.</span>
+        <!-- Note -->
+        <div class="info-note-card">
+          <span class="info-icon">ℹ️</span>
+          <span>You can change these settings anytime from Shop Settings.</span>
+        </div>
+
+        <button type="button" class="btn-royal-purple cta-bottom" (click)="nextStep()">
+          <span>Save &amp; Continue</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </main>
+    }
+
+    <!-- STEP 5: BUSINESS HOURS -->
+    @if (currentStep() === 5) {
+      <main class="wizard-step-card">
+        <div class="step-heading-block">
+          <h1 class="step-title">Business Hours</h1>
+          <p class="step-subtitle">Set your shop's operating days and timings</p>
+        </div>
+
+        <!-- Shop Operating Status Card -->
+        <div class="shop-status-banner-card">
+          <div class="status-store-icon">🏪</div>
+          <div class="status-text-col">
+            <h2 class="status-title">Shop Operating Status</h2>
+            <p class="status-sub">Accept orders during business hours</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [checked]="shopStatus()" (change)="shopStatus.set(!shopStatus())" />
+            <span class="slider"></span>
           </label>
-        </section>
-      }
+        </div>
 
-      <footer class="wizard-footer">
-        @if (store.currentStep() > 1) {
-          <ui-button variant="outline" (clicked)="store.prevStep()">Back</ui-button>
-        } @else {
-          <div></div>
-        }
+        <!-- Working Days Section -->
+        <div class="section-block">
+          <label class="section-label">Working Days</label>
+          <div class="days-pills-row">
+            @for (day of workingDays(); track day.short) {
+              <button 
+                type="button" 
+                class="day-pill-btn" 
+                [class.selected]="day.selected"
+                (click)="toggleDay(day.short)">
+                <span class="day-text">{{ day.short }}</span>
+                <span class="status-dot-icon">
+                  @if (day.selected) { ✓ } @else { ○ }
+                </span>
+              </button>
+            }
+          </div>
+        </div>
 
-        @if (store.currentStep() < 7) {
-          <ui-button variant="primary" [disabled]="!canProceedStep()" (clicked)="store.nextStep()">Continue</ui-button>
-        } @else {
-          <ui-button variant="primary" [disabled]="!canProceedStep()" [loading]="store.submitting()" (clicked)="onFinish()">Submit Application</ui-button>
-        }
-      </footer>
+        <!-- Business Timings Section -->
+        <div class="section-block">
+          <label class="section-label">Business Timings</label>
+          <div class="timings-grid">
+            <div class="time-picker-item">
+              <div class="time-lead-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#6D28D9" stroke-width="2">
+                  <circle cx="12" cy="12" r="5"/>
+                  <line x1="12" y1="1" x2="12" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1" y1="12" x2="3" y2="12"/>
+                  <line x1="21" y1="12" x2="23" y2="12"/>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+              </div>
+              <span class="time-title">Opening Time</span>
+              <select class="time-select" [ngModel]="openingTime()" (ngModelChange)="openingTime.set($event)">
+                <option value="07:00 AM">07:00 AM</option>
+                <option value="08:00 AM">08:00 AM</option>
+                <option value="09:00 AM">09:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+              </select>
+            </div>
+
+            <div class="time-picker-item">
+              <div class="time-lead-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#6D28D9" stroke-width="2">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              </div>
+              <span class="time-title">Closing Time</span>
+              <select class="time-select" [ngModel]="closingTime()" (ngModelChange)="closingTime.set($event)">
+                <option value="08:00 PM">08:00 PM</option>
+                <option value="09:00 PM">09:00 PM</option>
+                <option value="10:00 PM">10:00 PM</option>
+                <option value="11:00 PM">11:00 PM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 Days Recommended Checkbox -->
+        <label class="recommendation-checkbox-card" (click)="toggle7Days()">
+          <input type="checkbox" [checked]="open7Days()" />
+          <span class="checkbox-text">Open 7 days a week (Recommended)</span>
+        </label>
+
+        <button type="button" class="btn-royal-purple cta-bottom" (click)="nextStep()">
+          <span>Save &amp; Continue</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </main>
+    }
+
+    <!-- STEP 6: COMPLIANCE / VERIFICATION -->
+    @if (currentStep() === 6) {
+      <main class="wizard-step-card">
+        <div class="step-heading-block">
+          <h1 class="step-title">Compliance / Verification</h1>
+          <p class="step-subtitle">Verify your business to build trust and go live</p>
+        </div>
+
+        <div class="docs-section">
+          <label class="section-label">Upload Required Documents</label>
+          <div class="docs-list">
+            @for (doc of documents(); track doc.id) {
+              <article class="doc-upload-card" (click)="uploadDoc(doc.id)">
+                <div class="doc-icon-wrap">
+                  <svg viewBox="0 0 24 24" class="doc-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </div>
+                <div class="doc-info-col">
+                  <div class="doc-name-row">
+                    <span class="doc-name">{{ doc.title }}</span>
+                    @if (doc.required) { <span class="required-star">*</span> }
+                  </div>
+                  <span class="doc-sub">{{ doc.sub }}</span>
+                </div>
+                @if (doc.uploaded) {
+                  <span class="uploaded-pill-badge">
+                    <svg viewBox="0 0 24 24" class="check-inline" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Uploaded</span>
+                  </span>
+                } @else {
+                  <button type="button" class="upload-action-btn" (click)="uploadDoc(doc.id); $event.stopPropagation()">+ Upload</button>
+                }
+              </article>
+            }
+          </div>
+        </div>
+
+        <div class="security-privacy-note">
+          <div class="shield-icon">🛡️</div>
+          <span>Your documents are stored securely and used only for business verification.</span>
+        </div>
+
+        <label class="declaration-checkbox-row">
+          <input type="checkbox" [(ngModel)]="confirmValidDocs" />
+          <span>I confirm that the information and documents provided are true and valid.</span>
+        </label>
+
+        <button type="button" class="btn-royal-purple cta-bottom" (click)="nextStep()">
+          <span>Submit for Verification</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </main>
+    }
+
+    <!-- STEP 7: ONBOARDING REVIEW & GO LIVE -->
+    @if (currentStep() === 7) {
+      <main class="wizard-step-card">
+        <div class="step-heading-block">
+          <h1 class="step-title">Onboarding Review</h1>
+          <p class="step-subtitle">Please review your details before submitting</p>
+        </div>
+
+        <div class="review-cards-stack">
+          <!-- 1: Profile -->
+          <article class="review-item-card">
+            <div class="item-icon-col purple">🏪</div>
+            <div class="item-info-col">
+              <strong class="item-name">Business Profile</strong>
+              <span class="item-summary">{{ shopName }} | Retail Shop</span>
+            </div>
+            <button type="button" class="edit-link-btn" (click)="goToStep(2)">
+              <svg viewBox="0 0 24 24" class="edit-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>Edit</span>
+            </button>
+          </article>
+
+          <!-- 2: Location -->
+          <article class="review-item-card">
+            <div class="item-icon-col purple">📍</div>
+            <div class="item-info-col">
+              <strong class="item-name">Business Location</strong>
+              <span class="item-summary">{{ addressLine1 }}, {{ city }} – {{ pincode }}</span>
+            </div>
+            <button type="button" class="edit-link-btn" (click)="goToStep(3)">
+              <svg viewBox="0 0 24 24" class="edit-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>Edit</span>
+            </button>
+          </article>
+
+          <!-- 3: Fulfilment -->
+          <article class="review-item-card">
+            <div class="item-icon-col purple">🛵</div>
+            <div class="item-info-col">
+              <strong class="item-name">Fulfilment Configuration</strong>
+              <span class="item-summary">Home Delivery ({{ deliveryRadius() }}) | Self Pickup: {{ storePickup() ? 'On' : 'Off' }}</span>
+            </div>
+            <button type="button" class="edit-link-btn" (click)="goToStep(4)">
+              <svg viewBox="0 0 24 24" class="edit-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>Edit</span>
+            </button>
+          </article>
+
+          <!-- 4: Hours -->
+          <article class="review-item-card">
+            <div class="item-icon-col purple">⏱️</div>
+            <div class="item-info-col">
+              <strong class="item-name">Business Hours</strong>
+              <span class="item-summary">Mon – Fri, {{ openingTime() }} – {{ closingTime() }}</span>
+            </div>
+            <button type="button" class="edit-link-btn" (click)="goToStep(5)">
+              <svg viewBox="0 0 24 24" class="edit-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>Edit</span>
+            </button>
+          </article>
+
+          <!-- 5: Compliance -->
+          <article class="review-item-card">
+            <div class="item-icon-col purple">🛡️</div>
+            <div class="item-info-col">
+              <strong class="item-name">Compliance / Verification</strong>
+              <span class="item-summary green-text">✓ 3/3 documents uploaded</span>
+            </div>
+            <button type="button" class="edit-link-btn" (click)="goToStep(6)">
+              <svg viewBox="0 0 24 24" class="edit-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>Edit</span>
+            </button>
+          </article>
+        </div>
+
+        <!-- Green Ready To Go Live Banner -->
+        <div class="ready-live-banner">
+          <div class="ready-check-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="ready-text-col">
+            <h2 class="ready-title">Ready to Go Live!</h2>
+            <p class="ready-desc">Your shop will be verified by our team. You'll be notified once it's approved (usually within 24 hours).</p>
+          </div>
+        </div>
+
+        <!-- Submit & Create Shop Button -->
+        <button type="button" class="btn-royal-purple cta-bottom" (click)="finishOnboarding()">
+          <span>Submit &amp; Create Shop</span>
+          <svg viewBox="0 0 24 24" class="arrow-svg" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </main>
+    }
+
+    <!-- Toast -->
+    @if (toastMessage()) {
+      <div class="floating-toast" role="status">
+        <svg viewBox="0 0 24 24" class="toast-check-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>{{ toastMessage() }}</span>
+      </div>
     }
   </div>
 </div>

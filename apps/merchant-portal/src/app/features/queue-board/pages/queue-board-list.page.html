@@ -1,14 +1,307 @@
-﻿<div class="merchant-queue-board-container">
-  <div class="header-row">
-    <h2>QueueBoard Management</h2>
+﻿<div class="kds-page-container" [class.fullscreen-mode]="isFullscreen()">
+  <!-- Announcement Banner -->
+  @if (announcementToast()) {
+    <aside class="announcement-banner" role="alert">
+      <span class="bell-icon">📢</span>
+      <span class="announcement-text">{{ announcementToast() }}</span>
+    </aside>
+  }
+
+  <!-- Page Header -->
+  <header class="kds-header">
+    <div class="header-titles">
+      <div class="title-badge-row">
+        <h1 class="page-title">Live Queue & Kitchen Display</h1>
+        <span class="live-pill">
+          <span class="pulse-dot"></span>
+          Live Sync
+        </span>
+      </div>
+      <p class="page-subtitle">Real-time token management for counter walk-ins, table QR, and online pickup orders.</p>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button type="button" class="btn-call-next" (click)="callNextToken()">
+        <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        <span>Call Next Token</span>
+      </button>
+
+      <a routerLink="/walkin-orders" class="btn-new-walkin">
+        <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>+ Walk-in Order</span>
+      </a>
+
+      <button type="button" class="btn-fullscreen-toggle" (click)="toggleFullscreen()" title="Toggle Fullscreen TV Mode">
+        <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 4 KPI Metrics Row -->
+  <section class="kpi-row" aria-label="Queue summary metrics">
+    <div class="kpi-card purple-tint">
+      <span class="kpi-label">In Live Queue</span>
+      <strong class="kpi-number">{{ inQueueCount() }}</strong>
+      <span class="kpi-sub">Waiting for prep/collection</span>
+    </div>
+
+    <div class="kpi-card orange-tint">
+      <span class="kpi-label">Now Preparing</span>
+      <strong class="kpi-number orange">{{ preparingCount() }}</strong>
+      <span class="kpi-sub">In kitchen work</span>
+    </div>
+
+    <div class="kpi-card emerald-tint">
+      <span class="kpi-label">Ready for Pickup</span>
+      <strong class="kpi-number emerald">{{ readyCount() }}</strong>
+      <span class="kpi-sub">Tokens awaiting pickup</span>
+    </div>
+
+    <div class="kpi-card slate-tint">
+      <span class="kpi-label">Completed Today</span>
+      <strong class="kpi-number">{{ completedToday() }}</strong>
+      <span class="kpi-sub">Avg handover 6.2 mins</span>
+    </div>
+  </section>
+
+  <!-- Filter & View Switcher Bar -->
+  <div class="queue-toolbar">
+    <!-- Channel Filter Pills -->
+    <div class="channel-filter-pills">
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="activeTypeFilter() === 'All'"
+        (click)="activeTypeFilter.set('All')">
+        All Channels ({{ queueList().length }})
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="activeTypeFilter() === 'Walk-in'"
+        (click)="activeTypeFilter.set('Walk-in')">
+        🏪 Walk-in Counter
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="activeTypeFilter() === 'Online'"
+        (click)="activeTypeFilter.set('Online')">
+        📱 Online App
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="activeTypeFilter() === 'Table QR'"
+        (click)="activeTypeFilter.set('Table QR')">
+        🍽️ Table QR
+      </button>
+    </div>
+
+    <!-- Layout Switcher (Kanban vs List) -->
+    <div class="layout-toggle-group">
+      <button 
+        type="button" 
+        class="layout-btn" 
+        [class.active]="viewLayout() === 'kanban'"
+        (click)="viewLayout.set('kanban')"
+        title="Kanban columns view">
+        <svg viewBox="0 0 24 24" class="layout-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="18" rx="1"/>
+          <rect x="14" y="3" width="7" height="18" rx="1"/>
+        </svg>
+        <span>Board</span>
+      </button>
+      <button 
+        type="button" 
+        class="layout-btn" 
+        [class.active]="viewLayout() === 'list'"
+        (click)="viewLayout.set('list')"
+        title="List table view">
+        <svg viewBox="0 0 24 24" class="layout-svg" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/>
+          <line x1="3" y1="12" x2="3.01" y2="12"/>
+          <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        <span>List</span>
+      </button>
+    </div>
   </div>
-  @if (store.loading()) {
-    <p>Loading records...</p>
-  } @else {
-    <div class="cards-grid">
-      @for (item of store.items(); track item.id) {
-        <merchant-queue-board-card [item]="item"></merchant-queue-board-card>
-      }
+
+  <!-- ============================================== -->
+  <!-- VIEW 1: KANBAN COLUMNS VIEW                    -->
+  <!-- ============================================== -->
+  @if (viewLayout() === 'kanban') {
+    <div class="kds-kanban-grid">
+      <!-- COLUMN 1: NOW PREPARING -->
+      <section class="kanban-column preparing-col">
+        <div class="column-header">
+          <div class="col-title-group">
+            <span class="col-dot orange"></span>
+            <h2 class="col-title">Now Preparing</h2>
+          </div>
+          <span class="col-count-badge orange">{{ preparingOrders().length }}</span>
+        </div>
+
+        <div class="column-cards-list">
+          @for (ord of preparingOrders(); track ord.id) {
+            <article class="kds-token-card prep-card">
+              <div class="card-top-row">
+                <div class="token-badge-large">{{ ord.token }}</div>
+                <div class="timer-pill" [class.urgent]="ord.timeRemainingMins <= 5">
+                  <svg viewBox="0 0 24 24" class="timer-svg" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span>{{ ord.timeRemainingMins }}m left</span>
+                </div>
+              </div>
+
+              <div class="customer-channel-row">
+                <span class="cust-name-sm">{{ ord.customerName }}</span>
+                <span class="channel-tag" [class]="ord.type.toLowerCase().replace(' ', '-')">
+                  {{ ord.type }}
+                </span>
+              </div>
+
+              <div class="items-summary-box">
+                <p class="items-text">{{ ord.itemsSummary }}</p>
+                <span class="items-count-tag">{{ ord.itemsCount }} items • ₹{{ ord.amount }}</span>
+              </div>
+
+              <div class="card-action-bar">
+                <button type="button" class="btn-mark-ready" (click)="markReady(ord.id)">
+                  <svg viewBox="0 0 24 24" class="btn-svg" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Mark Ready
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <div class="col-empty-card">
+              <span>All orders prepped! Kitchen is clear.</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- COLUMN 2: READY FOR PICKUP -->
+      <section class="kanban-column ready-col">
+        <div class="column-header">
+          <div class="col-title-group">
+            <span class="col-dot emerald"></span>
+            <h2 class="col-title">Ready for Pickup / Counter</h2>
+          </div>
+          <span class="col-count-badge emerald">{{ readyOrders().length }}</span>
+        </div>
+
+        <div class="column-cards-list">
+          @for (ord of readyOrders(); track ord.id) {
+            <article class="kds-token-card ready-card">
+              <div class="card-top-row">
+                <div class="token-badge-large emerald">{{ ord.token }}</div>
+                @if (ord.status === 'Called') {
+                  <span class="called-pill">📢 Announced</span>
+                } @else {
+                  <span class="ready-pill">✓ At Counter</span>
+                }
+              </div>
+
+              <div class="customer-channel-row">
+                <span class="cust-name-sm">{{ ord.customerName }}</span>
+                <span class="channel-tag" [class]="ord.type.toLowerCase().replace(' ', '-')">
+                  {{ ord.type }}
+                </span>
+              </div>
+
+              <div class="items-summary-box">
+                <p class="items-text">{{ ord.itemsSummary }}</p>
+                <span class="items-count-tag">{{ ord.itemsCount }} items • ₹{{ ord.amount }}</span>
+              </div>
+
+              <div class="card-action-split">
+                <button type="button" class="btn-call-token" (click)="callToken(ord.token)">
+                  📢 Call
+                </button>
+                <button type="button" class="btn-handover" (click)="completeOrder(ord.id)">
+                  Handover ✓
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <div class="col-empty-card">
+              <span>No orders currently awaiting customer pickup.</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- ============================================== -->
+  <!-- VIEW 2: LIST / TABLE VIEW                      -->
+  <!-- ============================================== -->
+  @if (viewLayout() === 'list') {
+    <div class="queue-list-table-wrap">
+      <div class="queue-table-header">
+        <span class="th token">Token</span>
+        <span class="th customer">Customer & Channel</span>
+        <span class="th items">Order Items</span>
+        <span class="th status">Status / Timer</span>
+        <span class="th actions">Actions</span>
+      </div>
+
+      <div class="queue-table-rows">
+        @for (ord of filteredQueue(); track ord.id) {
+          <div class="queue-table-row">
+            <div class="td token">
+              <span class="token-pill">{{ ord.token }}</span>
+            </div>
+
+            <div class="td customer">
+              <strong class="cust-title">{{ ord.customerName }}</strong>
+              <span class="channel-sub">{{ ord.type }} • Placed at {{ ord.placedTime }}</span>
+            </div>
+
+            <div class="td items">
+              <p class="items-summary-truncate">{{ ord.itemsSummary }}</p>
+              <span class="items-badge-sm">{{ ord.itemsCount }} items • ₹{{ ord.amount }}</span>
+            </div>
+
+            <div class="td status">
+              @if (ord.status === 'Preparing') {
+                <span class="status-badge prep">⏳ Prep: {{ ord.timeRemainingMins }}m</span>
+              } @else if (ord.status === 'Called') {
+                <span class="status-badge called">📢 Called</span>
+              } @else {
+                <span class="status-badge ready">✓ Ready</span>
+              }
+            </div>
+
+            <div class="td actions">
+              @if (ord.status === 'Preparing') {
+                <button type="button" class="btn-sm btn-mark-ready" (click)="markReady(ord.id)">Ready</button>
+              } @else {
+                <button type="button" class="btn-sm btn-call-token" (click)="callToken(ord.token)">Call</button>
+                <button type="button" class="btn-sm btn-handover" (click)="completeOrder(ord.id)">Handover</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
     </div>
   }
 </div>
